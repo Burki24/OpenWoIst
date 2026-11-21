@@ -43,5 +43,30 @@ Kamera und Auswahl, schmales Layout und Mausradbedienung über Karte und
 Liste in beiden Richtungen. Im IPSView-Frame wurden außerdem die
 eigenen Markerfarben, Wiederanlauf nach einer Unterbrechung, Widerruf
 des Zugriffs und die SVG-Textgrenzen beider Farbdiagramme geprüft.
-Die Abnahme in der echten Symcon-Konsole, im Kachelhost und im
-verwendeten IPSView-Client steht aus.
+
+## Abnahme auf der Entwicklungsinstanz
+
+Symcon 9.1 hat den Modulstand `dev` mit Commit `6dad97a` geladen. Nach
+der Korrektur des Referenzzugriffs war die Testinstanz aktiv. Das Modul
+hat die Variablen für das Testfahrzeug und IPSView-WebContent angelegt
+und das zugewiesene iCloud-Konto referenziert.
+
+- Die direkte Kachelvorschau aus Symcon zeigte das Testfahrzeug und die
+  gespeicherten Apple-Positionen. Die abgelaufene iCloud-Sitzung führte zur
+  Kennzeichnung der Apple-Positionen als zuletzt bekannt. Der Quellenfilter
+  und die Objektauswahl reagierten wie vorgesehen.
+- Die erzeugte IPSView-WebContent-Einbindung lud im Browser ihren geschützten
+  Frame. Der autorisierte Zustandsabruf lieferte beide Quellen. Abrufe ohne
+  Zugriffsschlüssel wurden mit HTTP 403 beantwortet. Nach dem Bewegen des
+  Testfahrzeugs aktualisierte sich der Marker bei gleichem Ausschnitt und
+  gleicher Auswahl.
+- Kachel- und IPSView-Designer waren in der echten Symcon-Konsole bedienbar.
+  Ihre Farbkarten wurden geladen. Getrennte Kartenprofile und Markerfarben
+  wurden in den Ausgaben wirksam. Die Testfarben und Profile wurden nach
+  der Prüfung zurückgesetzt.
+- Echte Mausradaktionen in Chromium prüften Kartenzoom und unabhängiges
+  Listenscrollen in beide Richtungen mit den Ausgaben des Entwicklungsservers.
+
+Der Live-Push der nativen Kachel im regulären Visualisierungshost und die
+Einbettung im verwendeten IPSView-Desktop-Client bleiben Praxisnachweise
+für die jeweiligen Testansichten.
