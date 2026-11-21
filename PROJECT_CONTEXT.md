@@ -67,6 +67,24 @@ und das zugewiesene iCloud-Konto referenziert.
 - Echte Mausradaktionen in Chromium prüften Kartenzoom und unabhängiges
   Listenscrollen in beide Richtungen mit den Ausgaben des Entwicklungsservers.
 
-Der Live-Push der nativen Kachel im regulären Visualisierungshost und die
-Einbettung im verwendeten IPSView-Desktop-Client bleiben Praxisnachweise
-für die jeweiligen Testansichten.
+- Auf der Entwicklungsinstanz gibt es getrennte, passwortgeschützte
+  Testansichten für die native Kachel und IPSView Desktop. Die Kachel
+  verweist auf die OpenWoIst-Testinstanz. Die IPSView-Ansicht bindet deren
+  WebContent-Variable in einer HTML-Box ein.
+- Der native Live-Push wurde im regulären Symcon-Visualisierungshost
+  nachgewiesen. Nach Auswahl und Zoom auf das Testfahrzeug wurde ein
+  Positionswechsel serverseitig ausgelöst. Der Fahrzeugmarker wanderte im
+  bereits geöffneten Frame. Kartenausschnitt, Auswahl und die zehn als
+  zuletzt bekannt gekennzeichneten Apple-Marker blieben erhalten.
+- Beim Verbindungsaufbau scheiterte IPSViewConnect zunächst am PHP-Limit
+  von 64 MiB. SymconECharts lagert die Renderer seiner IPSView-Ausgaben
+  inzwischen über den EChartsGateway aus. Der Live-Snapshot sank dadurch
+  von 95,5 auf 27,1 MiB und benötigte beim Einlesen rund 42 statt 110 MiB
+  PHP-Speicher. Nach der Umstellung wurde die originale Store-Datei von
+  IPSViewConnect wieder eingespielt.
+- Für die IPSView-Testansicht wurden die Objekttypen der Gruppen- und
+  Kopiereinstellungen korrigiert. IPSView Desktop 6.5.21 lud die HTML-Box
+  per ViewConnect mit dem originalen IPSViewConnect. Sie zeigte das
+  Testfahrzeug und zehn als zuletzt bekannt markierte Apple-Positionen.
+  Beim Fahrzeugwechsel blieben der Kartenframe, der Ausschnitt, die
+  Auswahl und die Apple-Marker erhalten.
