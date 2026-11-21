@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="{{HTML_LANGUAGE}}" class="{{HTML_CLASSES}}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="{{VIEWPORT_CONTENT}}">
+    <meta name="referrer" content="origin">
+    <title>{{DOCUMENT_TITLE}}</title>
+    <style>html { font-size: {{ROOT_FONT_SIZE}}; } {{VISUALIZATION_THEME}}{{IPSVIEW_STYLE}}{{MODULE_STYLE}}</style>
+</head>
+<body>
+    <iframe id="ipsview-map" name="burki24.wheel.v1" title="OpenWoIst" hidden></iframe>
+    <p id="ipsview-notice" role="status" hidden></p>
+    <script>window.SymconVisualization = {{BOOTSTRAP_JSON}};</script>
+    <script>{{HTTP_ORIGIN}}</script>
+    <script>{{MODULE_SCRIPT}}</script>
+</body>
+</html>

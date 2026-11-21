@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="{{HTML_LANGUAGE}}" class="{{HTML_CLASSES}}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="{{VIEWPORT_CONTENT}}">
+    <meta name="referrer" content="origin">
+    <title>{{DOCUMENT_TITLE}}</title>
+    <style>html { font-size: {{ROOT_FONT_SIZE}}; }</style>
+    <style>{{LEAFLET_CSS}}</style>
+    <style>{{VECTOR_CSS}}</style>
+    <style>{{VISUALIZATION_THEME}}{{IPSVIEW_STYLE}}</style>
+    <style>{{RESPONSIVE_CSS}}</style>
+    <style>{{MODULE_STYLE}}</style>
+    <style id="map-presentation"></style>
+</head>
+<body>
+    <main id="openwoist">
+        <div class="toolbar" data-symc-tile-toolbar>
+            <label id="filter-control" hidden><span id="filter-label"></span><select id="source-filter"></select></label>
+            <button id="fit" type="button"></button>
+        </div>
+        <div class="workspace">
+            <section class="map-panel">
+                <div id="map" role="region"></div>
+                <p id="map-status" role="status" hidden></p>
+            </section>
+            <aside id="objects">
+                <h2 id="objects-label"></h2>
+                <p id="connection-status" role="status" hidden></p>
+                <p id="source-status" role="status" hidden></p>
+                <p id="empty" hidden></p>
+                <ul id="object-list"></ul>
+            </aside>
+        </div>
+    </main>
+    <script>window.SymconVisualization = {{BOOTSTRAP_JSON}};</script>
+    <script>{{LEAFLET_JS}}</script>
+    <script>{{VECTOR_JS}}</script>
+    <script>{{MODULE_SCRIPT}}</script>
+</body>
+</html>

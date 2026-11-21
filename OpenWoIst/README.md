@@ -1,0 +1,100 @@
+# OpenWoIst
+
+Die Kachel zeigt Geräte aus den zugewiesenen iCloud-Konten und optional ein
+Fahrzeug aus Symcon-Variablen. Die Fahrzeugquelle kann auch eigenständig
+verwendet werden.
+
+## Einrichten und mit dem Testfahrzeug ausprobieren
+
+1. Eine Instanz **OpenWoIst** anlegen. Unter **iCloud-Konten** die gewünschten
+   Konto-Instanzen aus SymconiCloud auswählen. Voraussetzung für Apple-Positionen
+   ist ein gefüllter Gerätestand im ausgewählten Konto.
+2. Unter **Fahrzeugquelle** den Eintrag **Testfahrzeug** auswählen und die
+   Konfiguration übernehmen. Dadurch entsteht die String-Variable
+   **Position des Testfahrzeugs** (`DemoPosition`) mit einem synthetischen
+   Standort in Berlin.
+3. Die Instanz in der Symcon-Kachelvisualisierung öffnen. Mit der Formularaktion
+   **Testfahrzeug bewegen** lässt sich die Fahrzeugposition an vier vorbereiteten
+   Punkten weiterschalten.
+
+OpenWoIst liest die ausgewählten lokalen Quellen alle fünf Sekunden.
+Fahrzeugvariablen melden neue Messungen zusätzlich per Ereignis. Der Zeitpunkt
+einer Position stammt aus der jeweiligen Messung. Unter
+**Position als veraltet markieren nach** lässt sich die Schwelle ändern
+(Standard 900 Sekunden). Bei einem vorübergehenden Quellenausfall zeigt die
+Kachel gespeicherte Positionen als **Letzte bekannte Position** an. Beim
+Entfernen eines Kontos aus der Auswahl oder bei dessen Abmeldung werden seine
+Positionen von der Karte entfernt.
+
+Der Quellenfilter steuert die sichtbaren Marker und Listeneinträge.
+Kachelzugriff umfasst die Standortdaten aller Quellen, die der Instanz
+zugewiesen sind.
+
+## Kachel und IPSView gestalten
+
+Der **Kachel-Designer** bietet Symcon-Farben, Schriftgröße, Markerfarben
+und ein eigenes OpenFreeMap-Profil. Im **IPSView-Designer** stehen der
+gemeinsame IPSView-Stil mit Schrift und Farben sowie eigene Markerfarben
+zur Verfügung. Eine Farbkarte mit Legende zeigt in jedem Designer, wo
+die Einstellungen wirken.
+
+Unter **OpenFreeMap** lassen sich Darstellungsmodus, helle und dunkle
+Kartenstile, Detailstufen, Beschriftungssprache und Kartenfarben
+einstellen. IPSView nutzt standardmäßig das Grundkartenprofil der Kachel.
+Für ein separates Profil im IPSView-Designer **Grundkartenprofil der
+Kachel verwenden** abwählen. IPSView-Stil und Markerfarben sind auch bei
+gemeinsamer Grundkarte unabhängig.
+
+### Karte in IPSView einbinden
+
+1. Im **IPSView-Designer** die HTML-Ausgabe aktivieren und **Übernehmen**
+   wählen.
+2. **OpenWoIst für IPSView** (`IPSViewOpenWoIst`) als WebContent in
+   IPSView einbinden. Die String-Variable enthält die Karteneinbindung
+   mit ihrem Zugriffsschlüssel. Gib sie nur an Personen mit Zugriff auf
+   die zugeordneten Standorte weiter.
+3. Falls IPSView den Server nicht automatisch findet, unter
+   **Symcon-Server-URL für IPSView** die erreichbare HTTP(S)-Serveradresse
+   mit optionalem Port eintragen, beispielsweise
+   `https://symcon.example.org`.
+
+Die IPSView-Karte liest alle fünf Sekunden den geschützten lokalen
+Kartenstand. Bei Positionsupdates bleiben Zoom, Ausschnitt und Auswahl
+erhalten. Änderungen der Quellzuordnung erzeugen einen neuen
+Zugriffsschlüssel. Beim Deaktivieren wird der Zugriff gesperrt. Der
+Ausgabe-Helper bietet für die bestehende Variable eine separate
+Löschfunktion im Instanzformular.
+
+## Vorhandene Fahrzeugvariablen anschließen
+
+Unter **Fahrzeugquelle** einen der folgenden Modi wählen und die entsprechenden
+Variablen zuordnen.
+
+- **Positionsvariable (JSON)** erwartet eine String-Variable mit einem
+  vollständigen Datensatz. `latitude` und `longitude` sind Zahlen in Grad.
+  `timestamp` ist die Messzeit als ganze Unix-Sekunde. `horizontalAccuracy`
+  ist optional und gibt die Genauigkeit in Metern an.
+- **Einzelne Positionsvariablen** erwartet zwei numerische Koordinatenvariablen
+  und eine ganzzahlige Messzeitvariable. Der Datenlieferant setzt die
+  Messzeitvariable vor dem Schreiben beider Koordinaten auf `0` und schreibt
+  zuletzt die neue positive Messzeit. Jede neue Messung erhält eine höhere
+  Messzeit. So gehören beide übernommenen Koordinaten zur selben Messung.
+
+Beispiel für das Format einer JSON-Positionsvariable in einem Symcon-Skript
+
+```php
+SetValueString($positionsVariableID, json_encode([
+    'latitude' => 52.51453,
+    'longitude' => 13.35010,
+    'timestamp' => time(),
+    'horizontalAccuracy' => 12
+], JSON_THROW_ON_ERROR));
+```
+
+## Öffentliche Funktionen
+
+| Funktion | Verhalten |
+| --- | --- |
+| `OWIS_Update(int $InstanceID): void` | Liest die zugewiesenen lokalen Quellen und aktualisiert die Kachel bei Änderungen. |
+| `OWIS_NextDemoPosition(int $InstanceID): bool` | Schreibt den nächsten synthetischen Standort in die Demo-Variable. Liefert `true`, wenn der Schreibvorgang gelungen ist. |
+| `OWIS_GetIPSViewHTML(int $InstanceID): string` | Gibt die HTML-Einbindung mit dem für die Instanz gültigen Zugriffsschlüssel zurück, sofern die Ausgabe aktiv ist. |

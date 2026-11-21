@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: symcon/SymconStubs
+          ref: 31f2e0478eb3763236fcf44ea4144271fdeddfd5
+          path: tests/stubs
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - uses: Burki24/Symcon_ModuleCI/php-tests@v1.0.0
+        with:
+          php-version: '8.5'
+          test-command: php tests/run.php
+      - run: |
+          node --check OpenWoIst/visualization/app.js
+          node --check OpenWoIst/visualization/frame.js

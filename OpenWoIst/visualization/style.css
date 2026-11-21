@@ -1,0 +1,185 @@
+:root {
+    color-scheme: light dark;
+    --surface: var(--symc-background, #f4f6f7);
+    --panel: var(--symc-surface, #fff);
+    --button: var(--symc-surface-raised, #fff);
+    --ink: var(--symc-text, #19292e);
+    --heading: var(--symc-heading, var(--ink));
+    --muted: var(--symc-subheading, #506268);
+    --border: var(--symc-border, #ccd7da);
+    --accent: var(--symc-accent, #17636c);
+    --selected: var(--symc-accent-soft, #dff1f2);
+    --selected-text: var(--ink);
+    --warning: var(--symc-warning, #b47521);
+    --map-background: #e5edeb;
+    --device: var(--openwoist-device, #17636c);
+    --vehicle: var(--openwoist-vehicle, #ae4e25);
+    --old: var(--openwoist-old, #626f74);
+    --control-radius: var(--symc-radius-small, .5rem);
+    --panel-radius: var(--symc-radius-medium, .75rem);
+    --frame-width: 1px;
+    font-family: var(--symc-font-family, system-ui, sans-serif);
+    font-size: var(--openwoist-font-size, 14px);
+    line-height: 1.4;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface: var(--symc-background, #162125);
+        --panel: var(--symc-surface, #1d2a30);
+        --button: var(--symc-surface-raised, #1d2a30);
+        --ink: var(--symc-text, #eff5f5);
+        --muted: var(--symc-subheading, #b2c6cb);
+        --border: var(--symc-border, #3d535a);
+        --accent: var(--symc-accent, #8edce0);
+        --selected: var(--symc-accent-soft, #243e44);
+        --map-background: #202d30;
+    }
+}
+
+:root.ipsview-mode {
+    --surface: var(--ipsview-role-view-background, #f4f6f7);
+    --panel: var(--ipsview-role-page-background, #fff);
+    --button: var(--ipsview-role-control-background, #fff);
+    --ink: var(--ipsview-role-text-primary, #19292e);
+    --heading: var(--ipsview-role-text-label, var(--ink));
+    --muted: var(--ipsview-role-text-inactive, #506268);
+    --border: var(--ipsview-role-border, #ccd7da);
+    --accent: var(--ipsview-role-accent, #17636c);
+    --selected: var(--ipsview-role-control-active-background, #dff1f2);
+    --selected-text: var(--ipsview-role-text-active, var(--ink));
+    --warning: var(--ipsview-role-warning, #b47521);
+    --map-background: var(--panel);
+    --control-radius: var(--ipsview-role-radius, .5rem);
+    --panel-radius: var(--ipsview-role-radius, .75rem);
+    --frame-width: var(--ipsview-role-border-width, 1px);
+    font-style: var(--ipsview-role-font-style, normal);
+    font-weight: var(--ipsview-role-font-weight, 400);
+}
+
+body { background: var(--surface); color: var(--ink); }
+[hidden] { display: none !important; }
+button, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: var(--ipsview-role-disabled-opacity, .55); cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: end;
+    margin-block-end: .55rem;
+}
+
+.toolbar label {
+    display: grid;
+    min-width: 0;
+    gap: .15rem;
+    color: var(--muted);
+}
+
+.toolbar select, .toolbar button {
+    box-sizing: border-box;
+    min-height: 2.45rem;
+    max-width: 100%;
+    padding: .35rem .7rem;
+    background: var(--button);
+    border: var(--frame-width) solid var(--border);
+    border-radius: var(--control-radius);
+    color: var(--ink);
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 31%);
+    gap: .6rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.map-panel, #objects {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border: var(--frame-width) solid var(--border);
+    border-radius: var(--panel-radius);
+}
+
+.map-panel { box-shadow: var(--ipsview-role-shadow, none); }
+#map { height: 100%; background: var(--map-background); }
+#objects { overflow: auto; overscroll-behavior: contain; background: var(--panel); }
+#objects h2 { margin: .75rem .75rem .4rem; font-size: 1rem; color: var(--heading); }
+#objects p { margin: .4rem .75rem .6rem; color: var(--muted); overflow-wrap: anywhere; }
+#objects [role="status"] { border-inline-start: 3px solid var(--warning); padding-inline-start: .5rem; }
+#object-list { list-style: none; margin: 0; padding: 0 .4rem .45rem; }
+#object-list li + li { margin-top: .2rem; }
+
+.object {
+    display: grid;
+    grid-template-columns: .65rem minmax(0, 1fr);
+    gap: .5rem;
+    width: 100%;
+    padding: .5rem .4rem;
+    text-align: start;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--control-radius);
+}
+
+.object[aria-pressed="true"] { background: var(--selected); color: var(--selected-text); border-color: var(--accent); }
+.object-name, .object-detail { display: block; overflow-wrap: anywhere; }
+.object-name { font-weight: 650; }
+.object-detail { font-size: .85rem; color: var(--muted); }
+
+.symbol {
+    display: block;
+    width: .6rem;
+    height: .6rem;
+    margin-top: .38rem;
+    background: var(--device);
+    border-radius: 50%;
+}
+
+[data-kind="vehicle"] .symbol, [data-kind="demo"] .symbol { background: var(--vehicle); border-radius: .15rem; }
+[data-stale="true"] .symbol { background: var(--old); }
+.location-marker .symbol {
+    box-sizing: border-box;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 5px #0008;
+}
+.location-marker[data-selected="true"] .symbol { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.leaflet-container { font-family: inherit; }
+.leaflet-control-zoom a {
+    background: var(--button);
+    color: var(--ipsview-role-icon, var(--ink));
+    border-bottom-color: var(--ipsview-role-line, var(--border));
+}
+.leaflet-control-zoom a:hover { background: var(--selected); }
+
+#map-status {
+    position: absolute;
+    inset: auto .5rem 1.5rem;
+    z-index: 500;
+    width: fit-content;
+    max-width: calc(100% - 1rem);
+    box-sizing: border-box;
+    margin: 0;
+    padding: .35rem .55rem;
+    background: var(--button);
+    border-inline-start: 3px solid var(--warning);
+    border-radius: var(--control-radius);
+    box-shadow: 0 1px 6px #0004;
+    pointer-events: none;
+}
+
+@container openwoist (max-width: 31rem) {
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+    }
+}

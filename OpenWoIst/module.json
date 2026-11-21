@@ -1,0 +1,12 @@
+{
+    "id": "{B9CA4CB3-31E4-4949-AA86-4580224C862D}",
+    "name": "OpenWoIst",
+    "type": 3,
+    "vendor": "",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "OWIS",
+    "url": "https://github.com/Burki24/OpenWoIst/blob/dev/OpenWoIst/README.md"
+}

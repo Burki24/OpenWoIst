@@ -1,0 +1,32 @@
+{
+    "schema": 1,
+    "source_repository": "Burki24/Symcon_ModuleHelper",
+    "base_branch": "dev",
+    "readme_language": "en",
+    "helpers": {
+        "ConfigurationFormHelper": {
+            "target": "libs/helper/ConfigurationFormHelper.php"
+        },
+        "DebugFlowHelper": {
+            "target": "libs/helper/DebugFlowHelper.php"
+        },
+        "HttpResponseHelper": {
+            "target": "libs/helper/HttpResponseHelper.php"
+        },
+        "IPSViewHTMLPageHelper": {
+            "target": "libs/helper/IPSViewHTMLPageHelper.php"
+        },
+        "IPSViewStyleConfigurationHelper": {
+            "target": "libs/helper/IPSViewStyleConfigurationHelper.php"
+        },
+        "OpenFreeMapHelper": {
+            "target": "libs/helper/OpenFreeMapHelper.php"
+        },
+        "ResponsiveVisualizationHelper": {
+            "target": "libs/helper/ResponsiveVisualizationHelper.php"
+        },
+        "VisualizationThemeConfigurationHelper": {
+            "target": "libs/helper/VisualizationThemeConfigurationHelper.php"
+        }
+    }
+}

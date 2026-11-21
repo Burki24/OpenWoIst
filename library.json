@@ -1,0 +1,12 @@
+{
+    "id": "{1DC64D08-AA13-4DEB-81E4-5DB2E5E446DA}",
+    "name": "OpenWoIst",
+    "author": "Burkhard Kneiseler",
+    "url": "https://github.com/Burki24/OpenWoIst",
+    "compatibility": {
+        "version": "9.0"
+    },
+    "version": "0.1",
+    "build": 0,
+    "date": 0
+}

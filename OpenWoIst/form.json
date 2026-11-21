@@ -1,0 +1,116 @@
+{
+    "elements": [
+        {
+            "type": "List",
+            "name": "Accounts",
+            "caption": "iCloud accounts",
+            "rowCount": 4,
+            "add": true,
+            "delete": true,
+            "columns": [
+                {
+                    "caption": "iCloud account",
+                    "name": "AccountID",
+                    "width": "auto",
+                    "add": 0,
+                    "edit": {
+                        "type": "SelectInstance",
+                        "validModules": [
+                            "{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Select",
+            "name": "VehicleMode",
+            "caption": "Vehicle source",
+            "options": [
+                {
+                    "caption": "Disabled",
+                    "value": "off"
+                },
+                {
+                    "caption": "Test vehicle",
+                    "value": "demo"
+                },
+                {
+                    "caption": "JSON position variable",
+                    "value": "json"
+                },
+                {
+                    "caption": "Separate position variables",
+                    "value": "fields"
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Vehicle variable assignments",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "VehicleName",
+                    "caption": "Vehicle name"
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VehiclePosition",
+                    "caption": "JSON position variable",
+                    "validVariableTypes": [
+                        3
+                    ]
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VehicleLatitude",
+                    "caption": "Latitude",
+                    "validVariableTypes": [
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VehicleLongitude",
+                    "caption": "Longitude",
+                    "validVariableTypes": [
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VehicleTimestamp",
+                    "caption": "Position time (Unix seconds)",
+                    "validVariableTypes": [
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "StaleAfter",
+            "caption": "Mark position as old after",
+            "suffix": "s",
+            "minimum": 60,
+            "maximum": 86400
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Move test vehicle",
+            "onClick": "OWIS_NextDemoPosition($id);"
+        }
+    ],
+    "status": [
+        {
+            "code": 201,
+            "icon": "error",
+            "caption": "Location sources unavailable"
+        }
+    ]
+}
