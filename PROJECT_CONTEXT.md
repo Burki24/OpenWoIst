@@ -88,3 +88,23 @@ und das zugewiesene iCloud-Konto referenziert.
   Testfahrzeug und zehn als zuletzt bekannt markierte Apple-Positionen.
   Beim Fahrzeugwechsel blieben der Kartenframe, der Ausschnitt, die
   Auswahl und die Apple-Marker erhalten.
+
+### ViewConnect-Abnahme nach dem regulären dev-Update am 22.11.2026
+
+Die Modulverwaltung von Symcon 9.1 aktualisierte OpenWoIst aus `dev`.
+SymconECharts stand bereits auf dem aktuellen `dev`-Commit mit der
+Auslagerung der IPSView-Renderer. Geprüft wurden diese Commits.
+
+- OpenWoIst `4156c0b3d2d3358e7f34d66ab388e16cb188d7d5`
+- SymconECharts `67f6becd0fbfb468d94c8978c0c9692e09622820`
+
+Die Prüfsumme von IPSViewConnect bestätigte die originale Store-Datei.
+Alle 137 ECharts-WebContent-Ausgaben verwiesen auf den EChartsGateway.
+Beim Einlesen des vollständigen Snapshots lag der PHP-Spitzenverbrauch
+bei 42 MiB bei einem konfigurierten Limit von 64 MiB.
+
+IPSView Desktop 6.5.21 öffnete die OpenWoIst-Testansicht per ViewConnect.
+Die Karte zeigte das Testfahrzeug und zehn zuletzt bekannte
+Apple-Positionen aus dem iCloud-Cache. Nach einem Wechsel der Testposition
+wanderte der Fahrzeugmarker im geöffneten Kartenframe. Kartenausschnitt,
+Auswahl und Apple-Marker blieben erhalten.
