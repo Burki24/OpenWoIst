@@ -406,7 +406,7 @@ class OpenWoIst extends IPSModuleStrict
         if ($this->ReadPropertyString('VehicleMode') !== 'demo') {
             $references = array_merge($references, array_filter($this->vehicleVariables(), static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
         }
-        $registered = IPS_GetReferenceList($this->InstanceID);
+        $registered = $this->GetReferenceList();
         foreach (array_diff($registered, $references) as $id) {
             $this->UnregisterReference($id);
         }

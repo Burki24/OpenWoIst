@@ -61,14 +61,40 @@ function source(OpenWoIst $map, string $kind): array
 
 IPS\Kernel::reset();
 IPS\ModuleLoader::loadLibrary($root . '/library.json');
+
+final class NonReentrantOpenWoIst extends OpenWoIst
+{
+    public function GetReferenceList(): array
+    {
+        // The stubs normally allow a kernel call back into the executing instance.
+        $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
+        if (($stack[2]['function'] ?? '') === 'IPS_GetReferenceList' && ($stack[3]['class'] ?? '') === OpenWoIst::class) {
+            throw new RuntimeException('The kernel rejects a reentrant reference lookup.');
+        }
+        return parent::GetReferenceList();
+    }
+}
+
 $accountModule = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
 $mapModule = '{B9CA4CB3-31E4-4949-AA86-4580224C862D}';
 $metadata = new ReflectionProperty(IPS\ModuleLoader::class, 'modules');
 $modules = $metadata->getValue();
 $modules[$accountModule] = array_replace($modules[$mapModule], ['Class' => TestAccount::class, 'ModuleID' => $accountModule, 'ModuleName' => 'Test Account']);
+$modules[$mapModule]['Class'] = NonReentrantOpenWoIst::class;
 $metadata->setValue(null, $modules);
 $accountID = IPS_CreateInstance($accountModule);
 $secondID = IPS_CreateInstance($accountModule);
+$referenceProbe = IPS_CreateInstance($mapModule);
+IPS_SetProperty($referenceProbe, 'Accounts', json_encode([['AccountID' => $accountID], ['AccountID' => $accountID]], JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($referenceProbe);
+check(IPS_GetReferenceList($referenceProbe) === [$accountID], 'ApplyChanges must reference the assigned account exactly once.');
+IPS_SetProperty($referenceProbe, 'Accounts', '[]');
+IPS_ApplyChanges($referenceProbe);
+check(IPS_GetReferenceList($referenceProbe) === [], 'ApplyChanges must remove references to unassigned accounts.');
+IPS_DeleteInstance($referenceProbe);
+$modules[$mapModule]['Class'] = OpenWoIst::class;
+$metadata->setValue(null, $modules);
+
 $account = IPS\InstanceManager::getInstanceInterface($accountID);
 $second = IPS\InstanceManager::getInstanceInterface($secondID);
 $mapID = IPS_CreateInstance($mapModule);

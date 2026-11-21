@@ -1,5 +1,9 @@
 # Unveröffentlicht
 
+## Fixes
+
+- OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
+
 ## Neu
 
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
