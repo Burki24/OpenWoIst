@@ -126,6 +126,12 @@ WebContent-Variable. Die Prüfsumme von IPSViewConnect bestätigte die
 originale Store-Datei. Der IPSView-Nachweis für diesen Positionswechsel
 erfolgte im Webclient mit einem separaten Browserprofil.
 
+Nach dem regulären Update über die Modulverwaltung auf `dev` (`9b51c00`)
+war der BMW-Positionswechsel in der nativen Kachel und im IPSView-Webclient
+über ViewConnect erneut erfolgreich. Alle zehn Apple-Marker aus dem
+iCloud-Cache blieben sichtbar. Die SHA-256-Prüfsumme der Desktop-Profildatei
+der Haussteuerung war vor und nach dem Test identisch.
+
 ## Schutz des IPSView-Profils der Haussteuerung
 
 IPSView-Tests dürfen das produktive Desktop-Verbindungsprofil der
