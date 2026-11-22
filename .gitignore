@@ -1,2 +1,3 @@
 /tests/stubs/
 /.php-cs-fixer.cache
+/.sentry-native/
