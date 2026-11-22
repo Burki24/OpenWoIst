@@ -108,3 +108,33 @@ Die Karte zeigte das Testfahrzeug und zehn zuletzt bekannte
 Apple-Positionen aus dem iCloud-Cache. Nach einem Wechsel der Testposition
 wanderte der Fahrzeugmarker im geöffneten Kartenframe. Kartenausschnitt,
 Auswahl und Apple-Marker blieben erhalten.
+
+### Abnahme der simulierten BMW-CarData-Quelle am 22.11.2026
+
+Auf der Symcon-9.1-Entwicklungsinstanz nutzt OpenWoIst die
+**BMW CarData – Testposition (JSON)** als Fahrzeugquelle. Das Skript
+**BMW CarData – Testposition wechseln** simuliert zwei BMW-CarData-Meldungen.
+Es schreibt Breiten- und Längengrad zusammen mit der gemeinsamen Messzeit
+als Unix-Sekunde in eine String-Variable. Als zweite Quelle war der
+bestehende iCloud-Cache eingebunden.
+
+In der nativen Kachelvisualisierung und im IPSView-Webclient über
+ViewConnect wanderte der Fahrzeugmarker im geöffneten Kartenframe auf
+den zweiten Testpunkt. Die Fahrzeugauswahl und alle zehn Apple-Marker
+aus dem iCloud-Cache blieben erhalten. Die HTML-Box verwendete dieselbe
+WebContent-Variable. Die Prüfsumme von IPSViewConnect bestätigte die
+originale Store-Datei. Der IPSView-Nachweis für diesen Positionswechsel
+erfolgte im Webclient mit einem separaten Browserprofil.
+
+## Schutz des IPSView-Profils der Haussteuerung
+
+IPSView-Tests dürfen das produktive Desktop-Verbindungsprofil der
+Haussteuerung und die Auswahl der aktiven Verbindung nicht verändern.
+Für Webclient-Tests ist ein separates Browserprofil zu verwenden.
+Desktop-Tests erfordern eine eigene, vom produktiven Benutzerprofil
+getrennte Ablage der IPSView-Verbindungseinstellungen. Die Tests verwenden
+ausschließlich die dafür eingerichteten Ansichten der Entwicklungsinstanz.
+
+Ein früherer Desktop-Test stellte die aktive Verbindung auf die
+Testansicht um. Der lokale Zugang zur produktiven Ansicht wurde
+rekonstruiert und durch Öffnen der Ansicht in IPSView Desktop überprüft.
