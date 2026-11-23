@@ -218,6 +218,40 @@ erhalten.
 **Übernommene Quelle prüfen** liest die gespeicherte Zuordnung und
 meldet das Messalter oder ein fehlendes bzw. ungültiges Feld.
 
+### Traccar direkt über MQTT einbinden
+
+Traccar Server veröffentlicht Positionen per MQTT 5. Verwende einen
+MQTT-5-fähigen Broker wie Mosquitto. Der Symcon-MQTT-Client kann dasselbe
+Topic per MQTT 3.1.1 abonnieren. [Traccar-Weiterleitung](https://www.traccar.org/forward/)
+
+1. Setze in der Traccar-Konfiguration `forward.type` auf `mqtt`,
+   `forward.url` auf die Broker-Adresse mit Port (zum Beispiel
+   `mqtt://broker.example.org:1883`) und `forward.topic` auf ein Topic
+   wie `openwoist/traccar/test`.
+2. Abonniere das Topic mit dem **MQTT Client** in Symcon. Lege ein
+   **MQTT Client Device** mit einer Nutzdatenvariable vom Typ **String** an.
+3. Wähle in OpenWoIst unter **Fahrzeuge → Weitere Fahrzeuge** die Quelle
+   **JSON-Variable** und das Format **Traccar**. Ordne die String-Variable zu.
+
+Eine gekürzte Testmeldung enthält die Position samt GPS-Messzeit.
+
+```json
+{
+    "position": {
+        "deviceId": 42,
+        "latitude": 52.52,
+        "longitude": 13.38,
+        "fixTime": "2026-11-23T19:53:19Z",
+        "valid": true
+    },
+    "device": {"id": 42}
+}
+```
+
+Verwende zum Testen eine aktuelle Messzeit. Bei einem gemeinsamen Topic für
+mehrere Tracker teile die Meldungen nach `position.deviceId` auf. Jede
+zugewiesene String-Variable enthält die Meldungen eines Trackers.
+
 ### Fahrzeug-Voreinstellungen verwenden
 
 Wähle unter **Weitere Fahrzeuge** die passende **Fahrzeugquelle** und

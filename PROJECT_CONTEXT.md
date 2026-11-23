@@ -35,8 +35,11 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Server kann Positionsmeldungen direkt über MQTT weiterleiten. Die
    Kopplung an das Symcon-Store-Modul ist aus dem Plan genommen. Sein
    öffentlich verlinktes GitHub-Repository lieferte am 23.11.2026 HTTP 404.
+   Auf `dev` (`aba702d`) bestätigten simulierte Traccar-Meldungen über einen
+   MQTT-5-Broker und den Symcon-MQTT-Client den Positionswechsel in Kachel
+   und IPSView Desktop. Bei fehlendem `fixTime` blieb der letzte Punkt sichtbar.
    [Symcon Store](https://www.symcon.de/de/module-store/mwlf01-traccar/) ·
-   [Traccar-Weiterleitung](https://www.traccar.org/forward/)
+   [Einrichtung](OpenWoIst/README.md#traccar-direkt-über-mqtt-einbinden)
 3. [x] **Smartphones und GPS-Tracker.** OwnTracks ist nach dem regulären
    `dev`-Update auf `963c45e` in der nativen Kachel und in IPSView Desktop
    abgenommen. Zwei simulierte Positionen und eine Nicht-Positionsmeldung
