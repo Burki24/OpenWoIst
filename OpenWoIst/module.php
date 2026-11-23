@@ -496,12 +496,13 @@ class OpenWoIst extends IPSModuleStrict
         $rows = json_decode($this->ReadPropertyString('Trackers'), true, 8);
         foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
             $id = $row['TrackerPosition'] ?? null;
-            if (!is_int($id) || $id <= 0) {
+            $format = $row['TrackerFormat'] ?? 'owntracks';
+            if (!is_int($id) || $id <= 0 || !in_array($format, ['owntracks', 'json'], true)) {
                 continue;
             }
             $trackers[LocationSnapshot::key('tracker', $id)] ??= [
                 'kind'             => 'tracker',
-                'mode'             => 'owntracks',
+                'mode'             => $format,
                 'name'             => is_string($row['TrackerName'] ?? null) ? trim($row['TrackerName']) : '',
                 'ids'              => [$id],
                 'trigger'          => $id,

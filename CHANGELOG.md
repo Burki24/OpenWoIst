@@ -22,6 +22,8 @@
   Renault Z.E. und Tronity.
 - OwnTracks-Geräte lassen sich unter **Weitere Standortgeräte** mit eigenem
   Namen und eigener Markerfarbe hinzufügen.
+- Standortgeräte können generisches OpenWoIst-JSON lesen. Die Modulanleitung
+  zeigt Beispiele für Home Assistant und MQTT-GPS.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das

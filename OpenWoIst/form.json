@@ -275,7 +275,7 @@
                 {
                     "type": "List",
                     "name": "Trackers",
-                    "caption": "OwnTracks devices",
+                    "caption": "Location devices",
                     "rowCount": 4,
                     "add": true,
                     "delete": true,
@@ -287,6 +287,25 @@
                             "add": "",
                             "edit": {
                                 "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "TrackerFormat",
+                            "caption": "JSON format",
+                            "width": "140px",
+                            "add": "owntracks",
+                            "edit": {
+                                "type": "Select",
+                                "options": [
+                                    {
+                                        "caption": "OwnTracks",
+                                        "value": "owntracks"
+                                    },
+                                    {
+                                        "caption": "OpenWoIst",
+                                        "value": "json"
+                                    }
+                                ]
                             }
                         },
                         {

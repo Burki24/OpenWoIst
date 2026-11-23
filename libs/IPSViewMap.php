@@ -149,7 +149,11 @@ trait IPSViewMap
                 $vehicle['mode'], $vehicle['ids'], $vehicle['timeFormat'], $vehicle['decimalSeparator']
             ], $vehicles);
         }
-        $trackers = array_keys($this->configuredTrackers());
+        $trackers = [];
+        foreach ($this->configuredTrackers() as $key => $tracker) {
+            // Keep the original scope for existing OwnTracks assignments.
+            $trackers[] = $tracker['mode'] === 'owntracks' ? $key : $key . ':' . $tracker['mode'];
+        }
         if ($trackers !== []) {
             sort($trackers, SORT_STRING);
             $scope['trackers'] = $trackers;

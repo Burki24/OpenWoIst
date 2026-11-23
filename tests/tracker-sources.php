@@ -19,6 +19,7 @@ $panels = array_column($form['elements'], null, 'name');
 check(array_slice(array_column($form['elements'], 'caption'), 0, 4) === ['Vehicles', 'iCloud', 'GoogleCloud', 'Additional location devices'], 'OwnTracks has a separate configuration area.');
 $columns = array_column($panels['TrackerSources']['items'][0]['columns'], null, 'name');
 check($columns['TrackerPosition']['edit']['validVariableTypes'] === [VARIABLETYPE_STRING] && $columns['TrackerMarkerColor']['edit']['type'] === 'SelectColor', 'Tracker entries have a JSON variable input and an individual marker color.');
+check(($columns['TrackerFormat']['add'] ?? null) === 'owntracks' && array_column($columns['TrackerFormat']['edit']['options'], 'value') === ['owntracks', 'json'], 'Tracker entries support OwnTracks and OpenWoIst JSON, with OwnTracks as the default.');
 
 $mainTracker = IPS_CreateVariable(VARIABLETYPE_STRING);
 $otherTracker = IPS_CreateVariable(VARIABLETYPE_STRING);
@@ -64,3 +65,56 @@ IPS_ApplyChanges($trackerMapID);
 $messages = new ReflectionMethod($trackerMap, 'GetMessageList');
 check($trackerMap->GetReferenceList() === [$accountID, $otherTracker] && !isset($messages->invoke($trackerMap)[$mainTracker]), 'Removing a tracker removes its reference and subscription.');
 check(mapRequest($trackerMap, $path, token: $access['token'])[0] === 403, 'Removing a tracker revokes access to the old scope.');
+
+$beforeGeneric = tileState($trackerMap)['sources'];
+$ownTracksEmbed = $trackerMap->GetIPSViewHTML();
+$ownTracksRow = $trackers[1] + ['TrackerFormat' => 'owntracks'];
+IPS_SetProperty($trackerMapID, 'Trackers', json_encode([$ownTracksRow], JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($trackerMapID);
+check($trackerMap->GetIPSViewHTML() === $ownTracksEmbed && tileState($trackerMap)['sources'] === $beforeGeneric, 'Making the default format explicit preserves existing OwnTracks assignments and access.');
+
+$exampleRows = [$ownTracksRow];
+$exampleIDs = [];
+$payloads = [
+    'Home Assistant' => ['latitude' => 52.51453, 'longitude' => 13.35010, 'timestamp' => $now],
+    'MQTT GPS'       => ['latitude' => 52.51461, 'longitude' => 13.35684, 'timestamp' => $now, 'horizontalAccuracy' => 12]
+];
+foreach ($payloads as $name => $payload) {
+    $input = IPS_CreateVariable(VARIABLETYPE_STRING);
+    SetValueString($input, json_encode($payload, JSON_THROW_ON_ERROR));
+    $exampleIDs[] = $input;
+    $exampleRows[] = ['TrackerName' => $name, 'TrackerPosition' => $input, 'TrackerFormat' => 'json', 'TrackerMarkerColor' => 0x2256A6];
+}
+IPS_SetProperty($trackerMapID, 'Trackers', json_encode($exampleRows, JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($trackerMapID);
+$snapshot = tileState($trackerMap)['sources'];
+check(array_slice($snapshot, 0, 3) === $beforeGeneric && $trackerMap->GetReferenceList() === [$accountID, $otherTracker, ...$exampleIDs], 'Adding generic JSON trackers preserves the existing sources.');
+$expected = $beforeGeneric;
+foreach (array_values($payloads) as $index => $payload) {
+    $id = $exampleIDs[$index];
+    $sourceIndex = $index + 3;
+    $source = $snapshot[$sourceIndex];
+    $fix = $source['objects'][0]['location'];
+    $accuracy = $index === 1 ? 12.0 : null;
+    check($source['kind'] === 'tracker' && $fix === ['latitude' => $payload['latitude'], 'longitude' => $payload['longitude'], 'timestamp' => $now, 'accuracy' => $accuracy], 'Generic JSON uses the original position and measurement time.');
+    $expected[] = $source;
+    $second = ['latitude' => 52.51469 + $index / 1000, 'longitude' => $payload['longitude'], 'timestamp' => $now + 1];
+    SetValueString($id, json_encode($second, JSON_THROW_ON_ERROR));
+    $trackerMap->MessageSink(1, $id, VM_UPDATE, []);
+    $expected[$sourceIndex]['objects'][0]['location'] = $second + ['accuracy' => null];
+    $all = tileState($trackerMap)['sources'];
+    check(array_slice($all, 0, count($expected)) === $expected, 'Only the generic JSON source with a new fix moves.');
+    unset($second['timestamp']);
+    SetValueString($id, json_encode($second, JSON_THROW_ON_ERROR));
+    $trackerMap->MessageSink(1, $id, VM_UPDATE, []);
+    $expected[$sourceIndex]['objects'][0]['current'] = false;
+    check(array_slice(tileState($trackerMap)['sources'], 0, count($expected)) === $expected, 'A missing measurement time retains the previous generic JSON fix.');
+}
+$genericAccess = bootstrap($trackerMap->GetIPSViewHTML())['options'];
+[$status, $response] = mapRequest($trackerMap, $path, token: $genericAccess['token']);
+check($status === 200 && json_decode($response, true, 32, JSON_THROW_ON_ERROR)['sources'] === $expected, 'IPSView shows the same Home Assistant and MQTT tracker data as the tile.');
+
+$exampleRows[1]['TrackerFormat'] = 'owntracks';
+IPS_SetProperty($trackerMapID, 'Trackers', json_encode($exampleRows, JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($trackerMapID);
+check(mapRequest($trackerMap, $path, token: $genericAccess['token'])[0] === 403, 'Changing the format of an assigned tracker rotates the token.');

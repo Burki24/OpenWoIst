@@ -86,12 +86,83 @@ Löschfunktion im Instanzformular.
 
 ## OwnTracks-Geräte hinzufügen
 
-Unter **Weitere Standortgeräte → OwnTracks-Geräte** pro Gerät einen Eintrag
-anlegen. Ordne die String-Variable **Position** einer OwnTracks-Data-Instanz
-mit aktivierter Positionsübernahme oder eine String-Variable mit OwnTracks-JSON
-zu. Das JSON enthält `lat`, `lon`, `tst` als Unix-Sekunden und optional `acc`
-in Metern. Geräte können je einen Anzeigenamen und eine Markerfarbe erhalten.
+Unter **Weitere Standortgeräte → Standortgeräte** pro Gerät einen Eintrag
+mit **JSON-Format → OwnTracks** anlegen. Ordne die String-Variable **Position**
+einer OwnTracks-Data-Instanz mit aktivierter Positionsübernahme oder eine
+String-Variable mit OwnTracks-JSON zu. Das JSON enthält `lat`, `lon`, `tst` als
+Unix-Sekunden und optional `acc` in Metern. Geräte können je einen Anzeigenamen
+und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
+
+## Home Assistant und MQTT-GPS anschließen
+
+Beide Beispiele schreiben die vollständige Position als eine MQTT-Nachricht.
+Verwende einen Broker, den der Sender und Symcon erreichen. Bei einem externen
+Broker abonniert der [MQTT Client in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-client/)
+das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-server/)
+sendet die Quelle direkt dorthin. Sende eine erste Meldung auf das gewünschte
+Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
+**String** an. Wähle in
+OpenWoIst unter **Weitere Standortgeräte → Standortgeräte** das **JSON-Format
+OpenWoIst** und ordne die jeweilige String-Variable zu.
+
+### Home Assistant
+
+Diese Automation setzt voraus, dass eine GPS-Entität `latitude`, `longitude`
+und `fix_timestamp` gemeinsam als Attribute liefert. `fix_timestamp` ist die
+ursprüngliche Messzeit in Unix-Sekunden. Passe die Entitäts-ID und bei Bedarf
+den Namen des Zeitfelds an deine Integration an. Der Zeitpunkt eines
+Home-Assistant-Zustandsupdates kann von der GPS-Messzeit abweichen.
+[Triggerdaten](https://www.home-assistant.io/docs/automation/trigger-data/) ·
+[MQTT](https://www.home-assistant.io/integrations/mqtt/)
+
+```yaml
+alias: OpenWoIst GPS-Position weitergeben
+triggers:
+  - trigger: state
+    entity_id: device_tracker.gps_test
+conditions:
+  - condition: template
+    value_template: >-
+      {% set p = trigger.to_state.attributes if trigger.to_state is not none else {} %}
+      {{ p.latitude is number and p.latitude is not boolean and -90 <= p.latitude <= 90
+         and p.longitude is number and p.longitude is not boolean and -180 <= p.longitude <= 180
+         and p.fix_timestamp is integer and p.fix_timestamp > 0 }}
+actions:
+  - action: mqtt.publish
+    data:
+      topic: openwoist/demo/home_assistant
+      payload: >-
+        {% set p = trigger.to_state.attributes %}
+        {{ {'latitude': p.latitude, 'longitude': p.longitude,
+            'timestamp': p.fix_timestamp} | to_json }}
+```
+
+Für einen Test kannst du in den [Entwicklerwerkzeugen](https://www.home-assistant.io/docs/tools/dev-tools/#states)
+den Zustand der separaten Testentität `device_tracker.gps_test` mit den
+drei Attributen setzen, zum Beispiel `latitude: 52.51453`,
+`longitude: 13.35010` und `fix_timestamp` als aktuelle ganze Unix-Sekunde.
+Sende anschließend einen zweiten Zustand mit anderen Koordinaten und einer
+höheren Messzeit. Symcon empfängt die Meldungen auf `openwoist/demo/home_assistant`.
+
+### MQTT-GPS
+
+Ein MQTT-GPS-Sender kann direkt auf `openwoist/demo/gps` veröffentlichen.
+Die folgende Nachricht enthält synthetische Testdaten.
+
+```json
+{
+    "latitude": 52.51461,
+    "longitude": 13.35684,
+    "timestamp": 1795438800,
+    "horizontalAccuracy": 12
+}
+```
+
+`horizontalAccuracy` ist optional und gibt die Genauigkeit in Metern an.
+Für den Test ersetze `timestamp` durch eine aktuelle ganze Unix-Sekunde.
+Eine zweite Meldung mit neuen Koordinaten und höherer Messzeit bewegt den
+Marker. Bei fehlendem `timestamp` bleibt der letzte gültige Standort sichtbar.
 
 ## Vorhandene Fahrzeugvariablen anschließen
 
