@@ -44,6 +44,13 @@ Liste in beiden Richtungen. Im IPSView-Frame wurden außerdem die
 eigenen Markerfarben, Wiederanlauf nach einer Unterbrechung, Widerruf
 des Zugriffs und die SVG-Textgrenzen beider Farbdiagramme geprüft.
 
+`node tests/compact-visualization.mjs` prüft mit `OPENWOIST_CHROME` und den
+PHP-Testdaten die kompakte Ausgabe bei 288 × 189 px und die normale
+Hochkantansicht. Lokal bleiben 85 px Kartenhöhe in der Kachel mit Titel und
+143 px in IPSView. Mausradzoom und unabhängiges Listenscrollen funktionieren
+in den Browser-Testframes. Die Abnahme der kompakten Ausgabe in den nativen
+Hosts steht aus.
+
 ## Abnahme auf der Entwicklungsinstanz
 
 Symcon 9.1 hat den Modulstand `dev` mit Commit `6dad97a` geladen. Nach

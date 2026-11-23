@@ -36,7 +36,10 @@
     byId('map').setAttribute('aria-label', text('Location map'));
     byId('filter-label').textContent = text('Source');
     byId('objects-label').textContent = text('Objects');
-    fitButton.textContent = text('Show all positions');
+    const fitLabel = text('Show all positions');
+    fitButton.setAttribute('aria-label', fitLabel);
+    byId('fit-label').textContent = fitLabel;
+    byId('fit-label-compact').textContent = text('Show all');
 
     function saveView() {
         if (!hasView) return;

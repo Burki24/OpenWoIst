@@ -3,6 +3,8 @@
 ## Fixes
 
 - OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
+- Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
+  sichtbar. Die Bedienelemente passen in eine Zeile.
 
 ## Neu
 

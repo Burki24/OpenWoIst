@@ -29,6 +29,9 @@ Der Quellenfilter steuert die sichtbaren Marker und Listeneinträge.
 Kachelzugriff umfasst die Standortdaten aller Quellen, die der Instanz
 zugewiesen sind.
 
+Bei geringer Höhe stehen die Karte und die scrollbare Objektliste nebeneinander.
+Mit **Alle anzeigen** passt die Karte alle sichtbaren Positionen in den Ausschnitt ein.
+
 ## Apple-Geräte auswählen
 
 Standardmäßig erscheinen alle Geräte der zugewiesenen Konten. Um die Anzeige
