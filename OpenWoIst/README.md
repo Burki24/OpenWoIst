@@ -1,15 +1,15 @@
 # OpenWoIst
 
-Die Kachel zeigt Geräte aus den zugewiesenen iCloud-Konten und optional ein
-Fahrzeug aus Symcon-Variablen. Die Fahrzeugquelle kann auch eigenständig
-verwendet werden.
+Die Kachel zeigt Geräte aus den zugewiesenen iCloud-Konten und Fahrzeuge aus
+Symcon-Variablen. Beide Quellenarten lassen sich auch einzeln verwenden.
 
 ## Einrichten und mit dem Testfahrzeug ausprobieren
 
 1. Eine Instanz **OpenWoIst** anlegen. Unter **iCloud-Konten** die gewünschten
    Konto-Instanzen aus SymconiCloud auswählen. Voraussetzung für Apple-Positionen
    ist ein gefüllter Gerätestand im ausgewählten Konto.
-2. Unter **Fahrzeugquelle** den Eintrag **Testfahrzeug** auswählen und die
+2. Unter **Bisherige Fahrzeugquelle und Testfahrzeug** den Eintrag
+   **Testfahrzeug** auswählen und die
    Konfiguration übernehmen. Dadurch entsteht die String-Variable
    **Position des Testfahrzeugs** (`DemoPosition`) mit einem synthetischen
    Standort in Berlin.
@@ -29,6 +29,14 @@ Positionen von der Karte entfernt.
 Der Quellenfilter steuert die sichtbaren Marker und Listeneinträge.
 Kachelzugriff umfasst die Standortdaten aller Quellen, die der Instanz
 zugewiesen sind.
+
+## Apple-Geräte auswählen
+
+Standardmäßig erscheinen alle Geräte der zugewiesenen Konten. Unter
+**iCloud-Geräteauswahl** die Option **Alle Geräte anzeigen** deaktivieren und
+die gewünschten Geräte aus den Kontocaches hinzufügen. Mit leerer Auswahl
+erscheinen keine Apple-Geräte. Nach einer neuen Kontozuordnung die Konfiguration
+übernehmen und das Formular erneut öffnen, um deren Geräte auszuwählen.
 
 ## Kachel und IPSView gestalten
 
@@ -67,8 +75,10 @@ Löschfunktion im Instanzformular.
 
 ## Vorhandene Fahrzeugvariablen anschließen
 
-Unter **Fahrzeugquelle** einen der folgenden Modi wählen und die entsprechenden
-Variablen zuordnen.
+Unter **Weitere Fahrzeuge** pro Fahrzeug einen Eintrag mit Namen hinzufügen.
+Die Liste zeigt die Namen und Quellenarten der hinzugefügten Fahrzeuge.
+Die zuvor konfigurierte Einzelquelle steht weiterhin unter **Bisherige
+Fahrzeugquelle und Testfahrzeug**. Für jede Quelle stehen diese Modi zur Verfügung.
 
 - **JSON-Variable** zeigt einen Variablenselektor und die Wahl des
   **JSON-Formats**. Das Format **OpenWoIst** erwartet `latitude` und

@@ -127,12 +127,27 @@ trait IPSViewMap
     {
         $accounts = $this->accountIDs();
         sort($accounts, SORT_NUMERIC);
-        $mode = $this->vehicleMode();
+        $legacy = $this->legacyVehicle();
+        $mode = $legacy['mode'];
         $scope = [
-            $accounts, $mode, $mode === 'demo' ? [] : $this->vehicleVariables()
+            $accounts, $mode, $mode === 'demo' ? [] : $legacy['ids']
         ];
         if (PositionConverter::supports($mode)) {
-            $scope[] = [$this->ReadPropertyString('VehicleTimeFormat'), $this->ReadPropertyString('VehicleDecimalSeparator')];
+            $scope[] = [$legacy['timeFormat'], $legacy['decimalSeparator']];
+        }
+        $selection = $this->selectedDeviceKeys();
+        if ($selection !== null) {
+            $scope['devices'] = array_keys($selection);
+        }
+        $vehicles = $this->configuredVehicles();
+        if ($mode !== 'off') {
+            unset($vehicles[$this->vehicleKey($legacy)]);
+        }
+        if ($vehicles !== []) {
+            ksort($vehicles, SORT_STRING);
+            $scope['vehicles'] = array_map(static fn (array $vehicle): array => [
+                $vehicle['mode'], $vehicle['ids'], $vehicle['timeFormat'], $vehicle['decimalSeparator']
+            ], $vehicles);
         }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }

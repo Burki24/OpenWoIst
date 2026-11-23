@@ -6,6 +6,10 @@
 
 ## Neu
 
+- Die iCloud-Geräteauswahl begrenzt Karte und Objektliste auf ausgewählte
+  Geräte aus den zugewiesenen Kontocaches.
+- Unter **Weitere Fahrzeuge** lassen sich mehrere Fahrzeuge mit eigenen
+  Symcon-Variablen hinzufügen und verwalten.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das

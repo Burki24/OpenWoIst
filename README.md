@@ -6,7 +6,7 @@
 [![Check Style](https://github.com/Burki24/OpenWoIst/actions/workflows/style.yml/badge.svg?branch=dev)](https://github.com/Burki24/OpenWoIst/actions/workflows/style.yml?query=branch%3Adev)
 [![Tests](https://github.com/Burki24/OpenWoIst/actions/workflows/tests.yml/badge.svg?branch=dev)](https://github.com/Burki24/OpenWoIst/actions/workflows/tests.yml?query=branch%3Adev)
 
-OpenWoIst zeigt Apple-Geräte und ein Fahrzeug gemeinsam auf einer Karte.
+OpenWoIst zeigt ausgewählte Apple-Geräte und mehrere Fahrzeuge auf einer Karte.
 Die native Symcon-Kachel und die IPSView-Ausgabe haben eigene Designer.
 Als Fahrzeugquelle stehen vorhandene Symcon-Variablen oder ein Testfahrzeug
 mit vorbereiteten Positionen zur Verfügung.

@@ -11,6 +11,7 @@ require_once __DIR__ . '/../libs/helper/OpenFreeMapHelper.php';
 require_once __DIR__ . '/../libs/helper/ResponsiveVisualizationHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
 require_once __DIR__ . '/../libs/IPSViewMap.php';
+require_once __DIR__ . '/../libs/ICloudDeviceSelection.php';
 require_once __DIR__ . '/../libs/LocationSnapshot.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
@@ -25,6 +26,7 @@ use Burki24\SymconModuleHelper\IPSViewStyleConfigurationHelper;
 use Burki24\SymconModuleHelper\OpenFreeMapHelper;
 use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
+use OpenWoIst\ICloudDeviceSelection;
 use OpenWoIst\IPSViewMap;
 use OpenWoIst\LocationSnapshot;
 use OpenWoIst\MapColorGuide;
@@ -43,6 +45,7 @@ class OpenWoIst extends IPSModuleStrict
     use ResponsiveVisualizationHelper;
     use VisualizationThemeConfigurationHelper;
     use IPSViewMap;
+    use ICloudDeviceSelection;
     use MapColorGuide;
     use MapDesign;
     use VehicleSourceForm;
@@ -61,6 +64,9 @@ class OpenWoIst extends IPSModuleStrict
         {
             parent::Create();
             $this->RegisterPropertyString('Accounts', '[]');
+            $this->RegisterPropertyBoolean('ShowAllDevices', true);
+            $this->RegisterPropertyString('SelectedDevices', '[]');
+            $this->RegisterPropertyString('Vehicles', '[]');
             $this->RegisterPropertyString('VehicleMode', 'off');
             $this->RegisterPropertyString('VehicleJSONFormat', '');
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
@@ -93,7 +99,7 @@ class OpenWoIst extends IPSModuleStrict
                 $this->writeDemoPosition($this->ReadAttributeInteger('DemoStep'));
             }
             $this->syncReferences();
-            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->ReadPropertyString('VehicleMode') !== 'off' ? 5000 : 0);
+            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredVehicles() !== [] ? 5000 : 0);
             $this->publish(true);
             $this->maintainIPSViewMap();
         }, true);
@@ -103,7 +109,7 @@ class OpenWoIst extends IPSModuleStrict
     {
         return $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): string
         {
-            $form = $this->configureVehicleForm($this->LoadConfigurationForm());
+            $form = $this->configureDeviceSelection($this->configureVehicleForm($this->LoadConfigurationForm()));
             $form['elements'][] = $this->mapDesigner(false);
             $form['elements'][] = $this->mapDesigner(true);
             return $this->EncodeConfigurationForm($form);
@@ -115,7 +121,7 @@ class OpenWoIst extends IPSModuleStrict
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($TimeStamp, $SenderID, $Message, $Data): void
         {
             parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-            if ($Message === VM_UPDATE && $SenderID === $this->vehicleTrigger()) {
+            if ($Message === VM_UPDATE && in_array($SenderID, array_column($this->configuredVehicles(), 'trigger'), true)) {
                 $this->Update();
             }
         }, true);
@@ -242,14 +248,13 @@ class OpenWoIst extends IPSModuleStrict
             $old = array_column($this->storedSnapshot()['sources'], null, 'id');
             $sources = [];
             $now = time();
+            $selectedDevices = $this->selectedDeviceKeys();
             foreach ($this->accountIDs() as $id) {
                 $key = LocationSnapshot::key('icloud', $id);
-                $sources[] = $this->readAccount($id, $key, $old[$key]['objects'] ?? [], $now);
+                $sources[] = $this->readAccount($id, $key, $old[$key]['objects'] ?? [], $now, $selectedDevices);
             }
-            $mode = $this->vehicleMode();
-            if ($mode !== 'off') {
-                $key = LocationSnapshot::key('vehicle', $this->vehicleTrigger(), $mode === 'fields' ? implode(',', $this->vehicleVariables()) : '');
-                $sources[] = $this->readVehicle($mode, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
+            foreach ($this->configuredVehicles() as $key => $vehicle) {
+                $sources[] = $this->readVehicle($vehicle, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
             }
             if ($scope !== $this->sourceScope()) {
                 return;
@@ -290,18 +295,18 @@ class OpenWoIst extends IPSModuleStrict
         return array_values(array_unique($ids));
     }
 
-    private function readAccount(int $id, string $key, array $oldObjects, int $now): array
+    private function readAccount(int $id, string $key, array $oldObjects, int $now, ?array $selectedDevices): array
     {
         $source = ['id' => $key, 'kind' => 'icloud', 'name' => $this->Translate('iCloud account'), 'available' => false, 'objects' => []];
-        if (!IPS_InstanceExists($id) || (IPS_GetInstance($id)['ModuleInfo']['ModuleID'] ?? '') !== self::ACCOUNT_MODULE) {
+        if (!$this->isICloudAccount($id)) {
             return $source;
         }
         $source['name'] = IPS_GetName($id);
+        if ($selectedDevices !== null) {
+            $oldObjects = array_values(array_filter($oldObjects, static fn (array $object): bool => isset($selectedDevices[$object['id']])));
+        }
         try {
-            $cache = json_decode(@ICAC_GetDevices($id), true, 64, JSON_THROW_ON_ERROR);
-            if (!is_array($cache['devices'] ?? null) || !array_is_list($cache['devices'])) {
-                throw new UnexpectedValueException('Invalid cache structure.');
-            }
+            $cache = $this->readAccountCache($id);
         } catch (Throwable $exception) {
             $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Der zugewiesene Kontocache konnte nicht gelesen werden.', ['KontoInstanz' => $id, 'Fehlerklasse' => $exception::class]);
             $source['objects'] = $oldObjects;
@@ -319,7 +324,7 @@ class OpenWoIst extends IPSModuleStrict
                 continue;
             }
             $objectKey = LocationSnapshot::key('icloud', $id, $idValue);
-            if (isset($objects[$objectKey])) {
+            if (($selectedDevices !== null && !isset($selectedDevices[$objectKey])) || isset($objects[$objectKey])) {
                 continue;
             }
             $location = $device['location'] ?? null;
@@ -340,18 +345,22 @@ class OpenWoIst extends IPSModuleStrict
         return $source;
     }
 
-    private function readVehicle(string $mode, string $key, ?array $previous, int $now): array
+    private function readVehicle(array $vehicle, string $key, ?array $previous, int $now): array
     {
-        $name = $mode === 'demo' ? $this->Translate('Test vehicle') : trim($this->ReadPropertyString('VehicleName'));
+        $mode = $vehicle['mode'];
+        $name = $vehicle['name'];
+        if ($name === '' && IPS_VariableExists($vehicle['trigger'])) {
+            $name = IPS_GetName($vehicle['trigger']);
+        }
         if ($name === '' || $name === 'Vehicle') {
             $name = $this->Translate('Vehicle');
         }
         $source = ['id' => $key, 'kind' => $mode === 'demo' ? 'demo' : 'vehicle', 'name' => $name, 'available' => false, 'objects' => []];
-        $ids = $this->vehicleVariables();
+        $ids = $vehicle['ids'];
         $data = null;
         try {
             if ($ids !== [] && count(array_unique($ids)) === count($ids) && array_reduce($ids, static fn ($ok, $id): bool => $ok && IPS_VariableExists($id), true)) {
-                $data = $this->readVehicleData($mode, $ids);
+                $data = $this->readVehicleData($vehicle);
                 $source['available'] = true;
             }
         } catch (Throwable $exception) {
@@ -365,15 +374,15 @@ class OpenWoIst extends IPSModuleStrict
         return $source;
     }
 
-    private function readVehicleData(string $mode, array $ids): ?array
+    private function readVehicleData(array $vehicle): ?array
     {
-        return $mode === 'fields' ? $this->readCoordinateVariables($ids) : $this->readJSONVariable($ids[0], $mode);
-    }
-
-    private function readJSONVariable(int $id, string $mode): ?array
-    {
+        $mode = $vehicle['mode'];
+        $ids = $vehicle['ids'];
+        if ($mode === 'fields') {
+            return $this->readCoordinateVariables($ids);
+        }
         $convert = PositionConverter::supports($mode);
-        $value = GetValue($id);
+        $value = GetValue($ids[0]);
         if (!is_string($value) || strlen($value) > ($convert ? 1048576 : 4096)) {
             throw new UnexpectedValueException('Invalid JSON position variable.');
         }
@@ -383,7 +392,7 @@ class OpenWoIst extends IPSModuleStrict
         }
 
         return $convert
-            ? PositionConverter::convert($mode, $data, $this->ReadPropertyString('VehicleTimeFormat'), $this->ReadPropertyString('VehicleDecimalSeparator'))
+            ? PositionConverter::convert($mode, $data, $vehicle['timeFormat'], $vehicle['decimalSeparator'])
             : $data;
     }
 
@@ -407,27 +416,79 @@ class OpenWoIst extends IPSModuleStrict
         };
     }
 
-    private function vehicleTrigger(): int
+    private function legacyVehicle(): array
     {
+        $mode = $this->vehicleMode();
         $ids = $this->vehicleVariables();
-        return $ids === [] ? 0 : $ids[array_key_last($ids)];
+        $name = trim($this->ReadPropertyString('VehicleName'));
+        return [
+            'mode'             => $mode,
+            'name'             => $mode === 'demo' ? $this->Translate('Test vehicle') : ($name !== '' ? $name : 'Vehicle'),
+            'ids'              => $ids,
+            'trigger'          => $ids[array_key_last($ids)] ?? 0,
+            'timeFormat'       => $this->ReadPropertyString('VehicleTimeFormat'),
+            'decimalSeparator' => $this->ReadPropertyString('VehicleDecimalSeparator')
+        ];
+    }
+
+    private function configuredVehicles(): array
+    {
+        $vehicles = [];
+        $legacy = $this->legacyVehicle();
+        if ($legacy['mode'] !== 'off') {
+            $vehicles[$this->vehicleKey($legacy)] = $legacy;
+        }
+        $rows = json_decode($this->ReadPropertyString('Vehicles'), true, 8);
+        foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
+            $kind = $row['CarMode'] ?? null;
+            $format = $row['CarFormat'] ?? 'json';
+            if (!in_array($kind, ['fields', 'json'], true) || ($kind === 'json' && (!is_string($format) || !$this->isJSONVehicleMode($format)))) {
+                continue;
+            }
+            $mode = $kind === 'fields' ? 'fields' : $format;
+            $ids = $mode === 'fields'
+                ? [$row['CarLatitude'] ?? 0, $row['CarLongitude'] ?? 0, $row['CarTimestamp'] ?? 0]
+                : [$row['CarPosition'] ?? 0];
+            if (count(array_filter($ids, static fn ($id): bool => is_int($id) && $id > 0)) !== count($ids) || count(array_unique($ids)) !== count($ids)) {
+                continue;
+            }
+            $vehicle = [
+                'mode'             => $mode,
+                'name'             => is_string($row['CarName'] ?? null) ? trim($row['CarName']) : '',
+                'ids'              => $ids,
+                'trigger'          => $ids[array_key_last($ids)],
+                'timeFormat'       => is_string($row['CarTimeFormat'] ?? null) ? $row['CarTimeFormat'] : 'default',
+                'decimalSeparator' => is_string($row['CarDecimalSeparator'] ?? null) ? $row['CarDecimalSeparator'] : '.'
+            ];
+            $vehicles[$this->vehicleKey($vehicle)] ??= $vehicle;
+        }
+        return $vehicles;
+    }
+
+    private function vehicleKey(array $vehicle): string
+    {
+        return LocationSnapshot::key('vehicle', $vehicle['trigger'], $vehicle['mode'] === 'fields' ? implode(',', $vehicle['ids']) : '');
     }
 
     private function syncReferences(): void
     {
-        $trigger = $this->vehicleTrigger();
+        $vehicles = $this->configuredVehicles();
+        $triggers = array_unique(array_column($vehicles, 'trigger'));
         foreach ($this->GetMessageList() as $sender => $messages) {
-            if ($sender !== $trigger && in_array(VM_UPDATE, $messages, true)) {
+            if (!in_array($sender, $triggers, true) && in_array(VM_UPDATE, $messages, true)) {
                 $this->UnregisterMessage($sender, VM_UPDATE);
             }
         }
-        if ($trigger > 0 && IPS_VariableExists($trigger)) {
+        foreach (array_filter($triggers, static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)) as $trigger) {
             $this->RegisterMessage($trigger, VM_UPDATE);
         }
         $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
-        if ($this->ReadPropertyString('VehicleMode') !== 'demo') {
-            $references = array_merge($references, array_filter($this->vehicleVariables(), static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
+        foreach ($vehicles as $vehicle) {
+            if ($vehicle['mode'] !== 'demo') {
+                $references = array_merge($references, array_filter($vehicle['ids'], static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
+            }
         }
+        $references = array_unique($references);
         $registered = $this->GetReferenceList();
         foreach (array_diff($registered, $references) as $id) {
             $this->UnregisterReference($id);

@@ -45,6 +45,8 @@ trait VehicleSourceForm
 
     private function configureVehicleForm(array $form): array
     {
+        $fields = array_column($form['elements'], null, 'name');
+        $vehicles = $this->additionalVehicleForm($fields);
         $selectedMode = $this->ReadPropertyString('VehicleMode');
         $format = $this->ReadPropertyString('VehicleJSONFormat');
         $implicitFormat = $this->isJSONVehicleMode($selectedMode) ? $selectedMode : 'json';
@@ -73,7 +75,61 @@ trait VehicleSourceForm
             $form['elements'] = $this->SetFormFieldVisibility($form['elements'], [$name], $visible);
             $form['actions'] = $this->SetFormFieldVisibility($form['actions'], [$name], $visible);
         }
+        $legacy = ['VehicleMode', 'VehicleJSONFormat', 'VehicleAssignments', 'VehicleAdvanced'];
+        $items = [];
+        foreach ($form['elements'] as $index => $field) {
+            $name = $field['name'] ?? '';
+            if ($name === 'Vehicles') {
+                $form['elements'][$index] = $vehicles;
+            } elseif (in_array($name, $legacy, true)) {
+                $items[] = $field;
+                unset($form['elements'][$index]);
+            }
+        }
+        $form['elements'] = array_values($form['elements']);
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'name'    => 'ExistingVehicleSettings',
+            'caption' => 'Existing vehicle source and test vehicle',
+            'items'   => $items
+        ];
         return $form;
+    }
+
+    private function additionalVehicleForm(array $fields): array
+    {
+        $modes = array_values(array_filter($fields['VehicleMode']['options'], static fn (array $option): bool => in_array($option['value'], ['json', 'fields'], true)));
+        $list = $fields['Vehicles'];
+        $list['columns'] = [
+            ['name' => 'CarName', 'caption' => 'Vehicle name', 'width' => 'auto', 'add' => '', 'save' => true],
+            ['name' => 'CarMode', 'caption' => 'Vehicle source', 'width' => '200px', 'add' => 'json', 'edit' => ['type' => 'Select', 'options' => $modes]]
+        ];
+        foreach (['CarFormat' => 'json', 'CarPosition' => 0, 'CarLatitude' => 0, 'CarLongitude' => 0, 'CarTimestamp' => 0,
+            'CarTimeFormat'   => 'default', 'CarDecimalSeparator' => '.'] as $name => $default) {
+            $list['columns'][] = ['name' => $name, 'visible' => false, 'add' => $default, 'save' => true];
+        }
+
+        $inputs = [];
+        foreach ([$fields['VehicleJSONFormat'], ...$fields['VehicleAssignments']['items'], ...$fields['VehicleAdvanced']['items']] as $field) {
+            $name = $field['name'] === 'VehicleJSONFormat' ? 'CarFormat' : 'Car' . substr($field['name'], strlen('Vehicle'));
+            $inputs[$name] = ['name' => $name] + array_diff_key($field, array_flip(['name', 'visible', 'onChange']));
+        }
+        $inputs['CarName']['validate'] = '^.*\S.*$';
+        $json = [$inputs['CarFormat'], $inputs['CarPosition'], [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Advanced vehicle settings',
+            'items'   => [$inputs['CarTimeFormat'], $inputs['CarDecimalSeparator']]
+        ]];
+        $coordinates = [$inputs['CarLatitude'], $inputs['CarLongitude'], $inputs['CarTimestamp']];
+        $list['form'] = [$inputs['CarName'], ['type' => 'Select', 'name' => 'CarMode', 'caption' => 'Vehicle source', 'options' => $modes]];
+        if (version_compare(IPS_GetKernelVersion(), '9.1', '>=')) {
+            $list['form'][1]['options'][0]['items'] = $json;
+            $list['form'][1]['options'][1]['items'] = $coordinates;
+        } else {
+            $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'JSON variable', 'items' => $json];
+            $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'Separate position variables', 'items' => $coordinates];
+        }
+        return $list;
     }
 
     private function handleVehicleFormAction(string $ident, mixed $value): bool
@@ -112,7 +168,7 @@ trait VehicleSourceForm
             return $this->Translate('Select a separate variable for each position field.');
         }
         try {
-            $data = $this->readVehicleData($mode, $ids);
+            $data = $this->readVehicleData($this->legacyVehicle());
         } catch (Throwable) {
             $data = null;
         }

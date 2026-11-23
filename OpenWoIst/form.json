@@ -23,6 +23,55 @@
             ]
         },
         {
+            "type": "ExpansionPanel",
+            "name": "DeviceSelectionPanel",
+            "caption": "iCloud device selection",
+            "items": [
+                {
+                    "type": "CheckBox",
+                    "name": "ShowAllDevices",
+                    "caption": "Show all devices"
+                },
+                {
+                    "type": "Label",
+                    "caption": "Clear Show all devices to use this list. Apply new account assignments and reopen the form to see their devices."
+                },
+                {
+                    "type": "List",
+                    "name": "SelectedDevices",
+                    "caption": "Selected devices",
+                    "rowCount": 5,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "name": "DeviceKey",
+                            "caption": "Device and account",
+                            "width": "auto",
+                            "add": "",
+                            "edit": {
+                                "type": "Select",
+                                "options": [
+                                    {
+                                        "caption": "Select a cached device",
+                                        "value": ""
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "List",
+            "name": "Vehicles",
+            "caption": "Additional vehicles",
+            "rowCount": 4,
+            "add": true,
+            "delete": true
+        },
+        {
             "type": "Select",
             "name": "VehicleMode",
             "caption": "Vehicle source",

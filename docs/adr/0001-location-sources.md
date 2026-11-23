@@ -12,6 +12,11 @@ und Traccar-Daten aus zugewiesenen JSON-Variablen beim Einlesen.
 Gespeicherte Anbieterwerte in `VehicleMode` gelten weiter, solange kein
 eigenes JSON-Format gewählt wird.
 
+Die Geräteauswahl speichert dieselben kontobezogenen, opaken Kennungen wie
+der Kartenstand. Ohne aktivierte Einschränkung erscheinen weiterhin alle Geräte.
+Weitere Fahrzeuge haben eigene Variablenzuordnungen. Die bisherige Einzelquelle
+und die Testfahrzeug-Variable behalten ihre Eigenschaften und Kennungen.
+
 Die Kachel erhält ausschließlich einen normalisierten Zustand mit opaken
 Objekt- und Quellenkennungen. Quellenstatus und Standortzeit sind getrennt.
 Abgemeldete oder abgewählte Konten werden aus dem gespeicherten Zustand

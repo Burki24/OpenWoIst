@@ -17,7 +17,8 @@ $setPosition = static function (int $variableID, array|string $payload) use ($co
 $vehicleForm = static function () use ($converterMap): array
 {
     $form = json_decode($converterMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-    return array_column([...$form['elements'], ...$form['actions']], null, 'name');
+    $elements = array_column($form['elements'], null, 'name');
+    return array_column([...$elements['ExistingVehicleSettings']['items'], ...$form['actions']], null, 'name');
 };
 $form = $vehicleForm();
 check(
