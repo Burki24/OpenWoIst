@@ -30,18 +30,20 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    die Position. iCloud-Marker und Testfahrzeug blieben sichtbar. Der
    Vorher-nachher-Abgleich bestätigte die unveränderten Zuordnungen und das
    unveränderte Haussteuerungsprofil.
-2. [ ] **Traccar aus dem Symcon Store.** Die direkte Auswahl einer
-   Traccar-Geräteinstanz prüfen. Der Adapter braucht einen eindeutig
-   erkennbaren Fix-Zeitpunkt, da `LastUpdate` auch Gerätezeit enthalten kann.
-   Solange die Instanz beide Zeiten gleich darstellt, bleibt Traccar-JSON
-   mit `fixTime` der unterstützte Weg. In diesem Fall mit Schritt 3 fortfahren.
+2. [ ] **Traccar aus dem Symcon Store.** Zurückgestellt. In 1.2.0 fällt
+   `LastUpdate` auf die Gerätezeit zurück. Der Splitter liefert den
+   ursprünglichen `fixTime` erst bei einem neuen Serverabruf. Bis ein
+   eindeutig erkennbarer Fix-Zeitpunkt lokal verfügbar ist, bleibt
+   Traccar-JSON mit `fixTime` der unterstützte Weg.
    [Traccar im Store](https://www.symcon.de/de/module-store/mwlf01-traccar/)
-3. [ ] **Smartphones und GPS-Tracker.** Für OwnTracks den vorhandenen
-   Konverter nutzen und als erste weitere Quelle Tractive prüfen. Anzeigename
-   und Markerfarbe gelten pro Gerät. Vor der Umsetzung einmalig festlegen,
-   wo diese Geräte im Formular neben **Fahrzeuge**, **iCloud** und
-   **GoogleCloud** erscheinen. Vorschlag ist ein Bereich **Weitere
-   Standortgeräte**. [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
+3. [ ] **Smartphones und GPS-Tracker.** OwnTracks ist im eigenen Bereich
+   **Weitere Standortgeräte** mit Anzeigename und Markerfarbe umgesetzt.
+   Die Abnahme auf der Entwicklungsinstanz steht aus. Tractive ist
+   zurückgestellt. Die Store-Versionen 1.14 und 1.19 schreiben
+   `LastPositionMessage` vor den Koordinaten. Ihr Positions-JSON enthält
+   Koordinaten und Höhe, die Messzeit steht separat. Ein gemeinsam
+   bereitgestellter Positionsdatensatz mit Messzeit ermöglicht die Anbindung.
+   [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [ ] **Weitere Quellen über bestehende Symcon-Variablen.** Für Home Assistant
    und GPS-Daten über MQTT jeweils ein dokumentiertes Beispiel mit dem
    generischen OpenWoIst-JSON-Format erstellen. Einen neuen Konverter nur

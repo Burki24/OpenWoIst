@@ -217,7 +217,7 @@ trait VehicleSourceForm
             return $this->Translate('Select a separate variable for each position field.');
         }
         try {
-            $data = $this->readVehicleData($this->legacyVehicle());
+            $data = $this->readPositionData($this->legacyVehicle());
         } catch (Throwable) {
             $data = null;
         }

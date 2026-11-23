@@ -8,7 +8,7 @@ import {setTimeout as delay} from 'node:timers/promises';
 
 const chrome = process.env.OPENWOIST_CHROME;
 assert.ok(chrome, 'Set OPENWOIST_CHROME to a Chromium executable.');
-const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures'], {maxBuffer: 4 * 1024 * 1024}));
+const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture'], {maxBuffer: 4 * 1024 * 1024}));
 const renderer = readFileSync('libs/helper/maps/vendor/maplibre-gl.js');
 const observeWheels = html => html.replace('<head>', `<head><script>
     window.testWheels = {map: 0, objects: 0};
@@ -127,7 +127,12 @@ try {
 
         await resize(288, 189);
         await call('Page.navigate', {url: `http://127.0.0.1:${server.address().port}/host/${mode}`});
-        await until(() => inspect('return d.querySelectorAll(".location-marker").length === 26;'), `${mode} marker fixture did not load.`);
+        await until(() => inspect('return d.querySelectorAll(".location-marker").length === 27;'), `${mode} marker fixture did not load.`);
+        const tracker = await inspect(`const marker = d.querySelector('.location-marker[data-kind="tracker"]');
+            const row = d.querySelector('.object[data-kind="tracker"]');
+            return {title: marker?.title, name: row?.querySelector('.object-name')?.textContent,
+                color: marker && w.getComputedStyle(marker.querySelector('.symbol')).backgroundColor};`);
+        assert.deepEqual(tracker, {title: 'OwnTracks test device', name: 'OwnTracks test device', color: 'rgb(34, 86, 166)'});
         const compact = await geometry();
         assert.ok(compact.mapHeight >= 72 && compact.listLeft >= compact.mapRight, `${mode} must give the compact map room beside the list: ${JSON.stringify(compact)}`);
         assert.ok(compact.listBottom <= 189 && compact.toolbarHeight <= 32, `${mode} toolbar and list must fit inside the viewport.`);

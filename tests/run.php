@@ -130,6 +130,14 @@ if (in_array('--tile-fixture', $argv, true) || in_array('--visualization-fixture
         ], JSON_THROW_ON_ERROR));
         IPS_ApplyChanges($mapID);
     }
+    if (in_array('--tracker-fixture', $argv, true)) {
+        $trackerPosition = IPS_CreateVariable(VARIABLETYPE_STRING);
+        SetValueString($trackerPosition, json_encode(['lat' => 52.508, 'lon' => 13.38, 'tst' => $now], JSON_THROW_ON_ERROR));
+        IPS_SetProperty($mapID, 'Trackers', json_encode([
+            ['TrackerName' => 'OwnTracks test device', 'TrackerPosition' => $trackerPosition, 'TrackerMarkerColor' => 0x2256A6]
+        ], JSON_THROW_ON_ERROR));
+        IPS_ApplyChanges($mapID);
+    }
     OWIS_Update($mapID);
     if (in_array('--tile-fixture', $argv, true)) {
         echo $map->GetVisualizationTile();
@@ -244,5 +252,6 @@ require __DIR__ . '/design-ipsview.php';
 require __DIR__ . '/position-converter.php';
 require __DIR__ . '/source-selection.php';
 require __DIR__ . '/position-presets.php';
+require __DIR__ . '/tracker-sources.php';
 echo "OpenWoIst source and tile integration passed.\n";
 require __DIR__ . '/validate_structure.php';

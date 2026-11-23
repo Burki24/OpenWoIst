@@ -268,6 +268,55 @@
             ]
         },
         {
+            "type": "ExpansionPanel",
+            "name": "TrackerSources",
+            "caption": "Additional location devices",
+            "items": [
+                {
+                    "type": "List",
+                    "name": "Trackers",
+                    "caption": "OwnTracks devices",
+                    "rowCount": 4,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "name": "TrackerName",
+                            "caption": "Device name",
+                            "width": "auto",
+                            "add": "",
+                            "edit": {
+                                "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "TrackerPosition",
+                            "caption": "JSON position variable",
+                            "width": "260px",
+                            "add": 0,
+                            "edit": {
+                                "type": "SelectVariable",
+                                "validVariableTypes": [
+                                    3
+                                ]
+                            }
+                        },
+                        {
+                            "name": "TrackerMarkerColor",
+                            "caption": "Marker color",
+                            "width": "140px",
+                            "add": -1,
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent": true,
+                                "transparentCaption": "Designer default"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "type": "NumberSpinner",
             "name": "StaleAfter",
             "caption": "Mark position as old after",

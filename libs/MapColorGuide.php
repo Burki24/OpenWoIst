@@ -47,7 +47,7 @@ trait MapColorGuide
                 $unused[] = $caption;
             }
         }
-        $markerAreas = ['Current Apple position', 'Current vehicle position', 'Last valid position of either source'];
+        $markerAreas = ['Current device position', 'Current vehicle position', 'Last valid position of a source'];
         foreach (array_values($this->mapColorFields($markers)) as $i => $caption) {
             $legend[($i + 8) . ' · ' . $caption] = $this->Translate($markerAreas[$i]);
         }

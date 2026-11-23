@@ -7,7 +7,7 @@ namespace OpenWoIst;
 trait MapDesign
 {
     private const POSITION_COLORS = [
-        'DeviceColor'  => [0x17636C, 'Apple device marker color'],
+        'DeviceColor'  => [0x17636C, 'Device marker color'],
         'VehicleColor' => [0xAE4E25, 'Vehicle marker color'],
         'StaleColor'   => [0x626F74, 'Last known marker color']
     ];

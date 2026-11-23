@@ -149,6 +149,11 @@ trait IPSViewMap
                 $vehicle['mode'], $vehicle['ids'], $vehicle['timeFormat'], $vehicle['decimalSeparator']
             ], $vehicles);
         }
+        $trackers = array_keys($this->configuredTrackers());
+        if ($trackers !== []) {
+            sort($trackers, SORT_STRING);
+            $scope['trackers'] = $trackers;
+        }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 

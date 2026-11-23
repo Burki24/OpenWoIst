@@ -84,6 +84,15 @@ Zugriffsschlüssel. Beim Deaktivieren wird der Zugriff gesperrt. Der
 Ausgabe-Helper bietet für die bestehende Variable eine separate
 Löschfunktion im Instanzformular.
 
+## OwnTracks-Geräte hinzufügen
+
+Unter **Weitere Standortgeräte → OwnTracks-Geräte** pro Gerät einen Eintrag
+anlegen. Ordne die String-Variable **Position** einer OwnTracks-Data-Instanz
+mit aktivierter Positionsübernahme oder eine String-Variable mit OwnTracks-JSON
+zu. Das JSON enthält `lat`, `lon`, `tst` als Unix-Sekunden und optional `acc`
+in Metern. Geräte können je einen Anzeigenamen und eine Markerfarbe erhalten.
+Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
+
 ## Vorhandene Fahrzeugvariablen anschließen
 
 Unter **Weitere Fahrzeuge** pro Fahrzeug einen Eintrag mit Namen hinzufügen.

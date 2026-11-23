@@ -67,6 +67,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterPropertyBoolean('ShowAllDevices', true);
             $this->RegisterPropertyString('SelectedDevices', '[]');
             $this->RegisterPropertyString('Vehicles', '[]');
+            $this->RegisterPropertyString('Trackers', '[]');
             $this->RegisterPropertyString('VehicleMode', 'off');
             $this->RegisterPropertyString('VehicleJSONFormat', '');
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
@@ -100,7 +101,7 @@ class OpenWoIst extends IPSModuleStrict
                 $this->writeDemoPosition($this->ReadAttributeInteger('DemoStep'));
             }
             $this->syncReferences();
-            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredVehicles() !== [] ? 5000 : 0);
+            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] ? 5000 : 0);
             $this->publish(true);
             $this->maintainIPSViewMap();
         }, true);
@@ -122,7 +123,7 @@ class OpenWoIst extends IPSModuleStrict
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($TimeStamp, $SenderID, $Message, $Data): void
         {
             parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-            if ($Message === VM_UPDATE && in_array($SenderID, array_column($this->configuredVehicles(), 'trigger'), true)) {
+            if ($Message === VM_UPDATE && in_array($SenderID, array_column($this->configuredPositions(), 'trigger'), true)) {
                 $this->Update();
             }
         }, true);
@@ -260,8 +261,8 @@ class OpenWoIst extends IPSModuleStrict
                 ), $source['objects']);
                 $sources[] = $source;
             }
-            foreach ($this->configuredVehicles() as $key => $vehicle) {
-                $sources[] = $this->readVehicle($vehicle, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
+            foreach ($this->configuredPositions() as $key => $position) {
+                $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
             }
             if ($scope !== $this->sourceScope()) {
                 return;
@@ -352,40 +353,41 @@ class OpenWoIst extends IPSModuleStrict
         return $source;
     }
 
-    private function readVehicle(array $vehicle, string $key, ?array $previous, int $now): array
+    private function readPositionSource(array $position, string $key, ?array $previous, int $now): array
     {
-        $mode = $vehicle['mode'];
-        $name = $vehicle['name'];
-        if ($name === '' && IPS_VariableExists($vehicle['trigger'])) {
-            $name = IPS_GetName($vehicle['trigger']);
+        $mode = $position['mode'];
+        $kind = $position['kind'];
+        $name = $position['name'];
+        if ($name === '' && IPS_VariableExists($position['trigger'])) {
+            $name = IPS_GetName($position['trigger']);
         }
-        if ($name === '' || $name === 'Vehicle') {
-            $name = $this->Translate('Vehicle');
+        if ($name === '' || ($kind === 'vehicle' && $name === 'Vehicle')) {
+            $name = $this->Translate($kind === 'tracker' ? 'Location device' : 'Vehicle');
         }
-        $source = ['id' => $key, 'kind' => $mode === 'demo' ? 'demo' : 'vehicle', 'name' => $name, 'available' => false, 'objects' => []];
-        $ids = $vehicle['ids'];
+        $source = ['id' => $key, 'kind' => $kind, 'name' => $name, 'available' => false, 'objects' => []];
+        $ids = $position['ids'];
         $data = null;
         try {
             if ($ids !== [] && count(array_unique($ids)) === count($ids) && array_reduce($ids, static fn ($ok, $id): bool => $ok && IPS_VariableExists($id), true)) {
-                $data = $this->readVehicleData($vehicle);
+                $data = $this->readPositionData($position);
                 $source['available'] = true;
             }
         } catch (Throwable $exception) {
-            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesenen Fahrzeugvariablen konnten nicht gelesen werden.', ['Fehlerklasse' => $exception::class]);
+            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesenen Positionsvariablen konnten nicht gelesen werden.', ['Fehlerklasse' => $exception::class]);
         }
         $fix = LocationSnapshot::fix($data, $now);
         if ((PositionConverter::supports($mode) || isset(self::VEHICLE_PRESETS[$mode]))
             && $fix !== null && ($previous['timestamp'] ?? null) === $fix['timestamp']) {
             $fix = $previous;
         }
-        $source['objects'][] = LocationSnapshot::withMarkerColor(LocationSnapshot::object($key, $name, $fix, $previous, true), $vehicle['markerColor']);
+        $source['objects'][] = LocationSnapshot::withMarkerColor(LocationSnapshot::object($key, $name, $fix, $previous, true), $position['markerColor']);
         return $source;
     }
 
-    private function readVehicleData(array $vehicle): ?array
+    private function readPositionData(array $position): ?array
     {
-        $mode = $vehicle['mode'];
-        $ids = $vehicle['ids'];
+        $mode = $position['mode'];
+        $ids = $position['ids'];
         if ($mode === 'fields') {
             return $this->readCoordinateVariables($ids);
         }
@@ -404,7 +406,7 @@ class OpenWoIst extends IPSModuleStrict
         }
 
         return $convert
-            ? PositionConverter::convert($mode, $data, $vehicle['timeFormat'], $vehicle['decimalSeparator'])
+            ? PositionConverter::convert($mode, $data, $position['timeFormat'], $position['decimalSeparator'])
             : $data;
     }
 
@@ -435,6 +437,7 @@ class OpenWoIst extends IPSModuleStrict
         $name = trim($this->ReadPropertyString('VehicleName'));
         return [
             'mode'             => $mode,
+            'kind'             => $mode === 'demo' ? 'demo' : 'vehicle',
             'name'             => $mode === 'demo' ? $this->Translate('Test vehicle') : ($name !== '' ? $name : 'Vehicle'),
             'ids'              => $ids,
             'trigger'          => $ids[array_key_last($ids)] ?? 0,
@@ -469,6 +472,7 @@ class OpenWoIst extends IPSModuleStrict
             }
             $vehicle = [
                 'mode'             => $mode,
+                'kind'             => 'vehicle',
                 'name'             => is_string($row['CarName'] ?? null) ? trim($row['CarName']) : '',
                 'ids'              => $ids,
                 'trigger'          => $ids[array_key_last($ids)],
@@ -486,10 +490,38 @@ class OpenWoIst extends IPSModuleStrict
         return LocationSnapshot::key('vehicle', $vehicle['trigger'], count($vehicle['ids']) === 3 ? implode(',', $vehicle['ids']) : '');
     }
 
+    private function configuredTrackers(): array
+    {
+        $trackers = [];
+        $rows = json_decode($this->ReadPropertyString('Trackers'), true, 8);
+        foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
+            $id = $row['TrackerPosition'] ?? null;
+            if (!is_int($id) || $id <= 0) {
+                continue;
+            }
+            $trackers[LocationSnapshot::key('tracker', $id)] ??= [
+                'kind'             => 'tracker',
+                'mode'             => 'owntracks',
+                'name'             => is_string($row['TrackerName'] ?? null) ? trim($row['TrackerName']) : '',
+                'ids'              => [$id],
+                'trigger'          => $id,
+                'markerColor'      => LocationSnapshot::markerColor($row['TrackerMarkerColor'] ?? null),
+                'timeFormat'       => 'default',
+                'decimalSeparator' => '.'
+            ];
+        }
+        return $trackers;
+    }
+
+    private function configuredPositions(): array
+    {
+        return $this->configuredVehicles() + $this->configuredTrackers();
+    }
+
     private function syncReferences(): void
     {
-        $vehicles = $this->configuredVehicles();
-        $triggers = array_unique(array_column($vehicles, 'trigger'));
+        $positions = $this->configuredPositions();
+        $triggers = array_unique(array_column($positions, 'trigger'));
         foreach ($this->GetMessageList() as $sender => $messages) {
             if (!in_array($sender, $triggers, true) && in_array(VM_UPDATE, $messages, true)) {
                 $this->UnregisterMessage($sender, VM_UPDATE);
@@ -499,9 +531,9 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterMessage($trigger, VM_UPDATE);
         }
         $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
-        foreach ($vehicles as $vehicle) {
-            if ($vehicle['mode'] !== 'demo') {
-                $references = array_merge($references, array_filter($vehicle['ids'], static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
+        foreach ($positions as $position) {
+            if ($position['kind'] !== 'demo') {
+                $references = array_merge($references, array_filter($position['ids'], static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
             }
         }
         $references = array_unique($references);
