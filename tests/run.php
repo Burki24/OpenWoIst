@@ -243,5 +243,6 @@ foreach ([['GET', $rendererPath, 200], ['POST', $rendererPath, 405], ['GET', '/h
 require __DIR__ . '/design-ipsview.php';
 require __DIR__ . '/position-converter.php';
 require __DIR__ . '/source-selection.php';
+require __DIR__ . '/position-presets.php';
 echo "OpenWoIst source and tile integration passed.\n";
 require __DIR__ . '/validate_structure.php';

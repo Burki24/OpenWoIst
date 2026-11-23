@@ -16,6 +16,8 @@
   Geräte aus den zugewiesenen Kontocaches.
 - Unter **Weitere Fahrzeuge** lassen sich mehrere Fahrzeuge mit eigenen
   Symcon-Variablen hinzufügen und verwalten.
+- Die Fahrzeug-Voreinstellungen für Smartcar und Hyundai Bluelink / Kia Connect
+  übernehmen Koordinaten und Messzeiten aus den vorhandenen Symcon-Variablen.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das

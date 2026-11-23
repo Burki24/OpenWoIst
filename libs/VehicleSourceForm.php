@@ -8,6 +8,21 @@ use Throwable;
 
 trait VehicleSourceForm
 {
+    private const VEHICLE_PRESETS = [
+        'smartcar' => [
+            'caption'          => 'Smartcar',
+            'prefix'           => 'Smartcar',
+            'timestampCaption' => 'Smartcar location time (OEM)',
+            'timestampType'    => VARIABLETYPE_INTEGER
+        ],
+        'hyundai-kia' => [
+            'caption'          => 'Hyundai Bluelink / Kia Connect',
+            'prefix'           => 'Hyundai',
+            'timestampCaption' => 'Hyundai/Kia position time',
+            'timestampType'    => VARIABLETYPE_STRING
+        ]
+    ];
+
     private function vehicleMode(): string
     {
         return $this->resolveVehicleFormat(
@@ -98,6 +113,9 @@ trait VehicleSourceForm
     private function additionalVehicleForm(array $list, array $fields): array
     {
         $modes = array_values(array_filter($fields['VehicleMode']['options'], static fn (array $option): bool => in_array($option['value'], ['json', 'fields'], true)));
+        foreach (self::VEHICLE_PRESETS as $mode => $preset) {
+            $modes[] = ['caption' => $preset['caption'], 'value' => $mode];
+        }
         $markerColor = ['name' => 'CarMarkerColor'] + array_diff_key($fields['VehicleMarkerColor'], ['name' => true, 'visible' => true]);
         $list['columns'] = [
             ['name' => 'CarName', 'caption' => 'Vehicle name', 'width' => 'auto', 'add' => '', 'save' => true],
@@ -122,12 +140,24 @@ trait VehicleSourceForm
         ]];
         $coordinates = [$inputs['CarLatitude'], $inputs['CarLongitude'], $inputs['CarTimestamp']];
         $list['form'] = [$inputs['CarName'], ['type' => 'Select', 'name' => 'CarMode', 'caption' => 'Vehicle source', 'options' => $modes]];
+        $positionInputs = ['json' => $json, 'fields' => $coordinates];
+        foreach (self::VEHICLE_PRESETS as $mode => $preset) {
+            foreach ($coordinates as $field) {
+                $name = $preset['prefix'] . substr($field['name'], strlen('Car'));
+                $list['columns'][] = ['name' => $name, 'visible' => false, 'add' => 0, 'save' => true];
+                $positionInputs[$mode][] = $field['name'] === 'CarTimestamp'
+                    ? array_replace($field, ['name' => $name, 'caption' => $preset['timestampCaption'], 'validVariableTypes' => [$preset['timestampType']]])
+                    : array_replace($field, ['name' => $name]);
+            }
+        }
         if (version_compare(IPS_GetKernelVersion(), '9.1', '>=')) {
-            $list['form'][1]['options'][0]['items'] = $json;
-            $list['form'][1]['options'][1]['items'] = $coordinates;
+            foreach ($modes as $index => $option) {
+                $list['form'][1]['options'][$index]['items'] = $positionInputs[$option['value']];
+            }
         } else {
-            $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'JSON variable', 'items' => $json];
-            $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'Separate position variables', 'items' => $coordinates];
+            foreach ($modes as $option) {
+                $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => $option['caption'], 'items' => $positionInputs[$option['value']]];
+            }
         }
         $list['form'][] = $markerColor;
         return $list;

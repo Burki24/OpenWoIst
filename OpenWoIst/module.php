@@ -374,7 +374,8 @@ class OpenWoIst extends IPSModuleStrict
             $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesenen Fahrzeugvariablen konnten nicht gelesen werden.', ['Fehlerklasse' => $exception::class]);
         }
         $fix = LocationSnapshot::fix($data, $now);
-        if (PositionConverter::supports($mode) && $fix !== null && ($previous['timestamp'] ?? null) === $fix['timestamp']) {
+        if ((PositionConverter::supports($mode) || isset(self::VEHICLE_PRESETS[$mode]))
+            && $fix !== null && ($previous['timestamp'] ?? null) === $fix['timestamp']) {
             $fix = $previous;
         }
         $source['objects'][] = LocationSnapshot::withMarkerColor(LocationSnapshot::object($key, $name, $fix, $previous, true), $vehicle['markerColor']);
@@ -387,6 +388,10 @@ class OpenWoIst extends IPSModuleStrict
         $ids = $vehicle['ids'];
         if ($mode === 'fields') {
             return $this->readCoordinateVariables($ids);
+        }
+        if (isset(self::VEHICLE_PRESETS[$mode])) {
+            $data = $this->readCoordinateVariables($ids);
+            return $data === null ? null : PositionConverter::convertVariables($mode, $data);
         }
         $convert = PositionConverter::supports($mode);
         $value = GetValue($ids[0]);
@@ -409,7 +414,7 @@ class OpenWoIst extends IPSModuleStrict
         $start = GetValue($timestamp);
         $lat = GetValue($latitude);
         $lon = GetValue($longitude);
-        // Writers set the timestamp to 0 before changing either coordinate.
+        // The generic writer clears the timestamp first. Provider presets commit by writing it last.
         return $start === GetValue($timestamp) ? ['latitude' => $lat, 'longitude' => $lon, 'timestamp' => $start] : null;
     }
 
@@ -450,13 +455,15 @@ class OpenWoIst extends IPSModuleStrict
         foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
             $kind = $row['CarMode'] ?? null;
             $format = $row['CarFormat'] ?? 'json';
-            if (!in_array($kind, ['fields', 'json'], true) || ($kind === 'json' && (!is_string($format) || !$this->isJSONVehicleMode($format)))) {
+            if (!is_string($kind) || ($kind !== 'fields' && $kind !== 'json' && !isset(self::VEHICLE_PRESETS[$kind]))
+                || ($kind === 'json' && (!is_string($format) || !$this->isJSONVehicleMode($format)))) {
                 continue;
             }
-            $mode = $kind === 'fields' ? 'fields' : $format;
-            $ids = $mode === 'fields'
-                ? [$row['CarLatitude'] ?? 0, $row['CarLongitude'] ?? 0, $row['CarTimestamp'] ?? 0]
-                : [$row['CarPosition'] ?? 0];
+            $mode = $kind === 'json' ? $format : $kind;
+            $prefix = self::VEHICLE_PRESETS[$mode]['prefix'] ?? 'Car';
+            $ids = $kind === 'json'
+                ? [$row['CarPosition'] ?? 0]
+                : [$row[$prefix . 'Latitude'] ?? 0, $row[$prefix . 'Longitude'] ?? 0, $row[$prefix . 'Timestamp'] ?? 0];
             if (count(array_filter($ids, static fn ($id): bool => is_int($id) && $id > 0)) !== count($ids) || count(array_unique($ids)) !== count($ids)) {
                 continue;
             }
@@ -476,7 +483,7 @@ class OpenWoIst extends IPSModuleStrict
 
     private function vehicleKey(array $vehicle): string
     {
-        return LocationSnapshot::key('vehicle', $vehicle['trigger'], $vehicle['mode'] === 'fields' ? implode(',', $vehicle['ids']) : '');
+        return LocationSnapshot::key('vehicle', $vehicle['trigger'], count($vehicle['ids']) === 3 ? implode(',', $vehicle['ids']) : '');
     }
 
     private function syncReferences(): void

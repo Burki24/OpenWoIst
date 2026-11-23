@@ -47,6 +47,8 @@
             "Latitude": "Breitengrad",
             "Longitude": "Längengrad",
             "Position time (Unix seconds)": "Messzeit (Unix-Sekunden)",
+            "Smartcar location time (OEM)": "Smartcar-Standortzeit (OEM-Datenstand)",
+            "Hyundai/Kia position time": "Hyundai/Kia-Standortzeit",
             "Mark position as old after": "Position als veraltet markieren nach",
             "Move test vehicle": "Testfahrzeug bewegen",
             "Location sources unavailable": "Standortquellen nicht verfügbar",

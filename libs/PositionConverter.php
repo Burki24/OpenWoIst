@@ -62,6 +62,40 @@ final class PositionConverter
         ];
     }
 
+    public static function convertVariables(string $source, array $position): array
+    {
+        $time = $position['timestamp'];
+        $position['timestamp'] = match ($source) {
+            'smartcar'    => is_int($time) ? $time : null,
+            'hyundai-kia' => self::localPositionTime($time),
+            default       => null
+        };
+        return $position;
+    }
+
+    private static function localPositionTime(mixed $value): ?int
+    {
+        if (!is_string($value) || preg_match('/^[0-9]{14}$/D', $value) !== 1) {
+            return null;
+        }
+        $date = DateTimeImmutable::createFromFormat('!YmdHis', $value);
+        if ($date === false || DateTimeImmutable::getLastErrors() !== false || $date->format('YmdHis') !== $value) {
+            return null;
+        }
+
+        $timestamp = $date->getTimestamp();
+        // A local clock time in the repeated interval identifies two different instants.
+        $transitions = $date->getTimezone()->getTransitions($timestamp - 86400, $timestamp + 86400);
+        if (isset($transitions[1])) {
+            $change = $transitions[1]['ts'];
+            $repeated = $transitions[0]['offset'] - $transitions[1]['offset'];
+            if ($timestamp >= $change - $repeated && $timestamp < $change + $repeated) {
+                return null;
+            }
+        }
+        return $timestamp;
+    }
+
     private static function number(mixed $value, string $decimalSeparator): ?float
     {
         if (is_string($value)) {

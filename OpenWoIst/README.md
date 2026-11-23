@@ -89,7 +89,7 @@ Löschfunktion im Instanzformular.
 Unter **Weitere Fahrzeuge** pro Fahrzeug einen Eintrag mit Namen hinzufügen.
 Die Liste zeigt die Namen und Quellenarten der hinzugefügten Fahrzeuge.
 Die zuvor konfigurierte Einzelquelle steht weiterhin unter **Bisherige
-Fahrzeugquelle und Testfahrzeug**. Für jede Quelle stehen diese Modi zur Verfügung.
+Fahrzeugquelle und Testfahrzeug**.
 
 - **JSON-Variable** zeigt einen Variablenselektor und die Wahl des
   **JSON-Formats**. Das Format **OpenWoIst** erwartet `latitude` und
@@ -137,6 +137,24 @@ erhalten.
 
 **Übernommene Quelle prüfen** liest die gespeicherte Zuordnung und
 meldet das Messalter oder ein fehlendes bzw. ungültiges Feld.
+
+### Smartcar und Hyundai/Kia anschließen
+
+Wähle unter **Weitere Fahrzeuge** die passende **Fahrzeugquelle** und
+ordne die drei Variablen aus derselben Fahrzeuginstanz zu.
+
+| Voreinstellung | Koordinaten | Messzeit |
+| --- | --- | --- |
+| **Smartcar** | `Latitude`, `Longitude` | `Sig_location_preciselocation_OEMUpdatedAt` als Unix-Sekunden. Aktiviere in Smartcar die zusätzliche OEM-Aktualisierungszeit für das Standortsignal. |
+| **Hyundai Bluelink / Kia Connect** | `Latitude`, `Longitude` | `PositionTimestamp` als Text im Format `JJJJMMTThhmmss` in der Symcon-Zeitzone. |
+
+Die Quellmodule schreiben die Koordinaten vor der neuen Messzeit.
+OpenWoIst übernimmt bei einer neuen gültigen Messzeit die vollständige
+Position. Bei ungültiger oder durch die Zeitumstellung mehrdeutiger Messzeit
+bleibt der letzte gültige Standort sichtbar. Beim Hyundai/Kia-Modul kann eine
+fehlende Messzeit als Abrufzeit im ISO-Format erscheinen. OpenWoIst verwirft
+dieses Zeitformat für die Voreinstellung. Kartenpositionen können je nach
+Fahrzeug und Dienst zuletzt gemeldete Parkpositionen sein.
 
 ## Öffentliche Funktionen
 
