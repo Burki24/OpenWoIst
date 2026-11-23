@@ -10,8 +10,9 @@
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das
   Instanzformular bewegen.
-- Die Fahrzeugquelle kann BMW-CarData- und OwnTracks-JSON direkt einlesen
-  und innerhalb von OpenWoIst konvertieren.
+- Die Fahrzeugquelle liest BMW-CarData-, OwnTracks- und Traccar-JSON
+  direkt ein. Das Formular zeigt die benötigten Eingaben zur Quellenart
+  und bietet eine Prüfung der übernommenen Zuordnung.
 - Die Kachel zeigt Messalter und letzte bekannte Positionen an. Der Quellenfilter
   begrenzt die angezeigten Marker und Listeneinträge.
 - Dieselbe Standortkarte steht optional als WebContent für IPSView bereit.

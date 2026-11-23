@@ -70,10 +70,10 @@ Löschfunktion im Instanzformular.
 Unter **Fahrzeugquelle** einen der folgenden Modi wählen und die entsprechenden
 Variablen zuordnen.
 
-- **Positionsvariable (JSON)** erwartet eine String-Variable mit einem
-  vollständigen Datensatz. `latitude` und `longitude` sind Zahlen in Grad.
-  `timestamp` ist die Messzeit als ganze Unix-Sekunde. `horizontalAccuracy`
-  ist optional und gibt die Genauigkeit in Metern an.
+- **JSON-Variable** zeigt einen Variablenselektor und die Wahl des
+  **JSON-Formats**. Das Format **OpenWoIst** erwartet `latitude` und
+  `longitude` in Grad, `timestamp` als ganze Unix-Sekunde und optional
+  `horizontalAccuracy` in Metern.
 - **Einzelne Positionsvariablen** erwartet zwei numerische Koordinatenvariablen
   und eine ganzzahlige Messzeitvariable. Der Datenlieferant setzt die
   Messzeitvariable vor dem Schreiben beider Koordinaten auf `0` und schreibt
@@ -91,24 +91,31 @@ SetValueString($positionsVariableID, json_encode([
 ], JSON_THROW_ON_ERROR));
 ```
 
-### BMW CarData und OwnTracks anschließen
+### BMW CarData, OwnTracks und Traccar anschließen
 
-Wähle unter **Fahrzeugquelle** den Modus **BMW CarData (JSON)** oder
-**OwnTracks (JSON)** und ordne unter **Positionsvariable (JSON)** die
-String-Variable mit den Originaldaten zu. OpenWoIst konvertiert die
-Daten direkt beim Einlesen.
+Wähle **JSON-Variable** und das passende **JSON-Format**. Ordne unter
+**Positionsvariable (JSON)** die String-Variable mit den Originaldaten zu.
+OpenWoIst konvertiert sie beim Einlesen.
 
 Für BMW kann die Variable das Ergebnis von `BMW_getTelematicData`,
 eine CarData-REST-Antwort oder eine Stream-Meldung enthalten. Beide
 Koordinaten müssen denselben Messzeitpunkt haben. OwnTracks liefert
 `lat`, `lon`, `tst` und optional `acc` in Metern.
 
-Unter **Format der Messzeit** gilt als Standard ISO 8601 mit Zeitzone
-für BMW und Unix-Sekunden für OwnTracks. Bei Bedarf sind auch
-Unix-Millisekunden und für Koordinatenstrings das Dezimalkomma wählbar.
+Traccar unterstützt ein einzelnes Positionsobjekt und Weiterleitungen mit
+`position`. OpenWoIst verwendet `fixTime` als Messzeit und übernimmt
+optional `accuracy` in Metern. Mit `valid: false` markierte Positionen
+werden verworfen.
+
+Unter **Erweiterte Fahrzeugeinstellungen** gilt ISO 8601 mit Zeitzone
+als Standard für BMW und Traccar und Unix-Sekunden für OwnTracks.
+Unix-Millisekunden und das Dezimalkomma sind bei Bedarf wählbar.
 Ungültige oder ältere Meldungen lassen die letzte gültige Position auf
 der Karte stehen. Bei gleicher Messzeit bleiben die bisherigen Koordinaten
 erhalten.
+
+**Übernommene Quelle prüfen** liest die gespeicherte Zuordnung und
+meldet das Messalter oder ein fehlendes bzw. ungültiges Feld.
 
 ## Öffentliche Funktionen
 

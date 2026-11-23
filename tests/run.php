@@ -152,7 +152,7 @@ check(count(tileState($map)['sources']) === 2 && $second->reads === 0, 'Read onl
 $tile = $map->GetVisualizationTile();
 check(!str_contains($tile, $phone['name']) && !str_contains($tile, $phone['id']) && !str_contains($tile, $phone['token']), 'HTML must escape display data and omit private provider identifiers and metadata.');
 $form = json_decode($map->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-check($form['actions'][0]['enabled'], 'Demo control must be enabled in demo mode.');
+check($form['actions'][0]['visible'], 'Demo control must be visible in demo mode.');
 check(OWIS_NextDemoPosition($mapID), 'The public demo action must change the demo variable.');
 check(source($map, 'demo')['objects'][0]['location']['longitude'] !== $demo['location']['longitude'], 'Demo action must change the plotted fix.');
 $vehicleKey = $demo['id'];

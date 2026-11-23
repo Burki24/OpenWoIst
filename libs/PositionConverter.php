@@ -10,13 +10,13 @@ final class PositionConverter
 {
     public static function supports(string $source): bool
     {
-        return in_array($source, ['bmw-cardata', 'owntracks'], true);
+        return in_array($source, ['bmw-cardata', 'owntracks', 'traccar'], true);
     }
 
     public static function convert(string $source, array $data, string $format, string $separator): ?array
     {
         if ($format === 'default') {
-            $format = $source === 'bmw-cardata' ? 'iso8601' : 'unix-seconds';
+            $format = $source === 'owntracks' ? 'unix-seconds' : 'iso8601';
         }
         if (!self::supports($source) || !in_array($separator, ['.', ','], true)
             || !in_array($format, ['iso8601', 'unix-seconds', 'unix-milliseconds'], true)) {
@@ -33,9 +33,9 @@ final class PositionConverter
             $lon = $longitude['value'] ?? null;
             $time = self::measurementTime($latitude['timestamp'] ?? null, $format);
             if ($time !== self::measurementTime($longitude['timestamp'] ?? null, $format)) {
-                return null;
+                $time = null;
             }
-        } else {
+        } elseif ($source === 'owntracks') {
             if (array_key_exists('_type', $data) && $data['_type'] !== 'location') {
                 return null;
             }
@@ -43,12 +43,21 @@ final class PositionConverter
             $lon = $data['lon'] ?? null;
             $time = self::measurementTime($data['tst'] ?? null, $format);
             $accuracy = self::number($data['acc'] ?? null, $separator);
+        } else {
+            $position = $data['position'] ?? $data;
+            if (!is_array($position) || (array_key_exists('valid', $position) && $position['valid'] !== true)) {
+                return null;
+            }
+            $lat = $position['latitude'] ?? null;
+            $lon = $position['longitude'] ?? null;
+            $time = self::measurementTime($position['fixTime'] ?? null, $format);
+            $accuracy = self::number($position['accuracy'] ?? null, $separator);
         }
 
-        return $time === null ? null : [
+        return [
             'latitude'           => self::number($lat, $separator),
             'longitude'          => self::number($lon, $separator),
-            'timestamp'          => $time[0],
+            'timestamp'          => $time[0] ?? null,
             'horizontalAccuracy' => $accuracy
         ];
     }

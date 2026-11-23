@@ -14,23 +14,50 @@ $setPosition = static function (int $variableID, array|string $payload) use ($co
 
     return source($converterMap, 'vehicle')['objects'][0];
 };
-$configuredFields = static function () use ($converterMap): array
+$vehicleForm = static function () use ($converterMap): array
 {
     $form = json_decode($converterMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-    $groups = array_column($form['elements'], null, 'caption');
-    return array_column($groups['Vehicle variable assignments']['items'], null, 'name');
+    return array_column([...$form['elements'], ...$form['actions']], null, 'name');
 };
-check(!$configuredFields()['VehicleTimeFormat']['visible'], 'Converter settings must be hidden for existing non-converter sources.');
+$form = $vehicleForm();
+check(
+    !$form['VehicleAssignments']['visible'] && !$form['VehicleJSONFormat']['visible']
+    && !$form['VehicleAdvanced']['visible'] && !$form['CheckVehicleSource']['visible'],
+    'Vehicle assignments, formats and diagnostics must be hidden for a disabled source.'
+);
+
+IPS_SetProperty($converterMapID, 'VehicleMode', 'fields');
+IPS_ApplyChanges($converterMapID);
+$form = $vehicleForm();
+$fields = array_column($form['VehicleAssignments']['items'], null, 'name');
+check(
+    $form['VehicleAssignments']['visible'] && !$form['VehicleJSONFormat']['visible']
+    && !$fields['VehiclePosition']['visible'] && $fields['VehicleLatitude']['visible']
+    && $fields['VehicleLongitude']['visible'] && $fields['VehicleTimestamp']['visible'],
+    'The separate-variable source must show only the three position fields.'
+);
 
 IPS_SetProperty($converterMapID, 'VehicleMode', 'bmw-cardata');
 IPS_SetProperty($converterMapID, 'VehiclePosition', $bmwID);
 IPS_SetProperty($converterMapID, 'VehicleDecimalSeparator', ',');
 IPS_SetProperty($converterMapID, 'EnableIPSView', true);
 IPS_ApplyChanges($converterMapID);
+$configBefore = IPS_GetConfiguration($converterMapID);
+$form = $vehicleForm();
+$fields = array_column($form['VehicleAssignments']['items'], null, 'name');
 check(
-    $configuredFields()['VehicleTimeFormat']['visible'] && $configuredFields()['VehicleDecimalSeparator']['visible'],
-    'Both converter settings must be available for a BMW source.'
+    $form['VehicleJSONFormat']['visible'] && $form['VehicleAdvanced']['visible'] && $form['CheckVehicleSource']['visible']
+    && $fields['VehiclePosition']['visible'] && !$fields['VehicleLatitude']['visible']
+    && !$fields['VehicleLongitude']['visible'] && !$fields['VehicleTimestamp']['visible'],
+    'The saved BMW source must show the JSON variable, format and advanced settings.'
 );
+$sourceOptions = array_column($form['VehicleMode']['options'], 'caption', 'value');
+$formatOptions = array_column($form['VehicleJSONFormat']['options'], 'caption', 'value');
+check(
+    $sourceOptions['bmw-cardata'] === 'JSON variable' && $formatOptions[''] === 'BMW CarData',
+    'A stored BMW mode must appear as JSON with the corresponding format selected.'
+);
+check(IPS_GetConfiguration($converterMapID) === $configBefore, 'Opening the grouped form must not change saved assignments.');
 check(
     $converterMap->GetReferenceList() === [$bmwID] && in_array(VM_UPDATE, $getSubscriptions->invoke($converterMap)[$bmwID] ?? [], true),
     'The BMW input variable must be registered as a reference and update trigger.'
@@ -44,10 +71,28 @@ $bmw = [
 $bmwFix = ['latitude' => 52.5201, 'longitude' => 13.4051, 'timestamp' => 1735732800, 'accuracy' => null];
 $vehicle = $setPosition($bmwID, ['data' => $bmw, 'extra' => str_repeat('x', 4096)]);
 check($vehicle['current'] && $vehicle['location'] === $bmwFix, 'The module must read and normalize the raw BMW position.');
+$diagnose = static function () use ($converterMap): string
+{
+    ob_start();
+    try {
+        $converterMap->RequestAction('CheckVehicleSource', '');
+        return ob_get_contents();
+    } finally {
+        ob_end_clean();
+    }
+};
+check(
+    preg_match('/^Valid position\. Measurement age \d+ s\.$/', $diagnose()) === 1,
+    'Source diagnostics must report the measurement age without exposing coordinates.'
+);
 
 $bmw[$prefix . 'longitude']['timestamp'] = '2025-01-01T12:00:00.123456788Z';
 $vehicle = $setPosition($bmwID, $bmw);
 check(!$vehicle['current'] && $vehicle['location'] === $bmwFix, 'Different BMW times within one Unix second must keep the last fix.');
+check(
+    $diagnose() === 'Measurement time is invalid, missing or inconsistent.' && IPS_GetConfiguration($converterMapID) === $configBefore,
+    'Source diagnostics must identify a measurement time problem without changing saved assignments.'
+);
 
 IPS_SetProperty($converterMapID, 'VehicleMode', 'owntracks');
 IPS_SetProperty($converterMapID, 'VehiclePosition', $ownTracksID);
@@ -63,6 +108,14 @@ $ownTracks = ['_type' => 'location', 'lat' => '-33.8688', 'lon' => 151.2093, 'ts
 $ownTracksFix = ['latitude' => -33.8688, 'longitude' => 151.2093, 'timestamp' => 1735732801, 'accuracy' => 12.5];
 $vehicle = $setPosition($ownTracksID, $ownTracks);
 check($vehicle['current'] && $vehicle['location'] === $ownTracksFix, 'The module must retain the OwnTracks position and accuracy.');
+$oldFrame = $converterMap->GetIPSViewHTML();
+IPS_SetProperty($converterMapID, 'VehicleMode', 'json');
+IPS_SetProperty($converterMapID, 'VehicleJSONFormat', 'owntracks');
+IPS_ApplyChanges($converterMapID);
+check(
+    $converterMap->GetIPSViewHTML() === $oldFrame && source($converterMap, 'vehicle')['objects'][0]['location'] === $ownTracksFix,
+    'Choosing an equivalent explicit JSON format must preserve the existing IPSView token and position.'
+);
 $vehicle = $setPosition($ownTracksID, [...$ownTracks, 'lat' => 1]);
 check($vehicle['current'] && $vehicle['location'] === $ownTracksFix, 'A repeated output time must not replace the last fix.');
 
@@ -98,3 +151,50 @@ foreach (['2025-01-01T12:00:04', '2025-02-30T12:00:04Z'] as $timestamp) {
     $vehicle = $setPosition($ownTracksID, ['lat' => 1, 'lon' => 2, 'tst' => $timestamp]);
     check(!$vehicle['current'] && $vehicle['location'] === $latest, 'Invalid ISO 8601 input must keep the last normalized position.');
 }
+
+$traccarID = IPS_CreateVariable(VARIABLETYPE_STRING);
+IPS_SetProperty($converterMapID, 'VehicleJSONFormat', 'traccar');
+IPS_SetProperty($converterMapID, 'VehiclePosition', $traccarID);
+IPS_SetProperty($converterMapID, 'VehicleTimeFormat', 'default');
+IPS_ApplyChanges($converterMapID);
+check($converterMap->GetReferenceList() === [$traccarID], 'Traccar must subscribe to its configured raw JSON variable.');
+$formats = array_column($vehicleForm()['VehicleJSONFormat']['options'], 'caption', 'value');
+check($formats['traccar'] === 'Traccar', 'Traccar must be selectable from the JSON formats.');
+
+$traccar = [
+    'latitude'   => 47.7,
+    'longitude'  => 8.2,
+    'fixTime'    => '2025-01-01T14:00:04.700+02:00',
+    'deviceTime' => '2025-01-01T12:00:06Z',
+    'serverTime' => '2025-01-01T12:00:07Z',
+    'valid'      => true,
+    'accuracy'   => 14
+];
+$vehicle = $setPosition($traccarID, $traccar);
+check(
+    $vehicle['current'] && $vehicle['location'] === ['latitude' => 47.7, 'longitude' => 8.2, 'timestamp' => 1735732804, 'accuracy' => 14.0],
+    'Traccar must use fixTime and retain its accuracy.'
+);
+
+$traccar['fixTime'] = '2025-01-01T12:00:05.199Z';
+$traccar['latitude'] = 47.8;
+unset($traccar['accuracy']);
+$vehicle = $setPosition($traccarID, ['position' => $traccar]);
+$traccarFix = ['latitude' => 47.8, 'longitude' => 8.2, 'timestamp' => 1735732805, 'accuracy' => null];
+check($vehicle['current'] && $vehicle['location'] === $traccarFix, 'The Traccar forwarding envelope must also be accepted.');
+$token = bootstrap($converterMap->GetIPSViewHTML())['options']['token'];
+[$status, $body] = mapRequest($converterMap, '/hook/OpenWoIst' . $converterMapID . '/state', token: $token);
+check(
+    $status === 200 && json_decode($body, true, 64, JSON_THROW_ON_ERROR)['sources'][0]['objects'][0]['location'] === $traccarFix,
+    'The Traccar position must be identical in the native tile and IPSView state.'
+);
+
+$vehicle = $setPosition($traccarID, [...$traccar, 'valid' => false, 'fixTime' => '2025-01-01T12:00:08Z']);
+check(!$vehicle['current'] && $vehicle['location'] === $traccarFix, 'An invalid Traccar fix must keep the previous position.');
+unset($traccar['fixTime']);
+$vehicle = $setPosition($traccarID, $traccar);
+check(
+    !$vehicle['current'] && $vehicle['location'] === $traccarFix
+    && $diagnose() === 'Measurement time is invalid, missing or inconsistent.',
+    'Traccar deviceTime and serverTime must not substitute for a missing fixTime.'
+);

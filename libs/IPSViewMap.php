@@ -127,7 +127,7 @@ trait IPSViewMap
     {
         $accounts = $this->accountIDs();
         sort($accounts, SORT_NUMERIC);
-        $mode = $this->ReadPropertyString('VehicleMode');
+        $mode = $this->vehicleMode();
         $scope = [
             $accounts, $mode, $mode === 'demo' ? [] : $this->vehicleVariables()
         ];

@@ -15,6 +15,7 @@ require_once __DIR__ . '/../libs/LocationSnapshot.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
+require_once __DIR__ . '/../libs/VehicleSourceForm.php';
 
 use Burki24\SymconModuleHelper\ConfigurationFormHelper;
 use Burki24\SymconModuleHelper\DebugFlowHelper;
@@ -29,6 +30,7 @@ use OpenWoIst\LocationSnapshot;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
 use OpenWoIst\PositionConverter;
+use OpenWoIst\VehicleSourceForm;
 
 class OpenWoIst extends IPSModuleStrict
 {
@@ -43,6 +45,7 @@ class OpenWoIst extends IPSModuleStrict
     use IPSViewMap;
     use MapColorGuide;
     use MapDesign;
+    use VehicleSourceForm;
 
     private const ACCOUNT_MODULE = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
     private const DEMO_ROUTE = [
@@ -59,6 +62,7 @@ class OpenWoIst extends IPSModuleStrict
             parent::Create();
             $this->RegisterPropertyString('Accounts', '[]');
             $this->RegisterPropertyString('VehicleMode', 'off');
+            $this->RegisterPropertyString('VehicleJSONFormat', '');
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
             $this->RegisterPropertyString('VehicleTimeFormat', 'default');
             $this->RegisterPropertyString('VehicleDecimalSeparator', '.');
@@ -99,14 +103,7 @@ class OpenWoIst extends IPSModuleStrict
     {
         return $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): string
         {
-            $form = $this->LoadConfigurationForm();
-            $mode = $this->ReadPropertyString('VehicleMode');
-            $form['actions'][0]['enabled'] = $mode === 'demo';
-            $form['elements'] = $this->SetFormFieldVisibility(
-                $form['elements'],
-                ['VehicleTimeFormat', 'VehicleDecimalSeparator'],
-                PositionConverter::supports($mode)
-            );
+            $form = $this->configureVehicleForm($this->LoadConfigurationForm());
             $form['elements'][] = $this->mapDesigner(false);
             $form['elements'][] = $this->mapDesigner(true);
             return $this->EncodeConfigurationForm($form);
@@ -163,7 +160,7 @@ class OpenWoIst extends IPSModuleStrict
     {
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($Ident, $Value): void
         {
-            if ($this->HandleIPSViewHTMLPageAction($Ident, $Value)) {
+            if ($this->HandleIPSViewHTMLPageAction($Ident, $Value) || $this->handleVehicleFormAction($Ident, $Value)) {
                 return;
             }
             if ($Ident !== 'GetState') {
@@ -249,7 +246,7 @@ class OpenWoIst extends IPSModuleStrict
                 $key = LocationSnapshot::key('icloud', $id);
                 $sources[] = $this->readAccount($id, $key, $old[$key]['objects'] ?? [], $now);
             }
-            $mode = $this->ReadPropertyString('VehicleMode');
+            $mode = $this->vehicleMode();
             if ($mode !== 'off') {
                 $key = LocationSnapshot::key('vehicle', $this->vehicleTrigger(), $mode === 'fields' ? implode(',', $this->vehicleVariables()) : '');
                 $sources[] = $this->readVehicle($mode, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
@@ -354,7 +351,7 @@ class OpenWoIst extends IPSModuleStrict
         $data = null;
         try {
             if ($ids !== [] && count(array_unique($ids)) === count($ids) && array_reduce($ids, static fn ($ok, $id): bool => $ok && IPS_VariableExists($id), true)) {
-                $data = $mode === 'fields' ? $this->readCoordinateVariables($ids) : $this->readJSONVariable($ids[0], $mode);
+                $data = $this->readVehicleData($mode, $ids);
                 $source['available'] = true;
             }
         } catch (Throwable $exception) {
@@ -366,6 +363,11 @@ class OpenWoIst extends IPSModuleStrict
         }
         $source['objects'][] = LocationSnapshot::object($key, $name, $fix, $previous, true);
         return $source;
+    }
+
+    private function readVehicleData(string $mode, array $ids): ?array
+    {
+        return $mode === 'fields' ? $this->readCoordinateVariables($ids) : $this->readJSONVariable($ids[0], $mode);
     }
 
     private function readJSONVariable(int $id, string $mode): ?array
@@ -397,11 +399,11 @@ class OpenWoIst extends IPSModuleStrict
 
     private function vehicleVariables(): array
     {
-        return match ($this->ReadPropertyString('VehicleMode')) {
-            'demo'                             => [(int) $this->GetIDForIdent('DemoPosition')],
-            'json', 'bmw-cardata', 'owntracks' => [$this->ReadPropertyInteger('VehiclePosition')],
-            'fields'                           => [$this->ReadPropertyInteger('VehicleLatitude'), $this->ReadPropertyInteger('VehicleLongitude'), $this->ReadPropertyInteger('VehicleTimestamp')],
-            default                            => []
+        $mode = $this->vehicleMode();
+        return match ($mode) {
+            'demo'   => [(int) $this->GetIDForIdent('DemoPosition')],
+            'fields' => [$this->ReadPropertyInteger('VehicleLatitude'), $this->ReadPropertyInteger('VehicleLongitude'), $this->ReadPropertyInteger('VehicleTimestamp')],
+            default  => $this->isJSONVehicleMode($mode) ? [$this->ReadPropertyInteger('VehiclePosition')] : []
         };
     }
 
