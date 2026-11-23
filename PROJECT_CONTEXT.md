@@ -17,6 +17,50 @@ Token-Prüfung über einen eigenen Endpunkt bereit.
 [ADR zur Quellenanbindung](docs/adr/0001-location-sources.md) ·
 [ADR zu Kachel und IPSView](docs/adr/0002-visualization.md)
 
+## Plan für weitere Standortquellen
+
+OpenWoIst verarbeitet den iCloud-Cache, generische Symcon-Variablen sowie
+BMW-CarData-, OwnTracks- und Traccar-JSON. Smartcar und Hyundai/Kia sind
+als Fahrzeug-Voreinstellungen mit simulierten Positionswechseln in Kachel
+und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
+
+1. [ ] **Volvo, Renault Z.E. und Tronity.** Unter **Weitere Fahrzeuge** drei
+   Voreinstellungen ergänzen. Pro Quellmodul prüfen, welche Variable den
+   Zeitpunkt der Position liefert und wann sie geschrieben wird. Den
+   bestehenden Library-eigenen Positionshelper für alle drei verwenden.
+2. [ ] **Traccar aus dem Symcon Store.** Die direkte Auswahl einer
+   Traccar-Geräteinstanz prüfen. Der Adapter braucht einen eindeutig
+   erkennbaren Fix-Zeitpunkt, da `LastUpdate` auch Gerätezeit enthalten kann.
+   Solange die Instanz beide Zeiten gleich darstellt, bleibt Traccar-JSON
+   mit `fixTime` der unterstützte Weg. In diesem Fall mit Schritt 3 fortfahren.
+   [Traccar im Store](https://www.symcon.de/de/module-store/mwlf01-traccar/)
+3. [ ] **Smartphones und GPS-Tracker.** Für OwnTracks den vorhandenen
+   Konverter nutzen und als erste weitere Quelle Tractive prüfen. Anzeigename
+   und Markerfarbe gelten pro Gerät. Vor der Umsetzung einmalig festlegen,
+   wo diese Geräte im Formular neben **Fahrzeuge**, **iCloud** und
+   **GoogleCloud** erscheinen. Vorschlag ist ein Bereich **Weitere
+   Standortgeräte**. [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
+4. [ ] **Weitere Quellen über bestehende Symcon-Variablen.** Für Home Assistant
+   und GPS-Daten über MQTT jeweils ein dokumentiertes Beispiel mit dem
+   generischen OpenWoIst-JSON-Format erstellen. Einen neuen Konverter nur
+   ergänzen, wenn das Quellformat eine eigene Umwandlung erfordert.
+
+**Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
+einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub
+ist eine unterstützte Schnittstelle für Gerätestandorte Voraussetzung.
+[Google Find Hub](https://developers.google.com/nearby/fast-pair/landing-page-find-hub)
+
+**Ablauf pro Paket.** Bei „weiter“ gilt der erste offene, ausführbare Schritt.
+Auf `dev` mit zwei simulierten Positionen je Quelle prüfen, dass der Marker
+wechselt und bei einer ungültigen Meldung die letzte gültige Position
+sichtbar bleibt.
+Commit-Betreff und -Beschreibung auf Englisch liefern. Nach dem Push und
+dem Auftrag zur Abnahme regulär auf der Entwicklungsinstanz aktualisieren.
+Den Positionswechsel zusammen mit dem iCloud-Cache in Kachel und IPSView
+Desktop prüfen. Bestehende Zuordnungen und das Haussteuerungsprofil vor
+und nach der Abnahme abgleichen. Anschließend den Schritt abhaken und den
+geprüften Commit festhalten.
+
 ## Lokale Prüfungen
 
 Die PHP-Integrationstests laden die offiziellen SymconStubs. Der Standardpfad
