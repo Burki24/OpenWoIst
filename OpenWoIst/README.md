@@ -138,7 +138,7 @@ erhalten.
 **Übernommene Quelle prüfen** liest die gespeicherte Zuordnung und
 meldet das Messalter oder ein fehlendes bzw. ungültiges Feld.
 
-### Smartcar und Hyundai/Kia anschließen
+### Fahrzeug-Voreinstellungen verwenden
 
 Wähle unter **Weitere Fahrzeuge** die passende **Fahrzeugquelle** und
 ordne die drei Variablen aus derselben Fahrzeuginstanz zu.
@@ -147,6 +147,9 @@ ordne die drei Variablen aus derselben Fahrzeuginstanz zu.
 | --- | --- | --- |
 | **Smartcar** | `Latitude`, `Longitude` | `Sig_location_preciselocation_OEMUpdatedAt` als Unix-Sekunden. Aktiviere in Smartcar die zusätzliche OEM-Aktualisierungszeit für das Standortsignal. |
 | **Hyundai Bluelink / Kia Connect** | `Latitude`, `Longitude` | `PositionTimestamp` als Text im Format `JJJJMMTThhmmss` in der Symcon-Zeitzone. |
+| **Volvo** | `CurrentLatitude`, `CurrentLongitude` | `LastPositionMessage` als Unix-Sekunden. |
+| **Renault Z.E.** | `GPSLatitude`, `GPSLongitude` | `GPSUpdate` als Unix-Sekunden. Aktiviere die drei GPS-Variablen im Renault-Modul. Das Modul füllt sie bei Fahrzeugen der Phase 2. |
+| **Tronity** | `Latitude`, `Longitude` | `Timestamp` als Unix-Sekunden. Das Tronity-Modul rechnet die Zeit des Positionsdatensatzes bereits von Millisekunden um. |
 
 Die Quellmodule schreiben die Koordinaten vor der neuen Messzeit.
 OpenWoIst übernimmt bei einer neuen gültigen Messzeit die vollständige

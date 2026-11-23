@@ -66,9 +66,9 @@ final class PositionConverter
     {
         $time = $position['timestamp'];
         $position['timestamp'] = match ($source) {
-            'smartcar'    => is_int($time) ? $time : null,
-            'hyundai-kia' => self::localPositionTime($time),
-            default       => null
+            'smartcar', 'volvo', 'renault-ze', 'tronity' => is_int($time) ? $time : null,
+            'hyundai-kia'                                => self::localPositionTime($time),
+            default                                      => null
         };
         return $position;
     }

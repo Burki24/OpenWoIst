@@ -18,6 +18,8 @@
   Symcon-Variablen hinzufügen und verwalten.
 - Die Fahrzeug-Voreinstellungen für Smartcar und Hyundai Bluelink / Kia Connect
   übernehmen Koordinaten und Messzeiten aus den vorhandenen Symcon-Variablen.
+- Weitere Fahrzeug-Voreinstellungen lesen die Positionsvariablen von Volvo,
+  Renault Z.E. und Tronity.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das

@@ -20,6 +20,24 @@ trait VehicleSourceForm
             'prefix'           => 'Hyundai',
             'timestampCaption' => 'Hyundai/Kia position time',
             'timestampType'    => VARIABLETYPE_STRING
+        ],
+        'volvo' => [
+            'caption'          => 'Volvo',
+            'prefix'           => 'Volvo',
+            'timestampCaption' => 'Volvo last position message',
+            'timestampType'    => VARIABLETYPE_INTEGER
+        ],
+        'renault-ze' => [
+            'caption'          => 'Renault Z.E.',
+            'prefix'           => 'RenaultZE',
+            'timestampCaption' => 'Renault GPS update time',
+            'timestampType'    => VARIABLETYPE_INTEGER
+        ],
+        'tronity' => [
+            'caption'          => 'Tronity',
+            'prefix'           => 'Tronity',
+            'timestampCaption' => 'Tronity position record time',
+            'timestampType'    => VARIABLETYPE_INTEGER
         ]
     ];
 

@@ -13,6 +13,7 @@ $webContent = IPS_GetObjectIDByIdent('IPSViewOpenWoIst', $presetID);
 
 $smartcar = [IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_INTEGER)];
 $hyundai = [IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_STRING)];
+$additionalPresets = ['volvo' => 'Volvo', 'renault-ze' => 'RenaultZE', 'tronity' => 'Tronity'];
 $rows = [
     [
         'CarName'           => 'Smartcar test',
@@ -50,6 +51,14 @@ try {
     $options = array_column($vehicleList['form'][1]['options'], null, 'value');
     check(isset($options['smartcar'], $options['hyundai-kia']), 'The vehicle list offers both provider presets.');
     $formInputs = array_column(array_slice($vehicleList['form'], 2), 'items', 'caption');
+    $columns = array_column($vehicleList['columns'], null, 'name');
+    foreach ($additionalPresets as $mode => $prefix) {
+        check(isset($options[$mode]), 'The vehicle list offers the ' . $prefix . ' preset.');
+        $inputs = $options[$mode]['items'] ?? $formInputs[$options[$mode]['caption']];
+        $keys = [$prefix . 'Latitude', $prefix . 'Longitude', $prefix . 'Timestamp'];
+        check(array_column($inputs, 'name') === $keys && $inputs[2]['validVariableTypes'] === [VARIABLETYPE_INTEGER], 'Each new preset selects the two coordinates and an integer position time.');
+        check(array_keys(array_filter(array_intersect_key($columns, array_flip($keys)), static fn (array $column): bool => $column['save'] === true)) === $keys, 'Each new preset stores its three variable IDs.');
+    }
     foreach (['smartcar' => ['SmartcarTimestamp', VARIABLETYPE_INTEGER], 'hyundai-kia' => ['HyundaiTimestamp', VARIABLETYPE_STRING]] as $mode => [$name, $type]) {
         $inputs = array_column($options[$mode]['items'] ?? $formInputs[$options[$mode]['caption']], null, 'name');
         check($inputs[$name]['validVariableTypes'] === [$type], 'Each preset offers a selector of the appropriate timestamp type.');
@@ -92,6 +101,60 @@ try {
     [$status, $body] = mapRequest($presetMap, dirname($presetAccess['page']) . '/state', token: $presetAccess['token']);
     check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $updated, 'Both presets deliver identical fixes to the tile and IPSView.');
     check(IPS_GetObjectIDByIdent('IPSViewOpenWoIst', $presetID) === $webContent && $presetMap->GetIPSViewHTML() === $embed, 'Position changes must preserve the IPSView variable and embedding.');
+
+    $fixtures = [];
+    $time = 1735732900;
+    foreach ($additionalPresets as $mode => $prefix) {
+        $ids = [IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLETYPE_INTEGER)];
+        $initial = ['latitude' => 53.0 + count($fixtures), 'longitude' => -1.25, 'timestamp' => $time, 'accuracy' => null];
+        SetValueFloat($ids[0], $initial['latitude']);
+        SetValueFloat($ids[1], $initial['longitude']);
+        SetValueInteger($ids[2], $initial['timestamp']);
+        $rows[] = [
+            'CarName'              => $prefix . ' test',
+            'CarMode'              => $mode,
+            $prefix . 'Latitude'   => $ids[0],
+            $prefix . 'Longitude'  => $ids[1],
+            $prefix . 'Timestamp'  => $ids[2]
+        ];
+        $fixtures[] = ['ids' => $ids, 'initial' => $initial, 'longitudeFirst' => $mode === 'volvo'];
+    }
+    $savedVehicles = json_encode($rows, JSON_THROW_ON_ERROR);
+    IPS_SetProperty($presetID, 'Vehicles', $savedVehicles);
+    IPS_ApplyChanges($presetID);
+    $all = tileState($presetMap)['sources'];
+    check(count($all) === 7 && array_slice($all, 0, 4) === $updated, 'Existing iCloud, demo, and vehicle assignments survive adding the new presets.');
+    $embed = $presetMap->GetIPSViewHTML();
+    $expected = $all;
+    foreach ($fixtures as $index => $fixture) {
+        [$latitude, $longitude, $timestamp] = $fixture['ids'];
+        $sourceIndex = $index + 4;
+        check($all[$sourceIndex]['objects'][0]['location'] === $fixture['initial'], 'The initial source uses the original Unix position time.');
+        $secondFix = ['latitude' => $fixture['initial']['latitude'] + 0.5, 'longitude' => -0.75, 'timestamp' => $time + 1, 'accuracy' => null];
+        $coordinates = $fixture['longitudeFirst']
+            ? [$longitude => $secondFix['longitude'], $latitude => $secondFix['latitude']]
+            : [$latitude => $secondFix['latitude'], $longitude => $secondFix['longitude']];
+        $firstCoordinate = array_key_first($coordinates);
+        SetValueFloat($firstCoordinate, $coordinates[$firstCoordinate]);
+        $presetMap->Update();
+        check(tileState($presetMap)['sources'] === $expected, 'A partial coordinate write with the previous time must not move any vehicle.');
+        $lastCoordinate = array_key_last($coordinates);
+        SetValueFloat($lastCoordinate, $coordinates[$lastCoordinate]);
+        SetValueInteger($timestamp, 0);
+        $presetMap->MessageSink(1, $timestamp, VM_UPDATE, []);
+        $expected[$sourceIndex]['objects'][0]['current'] = false;
+        check(tileState($presetMap)['sources'] === $expected, 'A missing position time retains the last known fix.');
+
+        SetValueInteger($timestamp, $secondFix['timestamp']);
+        $presetMap->MessageSink(1, $timestamp, VM_UPDATE, []);
+        $expected[$sourceIndex]['objects'][0]['location'] = $secondFix;
+        $expected[$sourceIndex]['objects'][0]['current'] = true;
+        check(tileState($presetMap)['sources'] === $expected, 'Only the matching marker moves once the provider writes the new position time.');
+    }
+    $presetAccess = bootstrap($embed)['options'];
+    [$status, $body] = mapRequest($presetMap, dirname($presetAccess['page']) . '/state', token: $presetAccess['token']);
+    check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $expected, 'IPSView shows the same new fixes as the tile.');
+    check(IPS_GetProperty($presetID, 'Vehicles') === $savedVehicles && IPS_GetObjectIDByIdent('IPSViewOpenWoIst', $presetID) === $webContent && $presetMap->GetIPSViewHTML() === $embed, 'Live positions preserve the saved assignments and IPSView embedding.');
 } finally {
     date_default_timezone_set($originalTimezone);
 }
