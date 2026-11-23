@@ -45,10 +45,15 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    abgenommen. Zwei simulierte Positionen und eine Nicht-Positionsmeldung
    bestätigten Positionswechsel, letzte bekannte Position und eigene
    Markerfarbe. iCloud-Marker, Testfahrzeug, Zuordnungen und das
-     Haussteuerungsprofil blieben erhalten. Der optionale Tractive-Adapter
-     übernimmt Koordinaten und Messzeit aus einer I/O-Antwort. Die Verträge
-     von 1.14 und 1.19 Beta sind mit simulierten Antworten geprüft. Die
-     Tractive-I/O-Schnittstelle ist intern. Der Live-Abruf ist offen.
+   Haussteuerungsprofil blieben erhalten.
+
+   Nach dem regulären `dev`-Update auf `69bad22` bestätigten simulierte
+   Tractive-I/O-Antworten für 1.14 und 1.19 Beta den Positionswechsel mit
+   ursprünglicher Messzeit in der nativen Kachel und in IPSView Desktop.
+   iCloud-Marker und Testfahrzeug blieben sichtbar. Die Prüfsummen der
+   Testkonfiguration und des Haussteuerungsprofils stimmten nach dem Test
+   mit dem Ausgangsstand überein. Die Rückmeldung von demel42 zur Nutzung
+   der internen I/O-Schnittstelle steht aus. Der Live-Abruf ist offen.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
    (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation
