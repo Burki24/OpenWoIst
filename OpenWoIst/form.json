@@ -26,6 +26,7 @@
             "type": "Select",
             "name": "VehicleMode",
             "caption": "Vehicle source",
+            "onChange": "$convertOptions = in_array($VehicleMode, ['bmw-cardata', 'owntracks'], true); IPS_UpdateFormField($id, 'VehicleTimeFormat', 'visible', $convertOptions); IPS_UpdateFormField($id, 'VehicleDecimalSeparator', 'visible', $convertOptions);",
             "options": [
                 {
                     "caption": "Disabled",
@@ -42,6 +43,14 @@
                 {
                     "caption": "Separate position variables",
                     "value": "fields"
+                },
+                {
+                    "caption": "BMW CarData (JSON)",
+                    "value": "bmw-cardata"
+                },
+                {
+                    "caption": "OwnTracks (JSON)",
+                    "value": "owntracks"
                 }
             ]
         },
@@ -60,6 +69,46 @@
                     "caption": "JSON position variable",
                     "validVariableTypes": [
                         3
+                    ]
+                },
+                {
+                    "type": "Select",
+                    "name": "VehicleTimeFormat",
+                    "caption": "Measurement time format",
+                    "visible": false,
+                    "options": [
+                        {
+                            "caption": "Source default",
+                            "value": "default"
+                        },
+                        {
+                            "caption": "ISO 8601 with time zone",
+                            "value": "iso8601"
+                        },
+                        {
+                            "caption": "Unix seconds",
+                            "value": "unix-seconds"
+                        },
+                        {
+                            "caption": "Unix milliseconds",
+                            "value": "unix-milliseconds"
+                        }
+                    ]
+                },
+                {
+                    "type": "Select",
+                    "name": "VehicleDecimalSeparator",
+                    "caption": "Coordinate decimal separator",
+                    "visible": false,
+                    "options": [
+                        {
+                            "caption": "Decimal point",
+                            "value": "."
+                        },
+                        {
+                            "caption": "Decimal comma",
+                            "value": ","
+                        }
                     ]
                 },
                 {

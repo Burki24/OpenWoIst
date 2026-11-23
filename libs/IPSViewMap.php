@@ -128,9 +128,13 @@ trait IPSViewMap
         $accounts = $this->accountIDs();
         sort($accounts, SORT_NUMERIC);
         $mode = $this->ReadPropertyString('VehicleMode');
-        return hash('sha256', $this->EncodeVisualizationHTMLJSON([
+        $scope = [
             $accounts, $mode, $mode === 'demo' ? [] : $this->vehicleVariables()
-        ]));
+        ];
+        if (PositionConverter::supports($mode)) {
+            $scope[] = [$this->ReadPropertyString('VehicleTimeFormat'), $this->ReadPropertyString('VehicleDecimalSeparator')];
+        }
+        return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 
     private function ipsViewScope(string $origin): string

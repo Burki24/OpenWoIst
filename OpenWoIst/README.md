@@ -91,32 +91,24 @@ SetValueString($positionsVariableID, json_encode([
 ], JSON_THROW_ON_ERROR));
 ```
 
-### BMW CarData und OwnTracks konvertieren
+### BMW CarData und OwnTracks anschließen
 
-Kopiere [PositionConverter.ips.php](../libs/PositionConverter.ips.php) in ein
-Symcon-PHP-Skript. Lege pro Fahrzeug eine String-Variable an und wähle sie
-in OpenWoIst als **Positionsvariable (JSON)**. Rufe den Konverter aus dem
-liefernden Skript auf, sobald eine Positionsmeldung vorliegt.
+Wähle unter **Fahrzeugquelle** den Modus **BMW CarData (JSON)** oder
+**OwnTracks (JSON)** und ordne unter **Positionsvariable (JSON)** die
+String-Variable mit den Originaldaten zu. OpenWoIst konvertiert die
+Daten direkt beim Einlesen.
 
-```php
-$result = IPS_RunScriptWaitEx($converterID, [
-    'Source'     => 'owntracks',
-    'PositionID' => $vehiclePositionID,
-    'Payload'    => GetValueString($ownTracksPositionID)
-]);
-```
+Für BMW kann die Variable das Ergebnis von `BMW_getTelematicData`,
+eine CarData-REST-Antwort oder eine Stream-Meldung enthalten. Beide
+Koordinaten müssen denselben Messzeitpunkt haben. OwnTracks liefert
+`lat`, `lon`, `tst` und optional `acc` in Metern.
 
-Für BMW verwende `bmw-cardata` und übergib das mit `json_encode` codierte
-Ergebnis von `BMW_getTelematicData($bmwInstanceID)` oder eine CarData-Stream-
-Meldung. Beide Koordinaten müssen denselben Messzeitpunkt haben. OwnTracks
-liefert `lat`, `lon`, `tst` und optional die Genauigkeit `acc` in Metern.
-
-`TimeFormat` akzeptiert `iso8601` mit Zeitzone, `unix-seconds` und
-`unix-milliseconds`. Standard ist ISO-8601 für BMW und Unix-Sekunden für
-OwnTracks. `DecimalSeparator` ist standardmäßig `.` und lässt sich für
-numerische Strings auf `,` setzen. Das Skript meldet `published` oder
-`ignored` mit Grund. Bei ungültigen Daten oder einer gleichen oder älteren
-Messzeit behält die Zielvariable ihren bisherigen Wert.
+Unter **Format der Messzeit** gilt als Standard ISO 8601 mit Zeitzone
+für BMW und Unix-Sekunden für OwnTracks. Bei Bedarf sind auch
+Unix-Millisekunden und für Koordinatenstrings das Dezimalkomma wählbar.
+Ungültige oder ältere Meldungen lassen die letzte gültige Position auf
+der Karte stehen. Bei gleicher Messzeit bleiben die bisherigen Koordinaten
+erhalten.
 
 ## Öffentliche Funktionen
 
