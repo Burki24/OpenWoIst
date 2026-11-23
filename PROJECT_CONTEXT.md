@@ -30,12 +30,13 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    die Position. iCloud-Marker und Testfahrzeug blieben sichtbar. Der
    Vorher-nachher-Abgleich bestätigte die unveränderten Zuordnungen und das
    unveränderte Haussteuerungsprofil.
-2. [ ] **Traccar aus dem Symcon Store.** Zurückgestellt. In 1.2.0 fällt
-   `LastUpdate` auf die Gerätezeit zurück. Der Splitter liefert den
-   ursprünglichen `fixTime` erst bei einem neuen Serverabruf. Bis ein
-   eindeutig erkennbarer Fix-Zeitpunkt lokal verfügbar ist, bleibt
-   Traccar-JSON mit `fixTime` der unterstützte Weg.
-   [Traccar im Store](https://www.symcon.de/de/module-store/mwlf01-traccar/)
+2. [x] **Traccar-Importweg festgelegt.** Traccar-JSON mit `fixTime` aus
+   einer Symcon-String-Variable bleibt der unterstützte Weg. Der Traccar
+   Server kann Positionsmeldungen direkt über MQTT weiterleiten. Die
+   Kopplung an das Symcon-Store-Modul ist aus dem Plan genommen. Sein
+   öffentlich verlinktes GitHub-Repository lieferte am 23.11.2026 HTTP 404.
+   [Symcon Store](https://www.symcon.de/de/module-store/mwlf01-traccar/) ·
+   [Traccar-Weiterleitung](https://www.traccar.org/forward/)
 3. [x] **Smartphones und GPS-Tracker.** OwnTracks ist nach dem regulären
    `dev`-Update auf `963c45e` in der nativen Kachel und in IPSView Desktop
    abgenommen. Zwei simulierte Positionen und eine Nicht-Positionsmeldung
