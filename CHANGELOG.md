@@ -10,6 +10,9 @@
 
 ## Neu
 
+- **OpenWoIst Tractive** stellt die Position eines Tractive-Trackers mit
+  seiner Messzeit als JSON-Variable für die Karte bereit.
+
 - Das Quellenformular ist in **Fahrzeuge**, **iCloud** und **GoogleCloud**
   gegliedert. Die iCloud-Liste zeigt die Geräte der zugewiesenen Kontocaches.
 - Einzelne Geräte und Fahrzeuge erhalten eigene Markerfarben in Kachel und

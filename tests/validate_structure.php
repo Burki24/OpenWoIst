@@ -33,4 +33,11 @@ foreach ($json('libs/vendor/leaflet/manifest.json')['files'] as $file => $checks
 
 $json('OpenWoIst/form.json');
 $json('OpenWoIst/locale.json');
+$adapter = $json('OpenWoIstTractive/module.json');
+if (!preg_match($guid, $adapter['id']) || in_array($adapter['id'], [$library['id'], $module['id']], true)
+    || $adapter['prefix'] !== 'OWIT' || !is_file($root . '/OpenWoIstTractive/README.md')) {
+    throw new RuntimeException('Invalid Tractive adapter metadata.');
+}
+$json('OpenWoIstTractive/form.json');
+$json('OpenWoIstTractive/locale.json');
 echo "OpenWoIst structure and bundled assets passed.\n";

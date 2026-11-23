@@ -253,5 +253,6 @@ require __DIR__ . '/position-converter.php';
 require __DIR__ . '/source-selection.php';
 require __DIR__ . '/position-presets.php';
 require __DIR__ . '/tracker-sources.php';
+require __DIR__ . '/tractive-adapter.php';
 echo "OpenWoIst source and tile integration passed.\n";
 require __DIR__ . '/validate_structure.php';

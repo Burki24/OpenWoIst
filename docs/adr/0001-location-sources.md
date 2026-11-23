@@ -12,6 +12,21 @@ und Traccar-Daten aus zugewiesenen JSON-Variablen beim Einlesen.
 Gespeicherte Anbieterwerte in `VehicleMode` gelten weiter, solange kein
 eigenes JSON-Format gewählt wird.
 
+Für Tractive übernimmt eine optionale Adapterinstanz Koordinaten und
+Messzeit aus derselben Antwort der zugewiesenen Tractive-I/O-Instanz. Die
+Karte liest nur die normalisierte Positionsvariable. Der Adapter verwendet
+den lokalen Symcon-Datenfluss mit einer expliziten Tracker-Zuordnung.
+Ein Abruf verursacht einen zusätzlichen Tractive-Request. Standard ist der
+manuelle Abruf. Der Adapter enthält eigenen Code und verwendet die für die
+Kompatibilität erforderlichen Schnittstellenkennungen des Quellmoduls.
+Das Quellmodul steht unter
+[CC BY-NC-SA 4.0](https://github.com/demel42/IPSymconTractiveGPS/blob/main/LICENSE.md).
+Die [Tractive-AGB](https://assets.tractive.com/static/legal/de/terms-of-service.pdf)
+verlangen eine bestimmungsgemäße Nutzung. Tractive beschreibt
+[Smart-Home-Integrationen](https://tractive.com/blog/de/technologie/lassen-sich-haustier-tracker-in-smart-home-geraete-oder-sprachassistenten-integrieren).
+Eine ausdrückliche Aussage von Tractive zu diesem konkreten Abrufweg liegt
+der Entscheidung nicht zugrunde.
+
 Die Geräteauswahl speichert dieselben kontobezogenen, opaken Kennungen wie
 der Kartenstand. Ohne aktivierte Einschränkung erscheinen weiterhin alle Geräte.
 Weitere Fahrzeuge haben eigene Variablenzuordnungen. Die bisherige Einzelquelle

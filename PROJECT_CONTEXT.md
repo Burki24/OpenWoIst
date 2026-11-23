@@ -45,11 +45,10 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    abgenommen. Zwei simulierte Positionen und eine Nicht-Positionsmeldung
    bestätigten Positionswechsel, letzte bekannte Position und eigene
    Markerfarbe. iCloud-Marker, Testfahrzeug, Zuordnungen und das
-   Haussteuerungsprofil blieben erhalten. Tractive ist zurückgestellt.
-   Die Store-Versionen 1.14 und 1.19 schreiben
-   `LastPositionMessage` vor den Koordinaten. Ihr Positions-JSON enthält
-   Koordinaten und Höhe, die Messzeit steht separat. Ein gemeinsam
-   bereitgestellter Positionsdatensatz mit Messzeit ermöglicht die Anbindung.
+     Haussteuerungsprofil blieben erhalten. Der optionale Tractive-Adapter
+     übernimmt Koordinaten und Messzeit aus einer I/O-Antwort. Die Verträge
+     von 1.14 und 1.19 Beta sind mit simulierten Antworten geprüft. Die
+     Tractive-I/O-Schnittstelle ist intern. Der Live-Abruf ist offen.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
    (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation

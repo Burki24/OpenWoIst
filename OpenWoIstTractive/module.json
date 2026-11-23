@@ -1,0 +1,16 @@
+{
+    "id": "{51FAD7B1-C71B-4A10-BF6A-72FA62649771}",
+    "name": "OpenWoIst Tractive",
+    "type": 3,
+    "vendor": "",
+    "aliases": [],
+    "parentRequirements": [
+        "{94B20D14-415B-1E19-8EA4-839F948B6CBE}"
+    ],
+    "childRequirements": [],
+    "implemented": [
+        "{91C54CDA-594C-1D6F-6BD8-57545408677F}"
+    ],
+    "prefix": "OWIT",
+    "url": "https://github.com/Burki24/OpenWoIst/blob/dev/OpenWoIstTractive/README.md"
+}

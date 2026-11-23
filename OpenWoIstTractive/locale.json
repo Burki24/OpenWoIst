@@ -1,0 +1,18 @@
+{
+    "translations": {
+        "de": {
+            "Tractive tracker": "Tractive-Tracker",
+            "Retrieve position": "Position abrufen",
+            "Manually only": "Nur manuell",
+            "Every 5 minutes": "Alle 5 Minuten",
+            "Every 10 minutes": "Alle 10 Minuten",
+            "Every 15 minutes": "Alle 15 Minuten",
+            "Connect the adapter to the existing Tractive I/O of the selected tracker. Each retrieval triggers an additional Tractive request.": "Verbinde den Adapter mit der vorhandenen Tractive-I/O-Instanz des ausgewählten Trackers. Jeder Abruf löst eine zusätzliche Anfrage bei Tractive aus.",
+            "Retrieve position now": "Position jetzt abrufen",
+            "Select a tracker and connect its Tractive I/O": "Tracker auswählen und dessen Tractive-I/O-Instanz verbinden",
+            "Tractive module version unsupported": "Version des Tractive-Moduls wird nicht unterstützt",
+            "No valid Tractive position received": "Keine gültige Tractive-Position empfangen",
+            "Position (OpenWoIst JSON)": "Position (OpenWoIst-JSON)"
+        }
+    }
+}

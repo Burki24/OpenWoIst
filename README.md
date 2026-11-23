@@ -22,6 +22,9 @@ Die Bibliothek wird über **Module Control** aus einem bereitgestellten
 Git-Repository eingebunden. Anschließend eine Instanz **OpenWoIst** anlegen
 und die Quellen gemäß der [Modulanleitung](OpenWoIst/README.md) auswählen.
 
+Für eingerichtete Tractive-Tracker gibt es die optionale Adapterinstanz
+[OpenWoIst Tractive](OpenWoIstTractive/README.md).
+
 ## Lizenz
 
 Der OpenWoIst-Quellcode steht unter der [PolyForm Noncommercial License 1.0.0](LICENSE).
