@@ -56,7 +56,7 @@ check(
 $sourceOptions = array_column($form['VehicleMode']['options'], 'caption', 'value');
 $formatOptions = array_column($form['VehicleJSONFormat']['options'], 'caption', 'value');
 check(
-    $sourceOptions['bmw-cardata'] === 'JSON variable' && $formatOptions[''] === 'BMW CarData',
+    $sourceOptions['bmw-cardata'] === 'One JSON variable' && $formatOptions[''] === 'BMW CarData',
     'A stored BMW mode must appear as JSON with the corresponding format selected.'
 );
 check(IPS_GetConfiguration($converterMapID) === $configBefore, 'Opening the grouped form must not change saved assignments.');

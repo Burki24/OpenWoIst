@@ -20,7 +20,7 @@ check(array_slice(array_column($form['elements'], 'caption'), 0, 4) === ['Vehicl
 $columns = array_column($panels['TrackerSources']['items'][0]['columns'], null, 'name');
 check($columns['TrackerPosition']['edit']['validVariableTypes'] === [VARIABLETYPE_STRING] && $columns['TrackerMarkerColor']['edit']['type'] === 'SelectColor', 'Tracker entries have a JSON variable input and an individual marker color.');
 $trackerFormats = array_column($columns['TrackerFormat']['edit']['options'], 'caption', 'value');
-check($columns['TrackerFormat']['add'] === 'owntracks' && $trackerFormats === ['owntracks' => 'OwnTracks', 'json' => 'OpenWoIst (Home Assistant / MQTT-GPS)'], 'The format selector names Home Assistant and MQTT-GPS without changing the saved values or default.');
+check($columns['TrackerFormat']['add'] === 'owntracks' && $trackerFormats === ['owntracks' => 'OwnTracks', 'json' => 'OpenWoIst JSON'], 'The format selector uses the shared format name while preserving both stored values and the default.');
 
 $mainTracker = IPS_CreateVariable(VARIABLETYPE_STRING);
 $otherTracker = IPS_CreateVariable(VARIABLETYPE_STRING);

@@ -29,7 +29,7 @@ $vehicleForm = $vehicleList['form'];
 check(array_column($vehicleList['columns'], null, 'name')['CarMarkerColor']['edit']['type'] === 'SelectColor', 'The vehicle list exposes a per-vehicle color.');
 $jsonInputs = $vehicleForm[1]['options'][0]['items'] ?? $vehicleForm[2]['items'];
 $coordinateInputs = $vehicleForm[1]['options'][1]['items'] ?? $vehicleForm[3]['items'];
-check(in_array('traccar', array_column($jsonInputs[0]['options'], 'value'), true) && array_column($coordinateInputs, 'name') === ['CarLatitude', 'CarLongitude', 'CarTimestamp'], 'Each vehicle can configure Traccar or three coordinate inputs.');
+check(in_array('traccar', array_column($jsonInputs[0]['options'], 'value'), true) && array_column(array_filter($coordinateInputs, static fn (array $item): bool => $item['type'] === 'SelectVariable'), 'name') === ['CarLatitude', 'CarLongitude', 'CarTimestamp'], 'Each vehicle can configure Traccar or three coordinate inputs.');
 check(IPS_GetConfiguration($selectionID) === $before, 'Opening the picker must not modify assignments.');
 
 $initialAccess = bootstrap($selectionMap->GetIPSViewHTML())['options'];

@@ -63,9 +63,9 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Zuordnungen und das Haussteuerungsprofil blieben erhalten.
    [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
 
-**Formularüberarbeitung.** Nach der Umsetzung der Importwege prüfen, welche
-Einträge sich zusammenfassen lassen und welche Bezeichnungen und Hinweise
-die Auswahl und Zuordnung im Formular verständlicher machen.
+**Formularüberarbeitung.** Die Fahrzeugliste bietet eine JSON-Variable oder
+drei Positionsvariablen mit gemeinsamer Zuordnung und Anbieter-Voreinstellung.
+Die Abnahme im Konsolenformular steht aus.
 
 **Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
 einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub

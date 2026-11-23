@@ -5,8 +5,9 @@
 - OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
   sichtbar. Die Bedienelemente passen in eine Zeile.
-- Die Auswahl des JSON-Formats nennt Home Assistant und MQTT-GPS und zeigt,
-  welche Positionsvariable benötigt wird.
+- Die Fahrzeugliste bietet **Eine JSON-Variable** oder **Drei Positionsvariablen**
+  an. Fahrzeug-Voreinstellungen stehen bei den drei Positionsvariablen.
+  Home Assistant und MQTT-GPS verwenden die Auswahl **OpenWoIst-JSON**.
 
 ## Neu
 

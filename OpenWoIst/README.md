@@ -103,7 +103,7 @@ das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/servi
 sendet die Quelle direkt dorthin. Sende eine erste Meldung auf das gewünschte
 Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
 **String** an. Wähle in OpenWoIst unter **Weitere Standortgeräte → Standortgeräte**
-das JSON-Format **OpenWoIst (Home Assistant / MQTT-GPS)** und ordne die jeweilige
+das JSON-Format **OpenWoIst-JSON** und ordne die jeweilige
 String-Variable zu.
 
 ### Home Assistant
@@ -171,12 +171,13 @@ Die Liste zeigt die Namen und Quellenarten der hinzugefügten Fahrzeuge.
 Die zuvor konfigurierte Einzelquelle steht weiterhin unter **Bisherige
 Fahrzeugquelle und Testfahrzeug**.
 
-- **JSON-Variable** zeigt einen Variablenselektor und die Wahl des
-  **JSON-Formats**. Das Format **OpenWoIst** erwartet `latitude` und
+- **Eine JSON-Variable** zeigt einen Variablenselektor und die Wahl des
+  **JSON-Formats**. **OpenWoIst-JSON** erwartet `latitude` und
   `longitude` in Grad, `timestamp` als ganze Unix-Sekunde und optional
   `horizontalAccuracy` in Metern.
-- **Einzelne Positionsvariablen** erwartet zwei numerische Koordinatenvariablen
-  und eine ganzzahlige Messzeitvariable. Der Datenlieferant setzt die
+- **Drei Positionsvariablen** erwartet je eine Variable für Breitengrad,
+  Längengrad und Messzeit. **Allgemein (Unix-Sekunden)** verwendet eine
+  ganzzahlige Messzeitvariable. Der Datenlieferant setzt die
   Messzeitvariable vor dem Schreiben beider Koordinaten auf `0` und schreibt
   zuletzt die neue positive Messzeit. Jede neue Messung erhält eine höhere
   Messzeit. So gehören beide übernommenen Koordinaten zur selben Messung.
@@ -194,7 +195,7 @@ SetValueString($positionsVariableID, json_encode([
 
 ### BMW CarData, OwnTracks und Traccar anschließen
 
-Wähle **JSON-Variable** und das passende **JSON-Format**. Ordne unter
+Wähle **Eine JSON-Variable** und das passende **JSON-Format**. Ordne unter
 **Positionsvariable (JSON)** die String-Variable mit den Originaldaten zu.
 OpenWoIst konvertiert sie beim Einlesen.
 
@@ -231,7 +232,7 @@ Topic per MQTT 3.1.1 abonnieren. [Traccar-Weiterleitung](https://www.traccar.org
 2. Abonniere das Topic mit dem **MQTT Client** in Symcon. Lege ein
    **MQTT Client Device** mit einer Nutzdatenvariable vom Typ **String** an.
 3. Wähle in OpenWoIst unter **Fahrzeuge → Weitere Fahrzeuge** die Quelle
-   **JSON-Variable** und das Format **Traccar**. Ordne die String-Variable zu.
+   **Eine JSON-Variable** und das Format **Traccar**. Ordne die String-Variable zu.
 
 Eine gekürzte Testmeldung enthält die Position samt GPS-Messzeit.
 
@@ -254,8 +255,9 @@ zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
 ### Fahrzeug-Voreinstellungen verwenden
 
-Wähle unter **Weitere Fahrzeuge** die passende **Fahrzeugquelle** und
-ordne die drei Variablen aus derselben Fahrzeuginstanz zu.
+Wähle unter **Weitere Fahrzeuge** die Fahrzeugquelle **Drei Positionsvariablen**,
+dann die passende **Voreinstellung**. Ordne die drei Variablen aus derselben
+Fahrzeuginstanz zu.
 
 | Voreinstellung | Koordinaten | Messzeit |
 | --- | --- | --- |

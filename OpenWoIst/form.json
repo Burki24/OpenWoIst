@@ -35,11 +35,11 @@
                                     "value": "demo"
                                 },
                                 {
-                                    "caption": "JSON variable",
+                                    "caption": "One JSON variable",
                                     "value": "json"
                                 },
                                 {
-                                    "caption": "Separate position variables",
+                                    "caption": "Three position variables",
                                     "value": "fields"
                                 }
                             ]
@@ -52,7 +52,7 @@
                             "onChange": "IPS_RequestAction($id, 'UpdateVehicleForm', json_encode([$VehicleMode, $VehicleJSONFormat]));",
                             "options": [
                                 {
-                                    "caption": "OpenWoIst",
+                                    "caption": "OpenWoIst JSON",
                                     "value": "json"
                                 },
                                 {
@@ -292,7 +292,7 @@
                         {
                             "name": "TrackerFormat",
                             "caption": "JSON format",
-                            "width": "280px",
+                            "width": "170px",
                             "add": "owntracks",
                             "edit": {
                                 "type": "Select",
@@ -302,7 +302,7 @@
                                         "value": "owntracks"
                                     },
                                     {
-                                        "caption": "OpenWoIst (Home Assistant / MQTT-GPS)",
+                                        "caption": "OpenWoIst JSON",
                                         "value": "json"
                                     }
                                 ]
@@ -335,7 +335,7 @@
                 },
                 {
                     "type": "Label",
-                    "caption": "For Home Assistant or MQTT GPS, select a string variable containing a complete position in OpenWoIst format."
+                    "caption": "Use OpenWoIst JSON for a complete position from sources such as Home Assistant or MQTT GPS."
                 }
             ]
         },

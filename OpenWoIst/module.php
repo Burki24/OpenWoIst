@@ -457,16 +457,19 @@ class OpenWoIst extends IPSModuleStrict
         $rows = json_decode($this->ReadPropertyString('Vehicles'), true, 8);
         foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
             $kind = $row['CarMode'] ?? null;
-            $format = $row['CarFormat'] ?? 'json';
-            if (!is_string($kind) || ($kind !== 'fields' && $kind !== 'json' && !isset(self::VEHICLE_PRESETS[$kind]))
-                || ($kind === 'json' && (!is_string($format) || !$this->isJSONVehicleMode($format)))) {
+            $mode = match ($kind) {
+                'json'   => $row['CarFormat'] ?? 'json',
+                'fields' => $row['CarPreset'] ?? 'fields',
+                default  => null
+            };
+            if (!is_string($mode)
+                || ($kind === 'json' && !$this->isJSONVehicleMode($mode))
+                || ($kind === 'fields' && $mode !== 'fields' && !isset(self::VEHICLE_PRESETS[$mode]))) {
                 continue;
             }
-            $mode = $kind === 'json' ? $format : $kind;
-            $prefix = self::VEHICLE_PRESETS[$mode]['prefix'] ?? 'Car';
             $ids = $kind === 'json'
                 ? [$row['CarPosition'] ?? 0]
-                : [$row[$prefix . 'Latitude'] ?? 0, $row[$prefix . 'Longitude'] ?? 0, $row[$prefix . 'Timestamp'] ?? 0];
+                : [$row['CarLatitude'] ?? 0, $row['CarLongitude'] ?? 0, $row['CarTimestamp'] ?? 0];
             if (count(array_filter($ids, static fn ($id): bool => is_int($id) && $id > 0)) !== count($ids) || count(array_unique($ids)) !== count($ids)) {
                 continue;
             }

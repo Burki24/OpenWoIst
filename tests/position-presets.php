@@ -16,19 +16,21 @@ $hyundai = [IPS_CreateVariable(VARIABLETYPE_FLOAT), IPS_CreateVariable(VARIABLET
 $additionalPresets = ['volvo' => 'Volvo', 'renault-ze' => 'RenaultZE', 'tronity' => 'Tronity'];
 $rows = [
     [
-        'CarName'           => 'Smartcar test',
-        'CarMode'           => 'smartcar',
-        'SmartcarLatitude'  => $smartcar[0],
-        'SmartcarLongitude' => $smartcar[1],
-        'SmartcarTimestamp' => $smartcar[2],
-        'CarMarkerColor'    => 0x117744
+        'CarName'        => 'Smartcar test',
+        'CarMode'        => 'fields',
+        'CarPreset'      => 'smartcar',
+        'CarLatitude'    => $smartcar[0],
+        'CarLongitude'   => $smartcar[1],
+        'CarTimestamp'   => $smartcar[2],
+        'CarMarkerColor' => 0x117744
     ],
     [
-        'CarName'          => 'Hyundai test',
-        'CarMode'          => 'hyundai-kia',
-        'HyundaiLatitude'  => $hyundai[0],
-        'HyundaiLongitude' => $hyundai[1],
-        'HyundaiTimestamp' => $hyundai[2]
+        'CarName'      => 'Hyundai test',
+        'CarMode'      => 'fields',
+        'CarPreset'    => 'hyundai-kia',
+        'CarLatitude'  => $hyundai[0],
+        'CarLongitude' => $hyundai[1],
+        'CarTimestamp' => $hyundai[2]
     ]
 ];
 
@@ -49,19 +51,17 @@ try {
     $form = json_decode($presetMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
     $vehicleList = array_column($form['elements'][0]['items'], null, 'name')['Vehicles'];
     $options = array_column($vehicleList['form'][1]['options'], null, 'value');
-    check(isset($options['smartcar'], $options['hyundai-kia']), 'The vehicle list offers both provider presets.');
+    check(array_keys($options) === ['json', 'fields'] && array_column($options, 'caption') === ['One JSON variable', 'Three position variables'], 'The vehicle dialog starts with exactly the two input types.');
     $formInputs = array_column(array_slice($vehicleList['form'], 2), 'items', 'caption');
+    $jsonInputs = array_column($options['json']['items'] ?? $formInputs[$options['json']['caption']], null, 'name');
+    $coordinateInputs = $options['fields']['items'] ?? $formInputs[$options['fields']['caption']];
+    check(array_column($jsonInputs['CarFormat']['options'], 'value') === ['json', 'bmw-cardata', 'owntracks', 'traccar'] && $jsonInputs['CarPosition']['validVariableTypes'] === [VARIABLETYPE_STRING], 'The JSON input offers the existing formats and a single string variable.');
+    $coordinateInputs = array_column($coordinateInputs, null, 'name');
+    check(array_column($coordinateInputs['CarPreset']['options'], 'value') === ['fields', 'smartcar', 'hyundai-kia', ...array_keys($additionalPresets)], 'The three-variable input offers generic variables and the existing provider presets.');
+    check($coordinateInputs['CarTimestamp']['validVariableTypes'] === [VARIABLETYPE_INTEGER, VARIABLETYPE_STRING] && !isset($coordinateInputs['CarFormat']), 'The three-variable input accepts both timestamp variable types and has no JSON format.');
     $columns = array_column($vehicleList['columns'], null, 'name');
-    foreach ($additionalPresets as $mode => $prefix) {
-        check(isset($options[$mode]), 'The vehicle list offers the ' . $prefix . ' preset.');
-        $inputs = $options[$mode]['items'] ?? $formInputs[$options[$mode]['caption']];
-        $keys = [$prefix . 'Latitude', $prefix . 'Longitude', $prefix . 'Timestamp'];
-        check(array_column($inputs, 'name') === $keys && $inputs[2]['validVariableTypes'] === [VARIABLETYPE_INTEGER], 'Each new preset selects the two coordinates and an integer position time.');
-        check(array_keys(array_filter(array_intersect_key($columns, array_flip($keys)), static fn (array $column): bool => $column['save'] === true)) === $keys, 'Each new preset stores its three variable IDs.');
-    }
-    foreach (['smartcar' => ['SmartcarTimestamp', VARIABLETYPE_INTEGER], 'hyundai-kia' => ['HyundaiTimestamp', VARIABLETYPE_STRING]] as $mode => [$name, $type]) {
-        $inputs = array_column($options[$mode]['items'] ?? $formInputs[$options[$mode]['caption']], null, 'name');
-        check($inputs[$name]['validVariableTypes'] === [$type], 'Each preset offers a selector of the appropriate timestamp type.');
+    foreach (['CarLatitude', 'CarLongitude', 'CarTimestamp', 'CarPreset'] as $key) {
+        check(isset($coordinateInputs[$key]) && $columns[$key]['save'] === true, 'Every coordinate source stores the same variable selectors and its preset.');
     }
     check(IPS_GetConfiguration($presetID) === $config && IPS_GetProperty($presetID, 'Vehicles') === $assigned, 'Reading the form must preserve saved assignments.');
 
@@ -111,11 +111,12 @@ try {
         SetValueFloat($ids[1], $initial['longitude']);
         SetValueInteger($ids[2], $initial['timestamp']);
         $rows[] = [
-            'CarName'              => $prefix . ' test',
-            'CarMode'              => $mode,
-            $prefix . 'Latitude'   => $ids[0],
-            $prefix . 'Longitude'  => $ids[1],
-            $prefix . 'Timestamp'  => $ids[2]
+            'CarName'      => $prefix . ' test',
+            'CarMode'      => 'fields',
+            'CarPreset'    => $mode,
+            'CarLatitude'  => $ids[0],
+            'CarLongitude' => $ids[1],
+            'CarTimestamp' => $ids[2]
         ];
         $fixtures[] = ['ids' => $ids, 'initial' => $initial, 'longitudeFirst' => $mode === 'volvo'];
     }
@@ -155,6 +156,25 @@ try {
     [$status, $body] = mapRequest($presetMap, dirname($presetAccess['page']) . '/state', token: $presetAccess['token']);
     check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $expected, 'IPSView shows the same new fixes as the tile.');
     check(IPS_GetProperty($presetID, 'Vehicles') === $savedVehicles && IPS_GetObjectIDByIdent('IPSViewOpenWoIst', $presetID) === $webContent && $presetMap->GetIPSViewHTML() === $embed, 'Live positions preserve the saved assignments and IPSView embedding.');
+
+    $genericLatitude = IPS_CreateVariable(VARIABLETYPE_FLOAT);
+    $genericLongitude = IPS_CreateVariable(VARIABLETYPE_FLOAT);
+    $genericTime = IPS_CreateVariable(VARIABLETYPE_INTEGER);
+    SetValueFloat($genericLatitude, 53.25);
+    SetValueFloat($genericLongitude, -0.5);
+    SetValueInteger($genericTime, $time);
+    $rows[] = [
+        'CarName'      => 'Generic vehicle',
+        'CarMode'      => 'fields',
+        'CarLatitude'  => $genericLatitude,
+        'CarLongitude' => $genericLongitude,
+        'CarTimestamp' => $genericTime
+    ];
+    IPS_SetProperty($presetID, 'Vehicles', json_encode($rows, JSON_THROW_ON_ERROR));
+    IPS_ApplyChanges($presetID);
+    $withGeneric = tileState($presetMap)['sources'];
+    $generic = end($withGeneric)['objects'][0];
+    check($generic['current'] && $generic['location'] === ['latitude' => 53.25, 'longitude' => -0.5, 'timestamp' => $time, 'accuracy' => null], 'Existing generic rows use their original field IDs without a preset value.');
 } finally {
     date_default_timezone_set($originalTimezone);
 }

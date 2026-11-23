@@ -20,7 +20,7 @@ Tractive-Trackers gemeinsam in einer Symcon-Variable für OpenWoIst bereit.
    Standard ist **Nur manuell**. Bei Bedarf ein automatisches Abrufintervall
    auswählen.
 4. In der OpenWoIst-Karteninstanz unter **Weitere Standortgeräte** einen
-   Eintrag mit **OpenWoIst (Home Assistant / MQTT-GPS)** erstellen und
+   Eintrag mit **OpenWoIst-JSON** erstellen und
    **Position (OpenWoIst-JSON)** aus der Adapterinstanz zuordnen.
 
 Verwende beim Wechsel zu einem anderen Tracker eine eigene Adapterinstanz

@@ -9,36 +9,11 @@ use Throwable;
 trait VehicleSourceForm
 {
     private const VEHICLE_PRESETS = [
-        'smartcar' => [
-            'caption'          => 'Smartcar',
-            'prefix'           => 'Smartcar',
-            'timestampCaption' => 'Smartcar location time (OEM)',
-            'timestampType'    => VARIABLETYPE_INTEGER
-        ],
-        'hyundai-kia' => [
-            'caption'          => 'Hyundai Bluelink / Kia Connect',
-            'prefix'           => 'Hyundai',
-            'timestampCaption' => 'Hyundai/Kia position time',
-            'timestampType'    => VARIABLETYPE_STRING
-        ],
-        'volvo' => [
-            'caption'          => 'Volvo',
-            'prefix'           => 'Volvo',
-            'timestampCaption' => 'Volvo last position message',
-            'timestampType'    => VARIABLETYPE_INTEGER
-        ],
-        'renault-ze' => [
-            'caption'          => 'Renault Z.E.',
-            'prefix'           => 'RenaultZE',
-            'timestampCaption' => 'Renault GPS update time',
-            'timestampType'    => VARIABLETYPE_INTEGER
-        ],
-        'tronity' => [
-            'caption'          => 'Tronity',
-            'prefix'           => 'Tronity',
-            'timestampCaption' => 'Tronity position record time',
-            'timestampType'    => VARIABLETYPE_INTEGER
-        ]
+        'smartcar'     => 'Smartcar',
+        'hyundai-kia'  => 'Hyundai Bluelink / Kia Connect',
+        'volvo'        => 'Volvo',
+        'renault-ze'   => 'Renault Z.E.',
+        'tronity'      => 'Tronity'
     ];
 
     private function vehicleMode(): string
@@ -131,8 +106,9 @@ trait VehicleSourceForm
     private function additionalVehicleForm(array $list, array $fields): array
     {
         $modes = array_values(array_filter($fields['VehicleMode']['options'], static fn (array $option): bool => in_array($option['value'], ['json', 'fields'], true)));
-        foreach (self::VEHICLE_PRESETS as $mode => $preset) {
-            $modes[] = ['caption' => $preset['caption'], 'value' => $mode];
+        $presets = [['caption' => 'Generic (Unix seconds)', 'value' => 'fields']];
+        foreach (self::VEHICLE_PRESETS as $preset => $caption) {
+            $presets[] = ['caption' => $caption, 'value' => $preset];
         }
         $markerColor = ['name' => 'CarMarkerColor'] + array_diff_key($fields['VehicleMarkerColor'], ['name' => true, 'visible' => true]);
         $list['columns'] = [
@@ -140,7 +116,7 @@ trait VehicleSourceForm
             ['name' => 'CarMode', 'caption' => 'Vehicle source', 'width' => '200px', 'add' => 'json', 'edit' => ['type' => 'Select', 'options' => $modes]],
             ['name' => 'CarMarkerColor', 'caption' => 'Marker color', 'width' => '140px', 'add' => -1, 'edit' => array_diff_key($markerColor, ['name' => true, 'caption' => true])]
         ];
-        foreach (['CarFormat' => 'json', 'CarPosition' => 0, 'CarLatitude' => 0, 'CarLongitude' => 0, 'CarTimestamp' => 0,
+        foreach (['CarFormat' => 'json', 'CarPosition' => 0, 'CarPreset' => 'fields', 'CarLatitude' => 0, 'CarLongitude' => 0, 'CarTimestamp' => 0,
             'CarTimeFormat'   => 'default', 'CarDecimalSeparator' => '.'] as $name => $default) {
             $list['columns'][] = ['name' => $name, 'visible' => false, 'add' => $default, 'save' => true];
         }
@@ -156,25 +132,22 @@ trait VehicleSourceForm
             'caption' => 'Advanced vehicle settings',
             'items'   => [$inputs['CarTimeFormat'], $inputs['CarDecimalSeparator']]
         ]];
-        $coordinates = [$inputs['CarLatitude'], $inputs['CarLongitude'], $inputs['CarTimestamp']];
+        $coordinates = [
+            ['type' => 'Select', 'name' => 'CarPreset', 'caption' => 'Position preset', 'options' => $presets],
+            $inputs['CarLatitude'],
+            $inputs['CarLongitude'],
+            array_replace($inputs['CarTimestamp'], ['caption' => 'Measurement time', 'validVariableTypes' => [VARIABLETYPE_INTEGER, VARIABLETYPE_STRING]]),
+            ['type' => 'Label', 'caption' => 'Select the original measurement time in Unix seconds. Hyundai/Kia provides it as text.']
+        ];
         $list['form'] = [$inputs['CarName'], ['type' => 'Select', 'name' => 'CarMode', 'caption' => 'Vehicle source', 'options' => $modes]];
         $positionInputs = ['json' => $json, 'fields' => $coordinates];
-        foreach (self::VEHICLE_PRESETS as $mode => $preset) {
-            foreach ($coordinates as $field) {
-                $name = $preset['prefix'] . substr($field['name'], strlen('Car'));
-                $list['columns'][] = ['name' => $name, 'visible' => false, 'add' => 0, 'save' => true];
-                $positionInputs[$mode][] = $field['name'] === 'CarTimestamp'
-                    ? array_replace($field, ['name' => $name, 'caption' => $preset['timestampCaption'], 'validVariableTypes' => [$preset['timestampType']]])
-                    : array_replace($field, ['name' => $name]);
-            }
-        }
         if (version_compare(IPS_GetKernelVersion(), '9.1', '>=')) {
             foreach ($modes as $index => $option) {
                 $list['form'][1]['options'][$index]['items'] = $positionInputs[$option['value']];
             }
         } else {
             foreach ($modes as $option) {
-                $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => $option['caption'], 'items' => $positionInputs[$option['value']]];
+                $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => $option['caption'], 'expanded' => $option['value'] === 'json', 'items' => $positionInputs[$option['value']]];
             }
         }
         $list['form'][] = $markerColor;
