@@ -338,6 +338,27 @@
                     "source_sha": "0b3fcc1a68c84f5ea2bc2cea21813b75dad7ab4e"
                 }
             ]
+        },
+        "GeofenceHelper": {
+            "version": "1.2.1",
+            "sha256": "8e856a675a7b53106979a2f6346ee38de959aa57208ffb5b23ac721fd96f6ca8",
+            "path": "libs/helper/GeofenceHelper.php",
+            "source_sha": "f44349716dcf828f3e2f294cdc31e726650ef611"
+        },
+        "ReverseGeocodingHelper": {
+            "version": "1.1.1",
+            "sha256": "074ff0b278647716e87e844c6a58942070feba4b051632dcaa15cf721298abfa",
+            "path": "libs/helper/ReverseGeocodingHelper.php",
+            "source_sha": "f44349716dcf828f3e2f294cdc31e726650ef611",
+            "dependencies": [
+                {
+                    "name": "PersistentJsonCacheHelper",
+                    "version": "1.0.1",
+                    "sha256": "e048ce434b80f396e1821fdfba65982ad6c02123c50a2e335c6d436d0aa3ae38",
+                    "path": "libs/helper/PersistentJsonCacheHelper.php",
+                    "source_sha": "f44349716dcf828f3e2f294cdc31e726650ef611"
+                }
+            ]
         }
     }
 }
