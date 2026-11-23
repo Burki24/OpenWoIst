@@ -67,6 +67,13 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
 drei Positionsvariablen mit gemeinsamer Zuordnung und Anbieter-Voreinstellung.
 Die Abnahme im Konsolenformular steht aus.
 
+**Adressauflösung und Zonen.** Die Darstellung nutzt die zentralen Helper
+für Reverse Geocoding und Geofencing. Lokale Tests mit simulierten
+Adressantworten und Zonenwechseln sind bestanden. Vor dem Modulcommit
+die abonnierten Helper regulär verteilen, einschließlich des
+Deklarationsschutzes für SymconiCloud. Die Abnahme auf der
+Entwicklungsinstanz steht aus.
+
 **Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
 einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub
 ist eine unterstützte Schnittstelle für Gerätestandorte Voraussetzung.

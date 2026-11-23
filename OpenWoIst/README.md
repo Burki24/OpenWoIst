@@ -275,10 +275,30 @@ fehlende Messzeit als Abrufzeit im ISO-Format erscheinen. OpenWoIst verwirft
 dieses Zeitformat für die Voreinstellung. Kartenpositionen können je nach
 Fahrzeug und Dienst zuletzt gemeldete Parkpositionen sein.
 
+## Adressen und Zonen
+
+Unter **Adressauflösung** kannst du einen eigenen Nominatim-Server oder
+Geoapify auswählen. Bei Nominatim trägst du die Basis-URL ein. Geoapify
+benötigt einen eigenen API-Schlüssel. Das Tageslimit gilt je OpenWoIst-Instanz
+und wechselt um Mitternacht UTC. Die Auflösung ist anfangs ausgeschaltet.
+Bei Aktivierung erhält der gewählte Dienst die Koordinaten. OpenWoIst
+fragt aktuelle Positionen im Hintergrund ab und zeigt gespeicherte Adressen
+in der Geräteliste sowie am Marker. Bei unbekannter Genauigkeit wird
+höchstens der Ort angezeigt. [Nominatim-Richtlinie](https://operations.osmfoundation.org/policies/nominatim/) · [Geoapify](https://www.geoapify.com/reverse-geocoding-api/)
+
+Unter **Zonen** legst du Kreise mit Name, Breitengrad, Längengrad und Radius
+in Metern an. Die Kreise erscheinen in Kachel und IPSView. Bei überlappenden
+Zonen hat der erste passende Eintrag Vorrang. Unter **Standortqualität** kannst
+du Grenzpuffer, maximale Standortunsicherheit und Bestätigungszeit einstellen.
+Der Radius jeder Zone muss größer als der Grenzpuffer sein. Veraltete und zu
+ungenaue Positionen oder Positionen ohne gemeldete Genauigkeit ergeben
+**Zone unbestimmt**. Zonenwechsel werden anhand neuer Messungen bestätigt.
+
 ## Öffentliche Funktionen
 
 | Funktion | Verhalten |
 | --- | --- |
 | `OWIS_Update(int $InstanceID): void` | Liest die zugewiesenen lokalen Quellen und aktualisiert die Kachel bei Änderungen. |
+| `OWIS_ResolveAddresses(int $InstanceID): void` | Verarbeitet bei aktiver Adressauflösung höchstens eine noch nicht aufgelöste aktuelle Position. |
 | `OWIS_NextDemoPosition(int $InstanceID): bool` | Schreibt den nächsten synthetischen Standort in die Demo-Variable. Liefert `true`, wenn der Schreibvorgang gelungen ist. |
 | `OWIS_GetIPSViewHTML(int $InstanceID): string` | Gibt die HTML-Einbindung mit dem für die Instanz gültigen Zugriffsschlüssel zurück, sofern die Ausgabe aktiv ist. |

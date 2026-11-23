@@ -11,6 +11,8 @@
 
 ## Neu
 
+- Optional ermittelte Adressen und einrichtbare Kreiszonen erscheinen in
+  der Kachel und in IPSView. Die Zonenauswertung nutzt die Standortqualität.
 - **OpenWoIst Tractive** stellt die Position eines Tractive-Trackers mit
   seiner Messzeit als JSON-Variable für die Karte bereit.
 

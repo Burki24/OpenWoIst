@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/helper/ConfigurationFormHelper.php';
 require_once __DIR__ . '/../libs/helper/DebugFlowHelper.php';
+require_once __DIR__ . '/../libs/helper/GeofenceHelper.php';
 require_once __DIR__ . '/../libs/helper/HttpResponseHelper.php';
 require_once __DIR__ . '/../libs/helper/IPSViewHTMLPageHelper.php';
 require_once __DIR__ . '/../libs/helper/IPSViewStyleConfigurationHelper.php';
 require_once __DIR__ . '/../libs/helper/OpenFreeMapHelper.php';
 require_once __DIR__ . '/../libs/helper/ResponsiveVisualizationHelper.php';
+require_once __DIR__ . '/../libs/helper/ReverseGeocodingHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
 require_once __DIR__ . '/../libs/IPSViewMap.php';
 require_once __DIR__ . '/../libs/ICloudDeviceSelection.php';
+require_once __DIR__ . '/../libs/LocationAddresses.php';
 require_once __DIR__ . '/../libs/LocationSnapshot.php';
+require_once __DIR__ . '/../libs/LocationZones.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
@@ -28,7 +32,9 @@ use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
 use OpenWoIst\ICloudDeviceSelection;
 use OpenWoIst\IPSViewMap;
+use OpenWoIst\LocationAddresses;
 use OpenWoIst\LocationSnapshot;
+use OpenWoIst\LocationZones;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
 use OpenWoIst\PositionConverter;
@@ -46,6 +52,8 @@ class OpenWoIst extends IPSModuleStrict
     use VisualizationThemeConfigurationHelper;
     use IPSViewMap;
     use ICloudDeviceSelection;
+    use LocationAddresses;
+    use LocationZones;
     use MapColorGuide;
     use MapDesign;
     use VehicleSourceForm;
@@ -81,6 +89,8 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterAttributeString('Snapshot', '');
             $this->RegisterAttributeInteger('DemoStep', 0);
             $this->RegisterTimer('ReadSources', 0, 'OWIS_Update($_IPS["TARGET"]);');
+            $this->registerLocationAddresses();
+            $this->registerLocationZones();
             $this->registerMapDesign();
             $this->registerIPSViewMap();
             $this->SetVisualizationType(1);
@@ -101,6 +111,9 @@ class OpenWoIst extends IPSModuleStrict
                 $this->writeDemoPosition($this->ReadAttributeInteger('DemoStep'));
             }
             $this->syncReferences();
+            if (!$this->ReadPropertyBoolean('EnableAddressResolution')) {
+                $this->ClearReverseGeocodingCache();
+            }
             $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] ? 5000 : 0);
             $this->publish(true);
             $this->maintainIPSViewMap();
@@ -112,6 +125,14 @@ class OpenWoIst extends IPSModuleStrict
         return $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): string
         {
             $form = $this->configureDeviceSelection($this->configureVehicleForm($this->LoadConfigurationForm()));
+            $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['AddressConfigurationError'], $this->ReadPropertyBoolean('EnableAddressResolution') && $this->addressConfiguration() === null);
+            $invalidZones = false;
+            try {
+                $this->zoneConfiguration($this->locationMaximumAge());
+            } catch (InvalidArgumentException) {
+                $invalidZones = true;
+            }
+            $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['ZoneConfigurationError'], $invalidZones);
             $form['elements'][] = $this->mapDesigner(false);
             $form['elements'][] = $this->mapDesigner(true);
             return $this->EncodeConfigurationForm($form);
@@ -236,7 +257,18 @@ class OpenWoIst extends IPSModuleStrict
 
     private function visualizationState(array $snapshot, bool $ipsView): array
     {
-        return ['sources' => $snapshot['sources'], 'staleAfter' => $snapshot['staleAfter'], 'presentation' => $this->mapPresentation($ipsView)];
+        return [
+            'sources'         => $snapshot['sources'],
+            'zones'           => $snapshot['zones'] ?? [],
+            'addressProvider' => $snapshot['addressProvider'] ?? '',
+            'staleAfter'      => $snapshot['staleAfter'],
+            'presentation'    => $this->mapPresentation($ipsView)
+        ];
+    }
+
+    private function locationMaximumAge(): int
+    {
+        return max(60, min(86400, $this->ReadPropertyInteger('StaleAfter')));
     }
 
     private function publish(bool $force): void
@@ -247,7 +279,8 @@ class OpenWoIst extends IPSModuleStrict
         }
         try {
             $scope = $this->sourceScope();
-            $old = array_column($this->storedSnapshot()['sources'], null, 'id');
+            $previous = $this->storedSnapshot();
+            $old = array_column($previous['sources'], null, 'id');
             $sources = [];
             $now = time();
             $deviceSettings = $this->deviceSettings();
@@ -267,10 +300,14 @@ class OpenWoIst extends IPSModuleStrict
             if ($scope !== $this->sourceScope()) {
                 return;
             }
-            $snapshot = [
-                'sources'    => $sources,
-                'staleAfter' => max(60, min(86400, $this->ReadPropertyInteger('StaleAfter'))),
-                'scope'      => $scope
+            $maxAge = $this->locationMaximumAge();
+            $zones = $this->evaluateLocationZones($sources, $previous, $now, $maxAge, $scope);
+            $addressProvider = $this->decorateLocationAddresses($sources, $now, $maxAge);
+            $snapshot = $zones + [
+                'addressProvider' => $addressProvider,
+                'sources'         => $sources,
+                'staleAfter'      => $maxAge,
+                'scope'           => $scope
             ];
             $value = $this->EncodeVisualizationHTMLJSON($snapshot);
             $changed = $value !== $this->ReadAttributeString('Snapshot');
@@ -278,8 +315,11 @@ class OpenWoIst extends IPSModuleStrict
                 $this->WriteAttributeString('Snapshot', $value);
             }
             $this->SetStatus($sources === [] ? IS_INACTIVE : (in_array(true, array_column($sources, 'available'), true) ? IS_ACTIVE : 201));
-            if ($changed || $force) {
-                $this->UpdateVisualizationValue($this->EncodeVisualizationHTMLJSON($this->visualizationState($snapshot, false)));
+            if ($force || $changed) {
+                $payload = $this->EncodeVisualizationHTMLJSON($this->visualizationState($snapshot, false));
+                if ($force || $payload !== $this->EncodeVisualizationHTMLJSON($this->visualizationState($previous, false))) {
+                    $this->UpdateVisualizationValue($payload);
+                }
             }
         } finally {
             IPS_SemaphoreLeave($lock);
@@ -337,6 +377,9 @@ class OpenWoIst extends IPSModuleStrict
             }
             $location = $device['location'] ?? null;
             $fix = LocationSnapshot::fix($location, $now);
+            if ($fix !== null && ($location['isInaccurate'] ?? false) === true) {
+                $fix['isInaccurate'] = true;
+            }
             $name = $device['name'] ?? '';
             $objects[$objectKey] = LocationSnapshot::object(
                 $objectKey,

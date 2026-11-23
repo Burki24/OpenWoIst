@@ -132,10 +132,14 @@ if (in_array('--tile-fixture', $argv, true) || in_array('--visualization-fixture
     }
     if (in_array('--tracker-fixture', $argv, true)) {
         $trackerPosition = IPS_CreateVariable(VARIABLETYPE_STRING);
-        SetValueString($trackerPosition, json_encode(['lat' => 52.508, 'lon' => 13.38, 'tst' => $now], JSON_THROW_ON_ERROR));
+        SetValueString($trackerPosition, json_encode(['lat' => 52.508, 'lon' => 13.38, 'tst' => $now, 'acc' => 5], JSON_THROW_ON_ERROR));
         IPS_SetProperty($mapID, 'Trackers', json_encode([
             ['TrackerName' => 'OwnTracks test device', 'TrackerPosition' => $trackerPosition, 'TrackerMarkerColor' => 0x2256A6]
         ], JSON_THROW_ON_ERROR));
+        IPS_ApplyChanges($mapID);
+    }
+    if (in_array('--zone-fixture', $argv, true)) {
+        IPS_SetProperty($mapID, 'Zones', json_encode([['name' => 'Tracker test zone', 'latitude' => 52.508, 'longitude' => 13.38, 'radius' => 100]], JSON_THROW_ON_ERROR));
         IPS_ApplyChanges($mapID);
     }
     OWIS_Update($mapID);
@@ -253,6 +257,7 @@ require __DIR__ . '/position-converter.php';
 require __DIR__ . '/source-selection.php';
 require __DIR__ . '/position-presets.php';
 require __DIR__ . '/tracker-sources.php';
+require __DIR__ . '/location-details.php';
 require __DIR__ . '/tractive-adapter.php';
-echo "OpenWoIst source and tile integration passed.\n";
+echo "OpenWoIst source, address, zone and tile integration passed.\n";
 require __DIR__ . '/validate_structure.php';

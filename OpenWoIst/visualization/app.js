@@ -22,13 +22,20 @@
     let hasView = Boolean(saved);
     let filterChoices = null;
     let shown = [];
+    let zoneGeometry = '';
     let vectorController = null;
 
     const map = L.map('map', {zoomControl: false, minZoom: 1, maxZoom: 19})
         .setView(saved?.center || [32, 10], saved?.zoom || 2);
     L.control.zoom({position: 'topright'}).addTo(map);
     map.attributionControl.setPrefix(false);
+    const zoneLayer = L.featureGroup().addTo(map);
     const markerLayer = L.layerGroup().addTo(map);
+    const addressCredits = {
+        nominatim: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',
+        geoapify: '<a href="https://www.geoapify.com/" target="_blank" rel="noopener">Geoapify</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
+    };
+    let activeAddressCredit = '';
     const icon = L.divIcon({className: 'location-marker', html: '<span class="symbol" aria-hidden="true"></span>', iconSize: [22, 22], iconAnchor: [11, 11]});
 
     root.style.setProperty('--symc-tile-header-inset', (options.tileHeaderInset || 0) + 'px');
@@ -49,9 +56,10 @@
 
     function fit() {
         const points = shown.filter(row => row.object.location).map(row => coordinates(row.object.location));
-        if (points.length === 0) return;
+        const bounds = points.length ? L.latLngBounds(points) : zoneLayer.getBounds();
+        if (!bounds.isValid()) return;
         hasView = true;
-        map.fitBounds(points, {padding: [30, 30], maxZoom: 15, animate: false});
+        map.fitBounds(bounds, {padding: [30, 30], maxZoom: 15, animate: false});
         saveView();
     }
 
@@ -109,6 +117,30 @@
         return item;
     }
 
+    function addressText(object) {
+        return object.address && (object.addressApproximate ? text('Approximate address') + ' · ' + object.address : object.address);
+    }
+
+    function zoneText(object) {
+        if (object.zonePending) return text('Zone change pending');
+        if (object.zone === null) return text('Zone undetermined');
+        if (object.zone === '') return text('Outside all zones');
+        return object.zone;
+    }
+
+    function syncZones() {
+        const zones = snapshot.zones ?? [];
+        const geometry = JSON.stringify(zones);
+        if (zoneGeometry === geometry) return;
+        zoneGeometry = geometry;
+        zoneLayer.clearLayers();
+        for (const zone of zones) {
+            L.circle(coordinates(zone), {radius: zone.radius, fillOpacity: .12, weight: 2, interactive: false, className: 'location-zone'})
+                .bindTooltip(element('span', '', zone.name), {permanent: true, direction: 'center', className: 'location-zone-label'})
+                .addTo(zoneLayer);
+        }
+    }
+
     function applyMarkerColor(node, color) {
         const custom = Number.isInteger(color) && color >= 0 && color <= 0xffffff;
         node.classList.toggle('has-marker-color', custom);
@@ -140,7 +172,7 @@
             node.dataset.selected = String(id === selected);
             applyMarkerColor(node, object.markerColor);
             node.setAttribute('aria-label', object.name);
-            node.title = object.name;
+            node.title = [object.name, zoneText(object), addressText(object)].filter(Boolean).join('\n');
             marker.setZIndexOffset(id === selected ? 1000 : 0);
         }
         for (const [id, marker] of markers) {
@@ -172,12 +204,19 @@
         shown = visible.flatMap(source => source.objects.map(object => ({
             source, object, stale: !source.available || !object.current || now - object.location?.timestamp >= snapshot.staleAfter
         }))).sort((a, b) => a.object.name.localeCompare(b.object.name, lang));
+        const credit = shown.some(({object}) => object.address) ? addressCredits[snapshot.addressProvider] : '';
+        if (credit !== activeAddressCredit) {
+            if (activeAddressCredit) map.attributionControl.removeAttribution(activeAddressCredit);
+            if (credit) map.attributionControl.addAttribution(credit);
+            activeAddressCredit = credit;
+        }
         if (!sources.some(source => source.objects.some(object => object.id === selected))) selected = null;
         const unavailable = visible.filter(source => !source.available).map(source => source.name);
         status('source-status', unavailable.length ? text('Source unavailable') + ' – ' + unavailable.join(', ') : '');
         status('empty', sources.length === 0 && !snapshot.presentation && options.statePath ? ''
             : sources.length === 0 ? text('No location sources configured.') : shown.length === 0 ? text('No objects in this view.') : '');
-        fitButton.disabled = !shown.some(row => row.object.location);
+        syncZones();
+        fitButton.disabled = !shown.some(row => row.object.location) && !zoneLayer.getBounds().isValid();
 
         const rows = document.createDocumentFragment();
         let restoreFocus = null;
@@ -196,6 +235,10 @@
             symbol.setAttribute('aria-hidden', 'true');
             const content = element('span', 'object-content');
             content.append(element('span', 'object-name', object.name), detail(row, now));
+            const address = addressText(object);
+            const zone = zoneText(object);
+            if (zone) content.append(element('span', 'object-detail location-zone-detail', zone));
+            if (address) content.append(element('span', 'object-detail location-address', address));
             button.append(symbol, content);
             item.append(button);
             rows.append(item);

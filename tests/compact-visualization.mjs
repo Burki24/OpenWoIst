@@ -8,7 +8,20 @@ import {setTimeout as delay} from 'node:timers/promises';
 
 const chrome = process.env.OPENWOIST_CHROME;
 assert.ok(chrome, 'Set OPENWOIST_CHROME to a Chromium executable.');
-const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture'], {maxBuffer: 4 * 1024 * 1024}));
+const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture', '--zone-fixture'], {maxBuffer: 4 * 1024 * 1024}));
+function withTrackerAddress(state) {
+    const tracker = state.sources.find(source => source.kind === 'tracker').objects[0];
+    tracker.address = '<i>Test City</i>';
+    tracker.addressApproximate = true;
+    state.addressProvider = 'geoapify';
+    return state;
+}
+fixture.tile = fixture.tile.replace(/window\.SymconVisualization = (.+);<\/script>/, (_match, json) => {
+    const bootstrap = JSON.parse(json);
+    withTrackerAddress(bootstrap.state);
+    return 'window.SymconVisualization = ' + JSON.stringify(bootstrap).replaceAll('<', '\\u003c') + ';</script>';
+});
+fixture.state = JSON.stringify(withTrackerAddress(JSON.parse(fixture.state)));
 const renderer = readFileSync('libs/helper/maps/vendor/maplibre-gl.js');
 const observeWheels = html => html.replace('<head>', `<head><script>
     window.testWheels = {map: 0, objects: 0};
@@ -103,6 +116,9 @@ try {
     const wheel = (point, deltaY) => call('Input.dispatchMouseEvent', {type: 'mouseWheel', x: point[0], y: point[1], deltaX: 0, deltaY});
 
     for (const mode of ['tile', 'ipsview']) {
+        const html = mode === 'tile' ? fixture.tile : fixture.page;
+        const {translations} = JSON.parse(/window\.SymconVisualization = (.+);<\/script>/.exec(html)[1]);
+        const expectedAddress = (translations?.['Approximate address'] ?? 'Approximate address') + ' · <i>Test City</i>';
         async function inspect(code) {
             const frame = mode === 'tile' ? 'outer' : 'outer?.document.querySelector("#ipsview-map")?.contentWindow';
             const result = await call('Runtime.evaluate', {returnByValue: true, expression: `(() => {
@@ -131,8 +147,15 @@ try {
         const tracker = await inspect(`const marker = d.querySelector('.location-marker[data-kind="tracker"]');
             const row = d.querySelector('.object[data-kind="tracker"]');
             return {title: marker?.title, name: row?.querySelector('.object-name')?.textContent,
+                zone: row?.querySelector('.location-zone-detail')?.textContent,
+                address: row?.querySelector('.location-address')?.textContent,
+                escaped: !row?.querySelector('.location-address i'),
+                attribution: Boolean(d.querySelector('.leaflet-control-attribution a[href="https://www.geoapify.com/"]')),
+                circles: d.querySelectorAll('path.location-zone').length,
                 color: marker && w.getComputedStyle(marker.querySelector('.symbol')).backgroundColor};`);
-        assert.deepEqual(tracker, {title: 'OwnTracks test device', name: 'OwnTracks test device', color: 'rgb(34, 86, 166)'});
+        assert.deepEqual(tracker, {title: 'OwnTracks test device\nTracker test zone\n' + expectedAddress, name: 'OwnTracks test device',
+            zone: 'Tracker test zone', address: expectedAddress, escaped: true,
+            attribution: true, circles: 1, color: 'rgb(34, 86, 166)'});
         const compact = await geometry();
         assert.ok(compact.mapHeight >= 72 && compact.listLeft >= compact.mapRight, `${mode} must give the compact map room beside the list: ${JSON.stringify(compact)}`);
         assert.ok(compact.listBottom <= 189 && compact.toolbarHeight <= 32, `${mode} toolbar and list must fit inside the viewport.`);

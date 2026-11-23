@@ -41,3 +41,11 @@ fließen über das native HTML SDK.
 OpenWoIst und SymconiCloud verwenden die zentralen Karten-, Layout- und
 Interaktions-Helper. Die OpenWoIst-Kachel besitzt eine eigene Oberfläche
 für den gemeinsamen Standortzustand.
+
+Die optionale Adressauflösung ergänzt diesen Standortzustand aus dem
+zentralen Reverse-Geocoding-Cache. Ein eigener Timer löst aktuelle,
+zugewiesene Positionen über den gewählten Dienst auf. Die Zonenauswertung
+verwendet den zentralen GeofenceHelper und speichert ihren Zustand je
+Objekt und Quellkonfiguration. Beide Ausgaben erhalten denselben
+Standortzustand. Anbieterzugänge und interne Zonenzustände bleiben auf
+dem Server.

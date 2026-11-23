@@ -133,6 +133,8 @@ button:disabled { opacity: var(--ipsview-role-disabled-opacity, .55); cursor: de
 .object-name, .object-detail { display: block; overflow-wrap: anywhere; }
 .object-name { font-weight: 650; }
 .object-detail { font-size: .85rem; color: var(--muted); }
+.location-zone { stroke: var(--accent); fill: var(--accent); }
+.location-zone-label { color: var(--ink); background: var(--panel); border-color: var(--border); pointer-events: none; }
 
 .symbol {
     display: block;
