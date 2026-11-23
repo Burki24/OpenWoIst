@@ -36,10 +36,13 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    eindeutig erkennbarer Fix-Zeitpunkt lokal verfügbar ist, bleibt
    Traccar-JSON mit `fixTime` der unterstützte Weg.
    [Traccar im Store](https://www.symcon.de/de/module-store/mwlf01-traccar/)
-3. [ ] **Smartphones und GPS-Tracker.** OwnTracks ist im eigenen Bereich
-   **Weitere Standortgeräte** mit Anzeigename und Markerfarbe umgesetzt.
-   Die Abnahme auf der Entwicklungsinstanz steht aus. Tractive ist
-   zurückgestellt. Die Store-Versionen 1.14 und 1.19 schreiben
+3. [x] **Smartphones und GPS-Tracker.** OwnTracks ist nach dem regulären
+   `dev`-Update auf `963c45e` in der nativen Kachel und in IPSView Desktop
+   abgenommen. Zwei simulierte Positionen und eine Nicht-Positionsmeldung
+   bestätigten Positionswechsel, letzte bekannte Position und eigene
+   Markerfarbe. iCloud-Marker, Testfahrzeug, Zuordnungen und das
+   Haussteuerungsprofil blieben erhalten. Tractive ist zurückgestellt.
+   Die Store-Versionen 1.14 und 1.19 schreiben
    `LastPositionMessage` vor den Koordinaten. Ihr Positions-JSON enthält
    Koordinaten und Höhe, die Messzeit steht separat. Ein gemeinsam
    bereitgestellter Positionsdatensatz mit Messzeit ermöglicht die Anbindung.
