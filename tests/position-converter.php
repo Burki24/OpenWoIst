@@ -18,7 +18,8 @@ $vehicleForm = static function () use ($converterMap): array
 {
     $form = json_decode($converterMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
     $elements = array_column($form['elements'], null, 'name');
-    return array_column([...$elements['ExistingVehicleSettings']['items'], ...$form['actions']], null, 'name');
+    $vehicles = array_column($elements['VehicleSources']['items'], null, 'name');
+    return array_column([...$vehicles['ExistingVehicleSettings']['items'], ...$form['actions']], null, 'name');
 };
 $form = $vehicleForm();
 check(

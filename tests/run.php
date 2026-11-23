@@ -118,7 +118,17 @@ if (in_array('--tile-fixture', $argv, true) || in_array('--visualization-fixture
         $device['id'] = 'extra-' . $i;
         $device['name'] = sprintf('Test Device %02d', $i);
         $device['location']['latitude'] += $i * 0.0006;
+        if ($i === 0 && in_array('--marker-colors', $argv, true)) {
+            $device['location']['isOld'] = true;
+        }
         $account->cache['devices'][] = $device;
+    }
+    if (in_array('--marker-colors', $argv, true)) {
+        IPS_SetProperty($mapID, 'SelectedDevices', json_encode([
+            ['DeviceKey' => OpenWoIst\LocationSnapshot::key('icloud', $accountID, 'extra-0'), 'MarkerColor' => 0xCF2050],
+            ['DeviceKey' => OpenWoIst\LocationSnapshot::key('icloud', $accountID, 'extra-1'), 'MarkerColor' => 0]
+        ], JSON_THROW_ON_ERROR));
+        IPS_ApplyChanges($mapID);
     }
     OWIS_Update($mapID);
     if (in_array('--tile-fixture', $argv, true)) {

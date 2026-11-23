@@ -106,6 +106,16 @@
         return item;
     }
 
+    function applyMarkerColor(node, color) {
+        const custom = Number.isInteger(color) && color >= 0 && color <= 0xffffff;
+        node.classList.toggle('has-marker-color', custom);
+        if (custom) {
+            node.style.setProperty('--object-marker-color', '#' + color.toString(16).padStart(6, '0'));
+        } else {
+            node.style.removeProperty('--object-marker-color');
+        }
+    }
+
     function syncMarkers() {
         const active = new Set();
         for (const {source, object, stale} of shown) {
@@ -125,6 +135,7 @@
             node.dataset.kind = source.kind;
             node.dataset.stale = String(stale);
             node.dataset.selected = String(id === selected);
+            applyMarkerColor(node, object.markerColor);
             node.setAttribute('aria-label', object.name);
             node.title = object.name;
             marker.setZIndexOffset(id === selected ? 1000 : 0);
@@ -175,6 +186,7 @@
             button.dataset.id = object.id;
             button.dataset.kind = source.kind;
             button.dataset.stale = String(stale);
+            applyMarkerColor(button, object.markerColor);
             button.setAttribute('aria-pressed', String(object.id === selected));
             button.addEventListener('click', () => selectObject(object.id, true));
             const symbol = element('span', 'symbol');

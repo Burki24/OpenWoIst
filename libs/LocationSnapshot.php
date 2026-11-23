@@ -52,6 +52,22 @@ final class LocationSnapshot
         return ['id' => $key, 'name' => $name, 'location' => $fix, 'current' => $current];
     }
 
+    public static function markerColor(mixed $value): ?int
+    {
+        return is_int($value) && $value >= 0 && $value <= 0xFFFFFF ? $value : null;
+    }
+
+    public static function withMarkerColor(array $object, mixed $value): array
+    {
+        $color = self::markerColor($value);
+        if ($color === null) {
+            unset($object['markerColor']);
+        } else {
+            $object['markerColor'] = $color;
+        }
+        return $object;
+    }
+
     private static function number(mixed $value): bool
     {
         return (is_int($value) || is_float($value)) && is_finite($value);

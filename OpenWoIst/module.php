@@ -72,6 +72,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
             $this->RegisterPropertyString('VehicleTimeFormat', 'default');
             $this->RegisterPropertyString('VehicleDecimalSeparator', '.');
+            $this->RegisterPropertyInteger('VehicleMarkerColor', -1);
             foreach (['VehiclePosition', 'VehicleLatitude', 'VehicleLongitude', 'VehicleTimestamp'] as $ident) {
                 $this->RegisterPropertyInteger($ident, 0);
             }
@@ -248,10 +249,16 @@ class OpenWoIst extends IPSModuleStrict
             $old = array_column($this->storedSnapshot()['sources'], null, 'id');
             $sources = [];
             $now = time();
-            $selectedDevices = $this->selectedDeviceKeys();
+            $deviceSettings = $this->deviceSettings();
+            $selectedDevices = $this->selectedDeviceKeys($deviceSettings);
             foreach ($this->accountIDs() as $id) {
                 $key = LocationSnapshot::key('icloud', $id);
-                $sources[] = $this->readAccount($id, $key, $old[$key]['objects'] ?? [], $now, $selectedDevices);
+                $source = $this->readAccount($id, $key, $old[$key]['objects'] ?? [], $now, $selectedDevices);
+                $source['objects'] = array_map(static fn (array $object): array => LocationSnapshot::withMarkerColor(
+                    $object,
+                    $deviceSettings[$object['id']]['MarkerColor'] ?? null
+                ), $source['objects']);
+                $sources[] = $source;
             }
             foreach ($this->configuredVehicles() as $key => $vehicle) {
                 $sources[] = $this->readVehicle($vehicle, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
@@ -370,7 +377,7 @@ class OpenWoIst extends IPSModuleStrict
         if (PositionConverter::supports($mode) && $fix !== null && ($previous['timestamp'] ?? null) === $fix['timestamp']) {
             $fix = $previous;
         }
-        $source['objects'][] = LocationSnapshot::object($key, $name, $fix, $previous, true);
+        $source['objects'][] = LocationSnapshot::withMarkerColor(LocationSnapshot::object($key, $name, $fix, $previous, true), $vehicle['markerColor']);
         return $source;
     }
 
@@ -426,6 +433,7 @@ class OpenWoIst extends IPSModuleStrict
             'name'             => $mode === 'demo' ? $this->Translate('Test vehicle') : ($name !== '' ? $name : 'Vehicle'),
             'ids'              => $ids,
             'trigger'          => $ids[array_key_last($ids)] ?? 0,
+            'markerColor'      => $this->ReadPropertyInteger('VehicleMarkerColor'),
             'timeFormat'       => $this->ReadPropertyString('VehicleTimeFormat'),
             'decimalSeparator' => $this->ReadPropertyString('VehicleDecimalSeparator')
         ];
@@ -457,6 +465,7 @@ class OpenWoIst extends IPSModuleStrict
                 'name'             => is_string($row['CarName'] ?? null) ? trim($row['CarName']) : '',
                 'ids'              => $ids,
                 'trigger'          => $ids[array_key_last($ids)],
+                'markerColor'      => LocationSnapshot::markerColor($row['CarMarkerColor'] ?? null),
                 'timeFormat'       => is_string($row['CarTimeFormat'] ?? null) ? $row['CarTimeFormat'] : 'default',
                 'decimalSeparator' => is_string($row['CarDecimalSeparator'] ?? null) ? $row['CarDecimalSeparator'] : '.'
             ];

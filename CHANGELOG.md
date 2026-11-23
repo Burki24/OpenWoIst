@@ -6,6 +6,10 @@
 
 ## Neu
 
+- Das Quellenformular ist in **Fahrzeuge**, **iCloud** und **GoogleCloud**
+  gegliedert. Die iCloud-Liste zeigt die Geräte der zugewiesenen Kontocaches.
+- Einzelne Geräte und Fahrzeuge erhalten eigene Markerfarben in Kachel und
+  IPSView. Die Designer liefern die Standardfarben.
 - Die iCloud-Geräteauswahl begrenzt Karte und Objektliste auf ausgewählte
   Geräte aus den zugewiesenen Kontocaches.
 - Unter **Weitere Fahrzeuge** lassen sich mehrere Fahrzeuge mit eigenen

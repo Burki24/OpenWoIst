@@ -72,6 +72,7 @@ trait MapDesign
             'items'   => [
                 ...$output,
                 ['type' => 'ExpansionPanel', 'caption' => $ipsView ? 'IPSView style' : 'Tile style', 'items' => $style],
+                ['type' => 'Label', 'caption' => 'These colors apply to devices without an individual marker color.'],
                 ...$markers,
                 $basemap,
                 $this->mapColorGuide($ipsView, $style, $markers, $basemap)

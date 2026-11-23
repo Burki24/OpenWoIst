@@ -5,14 +5,13 @@ Symcon-Variablen. Beide Quellenarten lassen sich auch einzeln verwenden.
 
 ## Einrichten und mit dem Testfahrzeug ausprobieren
 
-1. Eine Instanz **OpenWoIst** anlegen. Unter **iCloud-Konten** die gewünschten
+1. Eine Instanz **OpenWoIst** anlegen. Unter **iCloud → iCloud-Konten** die
    Konto-Instanzen aus SymconiCloud auswählen. Voraussetzung für Apple-Positionen
    ist ein gefüllter Gerätestand im ausgewählten Konto.
-2. Unter **Bisherige Fahrzeugquelle und Testfahrzeug** den Eintrag
-   **Testfahrzeug** auswählen und die
-   Konfiguration übernehmen. Dadurch entsteht die String-Variable
-   **Position des Testfahrzeugs** (`DemoPosition`) mit einem synthetischen
-   Standort in Berlin.
+2. Unter **Fahrzeuge → Bisherige Fahrzeugquelle und Testfahrzeug** den Eintrag
+   **Testfahrzeug** auswählen und die Konfiguration übernehmen. Dadurch entsteht
+   die String-Variable **Position des Testfahrzeugs** (`DemoPosition`) mit einem
+   synthetischen Standort in Berlin.
 3. Die Instanz in der Symcon-Kachelvisualisierung öffnen. Mit der Formularaktion
    **Testfahrzeug bewegen** lässt sich die Fahrzeugposition an vier vorbereiteten
    Punkten weiterschalten.
@@ -32,11 +31,14 @@ zugewiesen sind.
 
 ## Apple-Geräte auswählen
 
-Standardmäßig erscheinen alle Geräte der zugewiesenen Konten. Unter
-**iCloud-Geräteauswahl** die Option **Alle Geräte anzeigen** deaktivieren und
-die gewünschten Geräte aus den Kontocaches hinzufügen. Mit leerer Auswahl
-erscheinen keine Apple-Geräte. Nach einer neuen Kontozuordnung die Konfiguration
-übernehmen und das Formular erneut öffnen, um deren Geräte auszuwählen.
+Standardmäßig erscheinen alle Geräte der zugewiesenen Konten. Um die Anzeige
+einzuschränken, unter **iCloud** die Option **Alle Geräte anzeigen** deaktivieren
+und die gewünschten Geräte in der Spalte **Ausgewählt** markieren. Nach einer
+neuen Kontozuordnung die Konfiguration übernehmen und das Formular erneut öffnen,
+um die Geräteliste aus dem Cache zu laden.
+
+Der Formularbereich **GoogleCloud** zeigt den Status der Standortanbindung an.
+Für GoogleCloud ist derzeit keine Standortquelle angeschlossen.
 
 ## Kachel und IPSView gestalten
 
@@ -45,6 +47,12 @@ und ein eigenes OpenFreeMap-Profil. Im **IPSView-Designer** stehen der
 gemeinsame IPSView-Stil mit Schrift und Farben sowie eigene Markerfarben
 zur Verfügung. Eine Farbkarte mit Legende zeigt in jedem Designer, wo
 die Einstellungen wirken.
+
+In den Gerätelisten unter **iCloud** und **Fahrzeuge** lässt sich pro Eintrag eine
+**Markerfarbe** wählen. Sie gilt für Karte und Objektliste in Kachel und IPSView.
+Ein gestrichelter Rand kennzeichnet einen individuell gefärbten Marker mit einer
+letzten bekannten Position. **Designer-Standard** übernimmt wieder die Farbe
+aus dem jeweiligen Designer.
 
 Unter **OpenFreeMap** lassen sich Darstellungsmodus, helle und dunkle
 Kartenstile, Detailstufen, Beschriftungssprache und Kartenfarben

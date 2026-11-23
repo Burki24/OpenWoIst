@@ -137,12 +137,12 @@ button:disabled { opacity: var(--ipsview-role-disabled-opacity, .55); cursor: de
     width: .6rem;
     height: .6rem;
     margin-top: .38rem;
-    background: var(--device);
+    background: var(--object-marker-color, var(--default-marker-color, var(--device)));
     border-radius: 50%;
 }
 
-[data-kind="vehicle"] .symbol, [data-kind="demo"] .symbol { background: var(--vehicle); border-radius: .15rem; }
-[data-stale="true"] .symbol { background: var(--old); }
+[data-kind="vehicle"] .symbol, [data-kind="demo"] .symbol { --default-marker-color: var(--vehicle); border-radius: .15rem; }
+[data-stale="true"] .symbol { --default-marker-color: var(--old); }
 .location-marker .symbol {
     box-sizing: border-box;
     width: 22px;
@@ -151,6 +151,7 @@ button:disabled { opacity: var(--ipsview-role-disabled-opacity, .55); cursor: de
     border: 2px solid #fff;
     box-shadow: 0 1px 5px #0008;
 }
+.location-marker.has-marker-color[data-stale="true"] .symbol { border-style: dashed; }
 .location-marker[data-selected="true"] .symbol { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .leaflet-container { font-family: inherit; }

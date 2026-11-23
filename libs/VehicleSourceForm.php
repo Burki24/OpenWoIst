@@ -38,6 +38,7 @@ trait VehicleSourceForm
             'VehicleLongitude'   => $fields,
             'VehicleTimestamp'   => $fields,
             'VehicleAdvanced'    => PositionConverter::supports($mode),
+            'VehicleMarkerColor' => $json || $fields || $mode === 'demo',
             'MoveTestVehicle'    => $mode === 'demo',
             'CheckVehicleSource' => $json || $fields
         ];
@@ -45,64 +46,63 @@ trait VehicleSourceForm
 
     private function configureVehicleForm(array $form): array
     {
-        $fields = array_column($form['elements'], null, 'name');
-        $vehicles = $this->additionalVehicleForm($fields);
         $selectedMode = $this->ReadPropertyString('VehicleMode');
         $format = $this->ReadPropertyString('VehicleJSONFormat');
-        $implicitFormat = $this->isJSONVehicleMode($selectedMode) ? $selectedMode : 'json';
-        foreach ($form['elements'] as &$field) {
-            // Show saved provider modes as JSON without rewriting the instance configuration.
-            if (($field['name'] ?? '') === 'VehicleMode' && $implicitFormat !== 'json') {
-                foreach ($field['options'] as &$option) {
-                    if ($option['value'] === 'json') {
-                        $option['value'] = $implicitFormat;
-                    }
-                }
-                unset($option);
+        foreach ($form['elements'] as &$panel) {
+            if (($panel['name'] ?? '') !== 'VehicleSources') {
+                continue;
             }
-            if (($field['name'] ?? '') === 'VehicleJSONFormat' && $format === '') {
-                foreach ($field['options'] as &$option) {
-                    if ($option['value'] === $implicitFormat) {
-                        $option['value'] = '';
-                    }
-                }
-                unset($option);
-            }
+            $items = array_column($panel['items'], null, 'name');
+            $legacy = $items['ExistingVehicleSettings']['items'];
+            $items['Vehicles'] = $this->additionalVehicleForm($items['Vehicles'], array_column($legacy, null, 'name'));
+            $items['ExistingVehicleSettings']['items'] = $this->legacyVehicleOptions($legacy, $selectedMode, $format);
+            $panel['items'] = array_values($items);
+            break;
         }
-        unset($field);
+        unset($panel);
 
         foreach ($this->vehicleFormVisibility($this->resolveVehicleFormat($selectedMode, $format)) as $name => $visible) {
             $form['elements'] = $this->SetFormFieldVisibility($form['elements'], [$name], $visible);
             $form['actions'] = $this->SetFormFieldVisibility($form['actions'], [$name], $visible);
         }
-        $legacy = ['VehicleMode', 'VehicleJSONFormat', 'VehicleAssignments', 'VehicleAdvanced'];
-        $items = [];
-        foreach ($form['elements'] as $index => $field) {
-            $name = $field['name'] ?? '';
-            if ($name === 'Vehicles') {
-                $form['elements'][$index] = $vehicles;
-            } elseif (in_array($name, $legacy, true)) {
-                $items[] = $field;
-                unset($form['elements'][$index]);
-            }
-        }
-        $form['elements'] = array_values($form['elements']);
-        $form['elements'][] = [
-            'type'    => 'ExpansionPanel',
-            'name'    => 'ExistingVehicleSettings',
-            'caption' => 'Existing vehicle source and test vehicle',
-            'items'   => $items
-        ];
         return $form;
     }
 
-    private function additionalVehicleForm(array $fields): array
+    private function legacyVehicleOptions(array $fields, string $mode, string $format): array
+    {
+        // Show saved provider modes as JSON without rewriting the instance configuration.
+        $implicitFormat = $this->isJSONVehicleMode($mode) ? $mode : 'json';
+        foreach ($fields as &$field) {
+            if ($field['name'] === 'VehicleMode' && $implicitFormat !== 'json') {
+                $field['options'] = $this->replaceOptionValue($field['options'], 'json', $implicitFormat);
+            }
+            if ($field['name'] === 'VehicleJSONFormat' && $format === '') {
+                $field['options'] = $this->replaceOptionValue($field['options'], $implicitFormat, '');
+            }
+        }
+        unset($field);
+        return $fields;
+    }
+
+    private function replaceOptionValue(array $options, string $previous, string $replacement): array
+    {
+        foreach ($options as &$option) {
+            if ($option['value'] === $previous) {
+                $option['value'] = $replacement;
+            }
+        }
+        unset($option);
+        return $options;
+    }
+
+    private function additionalVehicleForm(array $list, array $fields): array
     {
         $modes = array_values(array_filter($fields['VehicleMode']['options'], static fn (array $option): bool => in_array($option['value'], ['json', 'fields'], true)));
-        $list = $fields['Vehicles'];
+        $markerColor = ['name' => 'CarMarkerColor'] + array_diff_key($fields['VehicleMarkerColor'], ['name' => true, 'visible' => true]);
         $list['columns'] = [
             ['name' => 'CarName', 'caption' => 'Vehicle name', 'width' => 'auto', 'add' => '', 'save' => true],
-            ['name' => 'CarMode', 'caption' => 'Vehicle source', 'width' => '200px', 'add' => 'json', 'edit' => ['type' => 'Select', 'options' => $modes]]
+            ['name' => 'CarMode', 'caption' => 'Vehicle source', 'width' => '200px', 'add' => 'json', 'edit' => ['type' => 'Select', 'options' => $modes]],
+            ['name' => 'CarMarkerColor', 'caption' => 'Marker color', 'width' => '140px', 'add' => -1, 'edit' => array_diff_key($markerColor, ['name' => true, 'caption' => true])]
         ];
         foreach (['CarFormat' => 'json', 'CarPosition' => 0, 'CarLatitude' => 0, 'CarLongitude' => 0, 'CarTimestamp' => 0,
             'CarTimeFormat'   => 'default', 'CarDecimalSeparator' => '.'] as $name => $default) {
@@ -129,6 +129,7 @@ trait VehicleSourceForm
             $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'JSON variable', 'items' => $json];
             $list['form'][] = ['type' => 'ExpansionPanel', 'caption' => 'Separate position variables', 'items' => $coordinates];
         }
+        $list['form'][] = $markerColor;
         return $list;
     }
 

@@ -23,27 +23,38 @@ trait ICloudDeviceSelection
         return $cache;
     }
 
-    /** A null selection includes all devices. An empty explicit selection includes none. */
-    private function selectedDeviceKeys(bool $includeAllMode = false): ?array
+    private function deviceSettings(): array
     {
-        if (!$includeAllMode && $this->ReadPropertyBoolean('ShowAllDevices')) {
-            return null;
-        }
         $rows = json_decode($this->ReadPropertyString('SelectedDevices'), true, 8);
-        $keys = [];
+        $settings = [];
         foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
             $key = $row['DeviceKey'] ?? null;
             if (is_string($key) && preg_match('/\A[a-f0-9]{64}\z/', $key) === 1) {
-                $keys[$key] = true;
+                // Rows saved with the original selection list were included by definition.
+                $settings[$key] = [
+                    'Included'    => ($row['Included'] ?? true) === true,
+                    'MarkerColor' => LocationSnapshot::markerColor($row['MarkerColor'] ?? null) ?? -1
+                ];
             }
         }
+        return $settings;
+    }
+
+    /** A null selection includes all devices. An empty explicit selection includes none. */
+    private function selectedDeviceKeys(?array $settings = null): ?array
+    {
+        if ($this->ReadPropertyBoolean('ShowAllDevices')) {
+            return null;
+        }
+        $keys = array_fill_keys(array_keys(array_filter($settings ?? $this->deviceSettings(), static fn (array $device): bool => $device['Included'])), true);
         ksort($keys, SORT_STRING);
         return $keys;
     }
 
     private function configureDeviceSelection(array $form): array
     {
-        $choices = [];
+        $settings = $this->deviceSettings();
+        $rows = [];
         foreach ($this->accountIDs() as $id) {
             if (!$this->isICloudAccount($id)) {
                 continue;
@@ -66,21 +77,24 @@ trait ICloudDeviceSelection
                 $name = is_string($device['name'] ?? null) ? trim($device['name']) : '';
                 $model = is_string($device['model'] ?? null) ? trim($device['model']) : '';
                 $caption = ($name !== '' ? $name : $this->Translate('Apple device')) . ($model !== '' ? ' (' . $model . ')' : '');
-                $choices[$key] = ['caption' => $caption . ' — ' . $account, 'value' => $key];
+                $rows[$key] = ['DeviceKey' => $key, 'DeviceLabel' => $caption . ' — ' . $account]
+                    + ($settings[$key] ?? ['Included' => false, 'MarkerColor' => -1]);
             }
         }
-        foreach ($this->selectedDeviceKeys(true) as $key => $_) {
-            $choices[$key] ??= ['caption' => $this->Translate('Unavailable Apple device'), 'value' => $key];
+        foreach ($settings as $key => $device) {
+            if ($device['Included'] || $device['MarkerColor'] !== -1) {
+                $rows[$key] ??= ['DeviceKey' => $key, 'DeviceLabel' => $this->Translate('Unavailable Apple device')] + $device;
+            }
         }
-        uasort($choices, static fn (array $left, array $right): int => strnatcasecmp($left['caption'], $right['caption']));
+        usort($rows, static fn (array $left, array $right): int => strnatcasecmp($left['DeviceLabel'], $right['DeviceLabel']));
 
         foreach ($form['elements'] as &$element) {
-            if (($element['name'] ?? '') !== 'DeviceSelectionPanel') {
+            if (($element['name'] ?? '') !== 'ICloudSources') {
                 continue;
             }
             foreach ($element['items'] as &$field) {
                 if (($field['name'] ?? '') === 'SelectedDevices') {
-                    array_push($field['columns'][0]['edit']['options'], ...array_values($choices));
+                    $field['values'] = $rows;
                 }
             }
             unset($field);
