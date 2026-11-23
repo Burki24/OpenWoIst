@@ -24,10 +24,12 @@ BMW-CarData-, OwnTracks- und Traccar-JSON. Smartcar und Hyundai/Kia sind
 als Fahrzeug-Voreinstellungen mit simulierten Positionswechseln in Kachel
 und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
 
-1. [ ] **Volvo, Renault Z.E. und Tronity.** Unter **Weitere Fahrzeuge** drei
-   Voreinstellungen ergänzen. Pro Quellmodul prüfen, welche Variable den
-   Zeitpunkt der Position liefert und wann sie geschrieben wird. Den
-   bestehenden Library-eigenen Positionshelper für alle drei verwenden.
+1. [x] **Volvo, Renault Z.E. und Tronity.** Die Voreinstellungen sind auf
+   `dev` (`03c49ae`) in der nativen Kachel und in IPSView Desktop abgenommen.
+   Alle drei Marker wechselten mit simulierten Daten bei geöffneten Ansichten
+   die Position. iCloud-Marker und Testfahrzeug blieben sichtbar. Der
+   Vorher-nachher-Abgleich bestätigte die unveränderten Zuordnungen und das
+   unveränderte Haussteuerungsprofil.
 2. [ ] **Traccar aus dem Symcon Store.** Die direkte Auswahl einer
    Traccar-Geräteinstanz prüfen. Der Adapter braucht einen eindeutig
    erkennbaren Fix-Zeitpunkt, da `LastUpdate` auch Gerätezeit enthalten kann.
