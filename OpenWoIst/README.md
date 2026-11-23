@@ -102,9 +102,9 @@ Broker abonniert der [MQTT Client in Symcon](https://www.symcon.de/de/service/do
 das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-server/)
 sendet die Quelle direkt dorthin. Sende eine erste Meldung auf das gewünschte
 Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
-**String** an. Wähle in
-OpenWoIst unter **Weitere Standortgeräte → Standortgeräte** das **JSON-Format
-OpenWoIst** und ordne die jeweilige String-Variable zu.
+**String** an. Wähle in OpenWoIst unter **Weitere Standortgeräte → Standortgeräte**
+das JSON-Format **OpenWoIst (Home Assistant / MQTT-GPS)** und ordne die jeweilige
+String-Variable zu.
 
 ### Home Assistant
 

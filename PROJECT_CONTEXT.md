@@ -47,11 +47,17 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Koordinaten und Höhe, die Messzeit steht separat. Ein gemeinsam
    bereitgestellter Positionsdatensatz mit Messzeit ermöglicht die Anbindung.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
-4. [ ] **Weitere Quellen über bestehende Symcon-Variablen.** Home Assistant
-   und MQTT-GPS verwenden das vorhandene OpenWoIst-JSON-Format unter
-   **Weitere Standortgeräte**. Die [Modulanleitung](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
-   enthält beide Beispiele. Lokal mit simulierten Positionswechseln geprüft.
-   Die Abnahme auf der Entwicklungsinstanz steht aus.
+4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
+   (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation
+   und eines MQTT-GPS-Senders über den Symcon-MQTT-Server empfangen.
+   Kachel und IPSView Desktop zeigten beide Positionswechsel und behielten
+   bei fehlender Messzeit die letzte bekannte Position. Die bestehenden
+   Zuordnungen und das Haussteuerungsprofil blieben erhalten.
+   [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
+
+**Formularüberarbeitung.** Nach der Umsetzung der Importwege prüfen, welche
+Einträge sich zusammenfassen lassen und welche Bezeichnungen und Hinweise
+die Auswahl und Zuordnung im Formular verständlicher machen.
 
 **Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
 einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub

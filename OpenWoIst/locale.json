@@ -16,6 +16,7 @@
             "Additional vehicles": "Weitere Fahrzeuge",
             "Additional location devices": "Weitere Standortgeräte",
             "Location devices": "Standortgeräte",
+            "For Home Assistant or MQTT GPS, select a string variable containing a complete position in OpenWoIst format.": "Wähle für Home Assistant oder MQTT-GPS eine String-Variable mit einer vollständigen Position im OpenWoIst-Format.",
             "Device name": "Gerätename",
             "Location device": "Standortgerät",
             "Existing vehicle source and test vehicle": "Bisherige Fahrzeugquelle und Testfahrzeug",

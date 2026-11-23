@@ -292,7 +292,7 @@
                         {
                             "name": "TrackerFormat",
                             "caption": "JSON format",
-                            "width": "140px",
+                            "width": "280px",
                             "add": "owntracks",
                             "edit": {
                                 "type": "Select",
@@ -302,7 +302,7 @@
                                         "value": "owntracks"
                                     },
                                     {
-                                        "caption": "OpenWoIst",
+                                        "caption": "OpenWoIst (Home Assistant / MQTT-GPS)",
                                         "value": "json"
                                     }
                                 ]
@@ -332,6 +332,10 @@
                             }
                         }
                     ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "For Home Assistant or MQTT GPS, select a string variable containing a complete position in OpenWoIst format."
                 }
             ]
         },
