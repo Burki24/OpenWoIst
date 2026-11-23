@@ -8,6 +8,7 @@ The files in this directory are vendored from
 | `ConfigurationFormHelper.php` | 1.0.3 | `532c26b557dff545b1a7ea3a845729a932fb65321d62d6276374a33de959deba` |
 | `DebugFlowHelper.php` | 1.1.0 | `ee763d210b8883c5e8a483e51f6a87e9cefeee73a89f6ef7bc7b4cfd61e28005` |
 | `DebugHelper.php` | 1.0.5 | `a3db963c500a56d7daaa6cab71fe51f236d9859c93cb75cc9100e9f47dc93d04` |
+| `GeofenceHelper.php` | 1.2.1 | `8e856a675a7b53106979a2f6346ee38de959aa57208ffb5b23ac721fd96f6ca8` |
 | `HttpResponseHelper.php` | 1.1.0 | `be4fae4c23f757ab462237d8e74d2a9dca1b504937ed4d4b51c7ff76004cf1cd` |
 | `IPSViewHTMLPageHelper.php` | 1.5.6 | `c5ac1aeaefa3b909ab3bfa07316322e9b3676dfb08a4e3a9adab63e495ba9c6b` |
 | `HelperTranslationHelper.php` | 1.0.2 | `7c0184b51923e3f4f78fb150d403ea092b0117b0b01fb5c04fdc4568b269ebdd` |
@@ -20,6 +21,8 @@ The files in this directory are vendored from
 | `IPSViewStyleHelper.php` | 1.6.10 | `16773fc594ae3b6df9b7d352611ec79a02c4c7089466769c94b77b1f90cdc7d9` |
 | `OpenFreeMapHelper.php` | 1.0.3 | `86bb678869e27cb188dac9b6ce0d000b0b46a978a22776052bddaf889db69209` |
 | `ResponsiveVisualizationHelper.php` | 1.0.4 | `66fd166b804f255e24be1f5bda0b852228f3cc1e6c45c56729b8a55385a20224` |
+| `ReverseGeocodingHelper.php` | 1.1.1 | `074ff0b278647716e87e844c6a58942070feba4b051632dcaa15cf721298abfa` |
+| `PersistentJsonCacheHelper.php` | 1.0.1 | `e048ce434b80f396e1821fdfba65982ad6c02123c50a2e335c6d436d0aa3ae38` |
 | `VisualizationThemeConfigurationHelper.php` | 1.0.2 | `a0319239cf638dc42586fc77b16986f33f8b08387dec4bfc8d734dd2c5a1b316` |
 | `VisualizationThemeHelper.php` | 1.1.2 | `ffd5ba38a26191fd40c5900f8338ae520fa12904474493712eac7975304f4672` |
 
