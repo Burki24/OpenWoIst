@@ -121,9 +121,11 @@ Standortvariablen enthalten die Koordinaten, die Empfangszeit gilt für
 beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
 
 **Tesla Fleet Telemetry.** Der JSON-Import übernimmt `Location` und
-`createdAt` aus demselben Fahrzeugbericht. Positionswechsel und ungültige
-Berichte sind lokal mit Testdaten geprüft. Die Abnahme auf der
-Entwicklungsinstanz und die direkte Tesla-Instanzauswahl stehen aus.
+`createdAt` aus demselben Fahrzeugbericht. Auf `dev` (`fe462f0`, Version
+0.23) wanderte der Marker mit Testdaten in der nativen Kachel und in
+IPSView Desktop. Ein ungültiger Bericht ließ den letzten Standort stehen.
+Quellzuordnungen und Haussteuerungsprofil blieben erhalten. Die direkte
+Tesla-Instanzauswahl steht aus.
 [Tesla-Fahrzeugbericht](https://github.com/teslamotors/fleet-telemetry/blob/bb7c8a931e46da3b3eb6d20a67541c8f755f1ee6/protos/vehicle_data.proto)
 
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
