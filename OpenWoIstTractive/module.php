@@ -13,19 +13,9 @@ class OpenWoIstTractive extends IPSModuleStrict
 {
     use DebugFlowHelper;
 
-    private const TRACTIVE_DEVICE = '{A259E80D-C7B4-F5A9-F82B-B9B05F71B4F3}';
     private const SOURCE_MISSING = 201;
     private const VARIABLES_MISSING = 202;
     private const POSITION_MISSING = 203;
-    private const MAX_CYCLE_SECONDS = 15;
-    private const OBJECT_MESSAGES = [OM_CHILDADDED, OM_CHILDREMOVED, OM_UNREGISTER];
-    private const POSITION_VARIABLES = [
-        'timestamp'          => ['LastPositionMessage', VARIABLETYPE_INTEGER],
-        'latitude'           => ['LastLatitude', VARIABLETYPE_FLOAT],
-        'longitude'          => ['LastLongitude', VARIABLETYPE_FLOAT],
-        'horizontalAccuracy' => ['PositionUncertainty', VARIABLETYPE_FLOAT],
-        'completed'          => ['LastUpdate', VARIABLETYPE_INTEGER]
-    ];
 
     public function Create(): void
     {
@@ -62,12 +52,12 @@ class OpenWoIstTractive extends IPSModuleStrict
             }
             try {
                 $tracker = $this->ReadPropertyInteger('TrackerInstance');
-                if ($tracker <= 0 || !IPS_InstanceExists($tracker) || IPS_GetInstance($tracker)['ModuleInfo']['ModuleID'] !== self::TRACTIVE_DEVICE) {
+                if (!TractivePosition::isDevice($tracker)) {
                     $this->bindTracker(0, []);
                     $this->SetStatus(self::SOURCE_MISSING);
                     return;
                 }
-                $fields = $this->trackerVariables($tracker);
+                $fields = TractivePosition::variables($tracker);
                 $this->bindTracker($tracker, $fields);
                 $this->SetStatus($fields === [] ? self::VARIABLES_MISSING : IS_ACTIVE);
             } finally {
@@ -85,7 +75,7 @@ class OpenWoIstTractive extends IPSModuleStrict
                 $this->Update();
                 return;
             }
-            if ($SenderID === $this->ReadPropertyInteger('TrackerInstance') && in_array($Message, self::OBJECT_MESSAGES, true)) {
+            if ($SenderID === $this->ReadPropertyInteger('TrackerInstance') && in_array($Message, TractivePosition::OBJECT_MESSAGES, true)) {
                 $this->Update();
                 return;
             }
@@ -104,39 +94,15 @@ class OpenWoIstTractive extends IPSModuleStrict
                     return;
                 }
                 $pending = json_decode($this->GetBuffer('PendingPosition'), true) ?? [];
-                $started = $pending['started'] ?? $TimeStamp;
-                if ($TimeStamp < $started || $TimeStamp - $started > self::MAX_CYCLE_SECONDS) {
-                    $pending = [];
-                    $started = $TimeStamp;
-                }
-                if ($field !== 'completed') {
-                    $pending = TractivePosition::record($pending, $field, $Data[0] ?? null);
-                    $this->SetBuffer('PendingPosition', $pending === [] ? '' : json_encode($pending + ['started' => $started], JSON_THROW_ON_ERROR));
-                    return;
-                }
-                $remaining = ($pending['cycles'] ?? 0) - 1;
-                $this->SetBuffer('PendingPosition', $remaining > 0 ? json_encode(['cycles' => $remaining, 'invalid' => true, 'started' => $started], JSON_THROW_ON_ERROR) : '');
-                if ($pending !== []) {
-                    $this->publishPosition(TractivePosition::completed($pending, time()));
+                [$pending, $fix, $finished] = TractivePosition::receive($pending, $field, $Data[0] ?? null, $TimeStamp, time());
+                $this->SetBuffer('PendingPosition', $pending === [] ? '' : json_encode($pending, JSON_THROW_ON_ERROR));
+                if ($finished) {
+                    $this->publishPosition($fix);
                 }
             } finally {
                 IPS_SemaphoreLeave($lock);
             }
         }, true);
-    }
-
-    private function trackerVariables(int $tracker): array
-    {
-        $fields = [];
-        foreach (self::POSITION_VARIABLES as $field => [$ident, $type]) {
-            $id = (int) @IPS_GetObjectIDByIdent($ident, $tracker);
-            if ($id > 0 && IPS_VariableExists($id) && IPS_GetVariable($id)['VariableType'] === $type) {
-                $fields[$field] = $id;
-            } elseif ($field !== 'horizontalAccuracy') {
-                return [];
-            }
-        }
-        return $fields;
     }
 
     private function bindTracker(int $tracker, array $fields): void
@@ -153,7 +119,7 @@ class OpenWoIstTractive extends IPSModuleStrict
 
         $desired = [0 => [IPS_KERNELMESSAGE]];
         if ($tracker > 0) {
-            $desired[$tracker] = self::OBJECT_MESSAGES;
+            $desired[$tracker] = TractivePosition::OBJECT_MESSAGES;
         }
         foreach ($fields as $id) {
             $desired[$id] = [VM_UPDATE];

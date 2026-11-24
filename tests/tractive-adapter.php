@@ -31,6 +31,17 @@ $metadata->setValue(null, $modules);
 
 $trackerID = IPS_CreateInstance($tractiveDevice);
 $trackerFixture = IPS\InstanceManager::getInstanceInterface($trackerID);
+$directMapID = IPS_CreateInstance($mapModule);
+$directMap = IPS\InstanceManager::getInstanceInterface($directMapID);
+$directForm = json_decode($directMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
+$trackerPanel = array_column($directForm['elements'], null, 'name')['TrackerSources'];
+$directList = array_column(array_filter($trackerPanel['items'], static fn (array $item): bool => isset($item['name'])), null, 'name')['TractiveTrackers'] ?? [];
+$directColumns = array_column($directList['columns'] ?? [], null, 'name');
+check(array_keys($directColumns) === ['TractiveInstance', 'TractiveMarkerColor']
+    && $directColumns['TractiveInstance']['edit']['type'] === 'SelectInstance'
+    && $directColumns['TractiveInstance']['edit']['validModules'] === [$tractiveDevice]
+    && $directList['add'] && $directList['delete'], 'The map accepts multiple original Tractive devices with optional marker colors.');
+
 $adapterID = IPS_CreateInstance($adapterModule);
 $adapter = IPS\InstanceManager::getInstanceInterface($adapterID);
 $positionID = IPS_GetObjectIDByIdent('Position', $adapterID);
@@ -156,4 +167,103 @@ check($adapter->GetReferenceList() === [$trackerID, ...array_values($sourceIDs)]
 IPS_SetProperty($adapterID, 'TrackerInstance', 0);
 IPS_ApplyChanges($adapterID);
 check($adapter->GetReferenceList() === [] && GetValueString($positionID) === '' && IPS_GetObjectIDByIdent('Position', $adapterID) === $positionID, 'Unassigning the tracker clears its data and subscriptions and retains the output variable ID.');
-echo "OpenWoIst passive Tractive adapter passed for 1.14 and 1.19 Beta.\n";
+
+$secondTrackerID = IPS_CreateInstance($tractiveDevice);
+IPS_SetName($trackerID, 'Test tracker');
+IPS_SetName($secondTrackerID, 'Test tracker');
+IPS_SetProperty($directMapID, 'Accounts', json_encode([['AccountID' => $accountID]], JSON_THROW_ON_ERROR));
+IPS_SetProperty($directMapID, 'VehicleMode', 'demo');
+IPS_SetProperty($directMapID, 'EnableIPSView', true);
+IPS_ApplyChanges($directMapID);
+$directBase = tileState($directMap)['sources'];
+$secondSources = [];
+foreach (array_keys($sourceIDs) as $ident) {
+    $secondSources[$ident] = IPS_GetObjectIDByIdent($ident, $secondTrackerID);
+}
+$rows = [
+    ['TractiveInstance' => $trackerID, 'TractiveMarkerColor' => 0x2256A6],
+    ['TractiveInstance' => $secondTrackerID, 'TractiveMarkerColor' => 0],
+    ['TractiveInstance' => $accountID]
+];
+IPS_SetProperty($directMapID, 'TractiveTrackers', json_encode([...$rows, $rows[0]], JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($directMapID);
+$watch = (new ReflectionMethod($directMap, 'GetMessageList'))->invoke($directMap);
+foreach ([...array_values($sourceIDs), ...array_values($secondSources)] as $id) {
+    check(in_array(VM_UPDATE, $watch[$id], true), 'The map discovers and subscribes to the original local variables.');
+}
+check(!isset($watch[$adapterID]) && !isset($watch[$positionID]) && !isset($watch[$accountID])
+    && in_array($trackerID, $directMap->GetReferenceList(), true)
+    && in_array($secondTrackerID, $directMap->GetReferenceList(), true), 'The map references both original devices, with no adapter or unrelated device involved.');
+$directEmbed = $directMap->GetIPSViewHTML();
+$directAccess = bootstrap($directEmbed)['options'];
+$directPath = dirname($directAccess['page']) . '/state';
+
+$send = static function (array $ids, string $ident, int|float $value) use ($directMap, $now): void
+{
+    $id = $ids[$ident];
+    $old = GetValue($id);
+    IPS\InstanceManager::getInstanceInterface(IPS_GetParent($id))->WriteFixture($ident, $value);
+    $directMap->MessageSink($now, $id, VM_UPDATE, [$value, $value !== $old, $old, $now]);
+};
+$reportValues = [
+    'LastPositionMessage' => 'timestamp',
+    'LastLatitude'        => 'latitude',
+    'LastLongitude'       => 'longitude'
+];
+foreach ($reportValues as $ident => $key) {
+    $send($sourceIDs, $ident, $reports['1.14'][$key]);
+    $send($secondSources, $ident, $reports['1.19'][$key]);
+}
+$send($sourceIDs, 'PositionUncertainty', 8.0);
+$directMap->Update();
+check(tileState($directMap)['sources'][2]['objects'][0]['location'] === null, 'A timer or manual refresh cannot take coordinates from an unfinished report.');
+$send($secondSources, 'LastUpdate', $now);
+check(tileState($directMap)['sources'][2]['objects'][0]['location'] === null, 'A different tracker cannot complete the first tracker’s report.');
+$send($sourceIDs, 'LastUpdate', $now);
+$directSources = tileState($directMap)['sources'];
+[$firstDirect, $secondDirect, $unrelated] = array_slice($directSources, 2);
+check(array_slice($directSources, 0, 2) === $directBase
+    && count($directSources) === 5 && !$unrelated['available']
+    && $firstDirect['id'] !== $secondDirect['id'] && $firstDirect['name'] === $secondDirect['name'], 'Distinct tracker instances can share a name; duplicate rows and unrelated source variables are ignored.');
+check($firstDirect['objects'][0]['location'] === $reports['1.14'] + ['accuracy' => 8.0]
+    && $secondDirect['objects'][0]['location'] === $reports['1.19'] + ['accuracy' => null]
+    && $firstDirect['objects'][0]['markerColor'] === 0x2256A6
+    && $secondDirect['objects'][0]['markerColor'] === 0, 'Both Store contracts update the correct marker and preserve its color.');
+[$status, $response] = mapRequest($directMap, $directPath, token: $directAccess['token']);
+check($status === 200 && json_decode($response, true, 32, JSON_THROW_ON_ERROR)['sources'] === $directSources
+    && $directMap->GetIPSViewHTML() === $directEmbed, 'The same direct Tractive positions reach IPSView without replacing the embedding.');
+
+$send($sourceIDs, 'LastPositionMessage', $now - 15);
+$send($sourceIDs, 'LastLatitude', 51.7);
+$send($sourceIDs, 'LastUpdate', $now);
+check(tileState($directMap)['sources'][2] === $firstDirect, 'An incomplete direct update retains its own last fix and measurement time.');
+IPS_SetProperty($directMapID, 'TractiveTrackers', json_encode([$rows[1]], JSON_THROW_ON_ERROR));
+IPS_ApplyChanges($directMapID);
+$remaining = tileState($directMap)['sources'];
+$watch = (new ReflectionMethod($directMap, 'GetMessageList'))->invoke($directMap);
+check(count($remaining) === 3 && $remaining[2] === $secondDirect
+    && !isset($watch[$sourceIDs['LastUpdate']]) && !in_array($trackerID, $directMap->GetReferenceList(), true)
+    && mapRequest($directMap, $directPath, token: $directAccess['token'])[0] === 403, 'Removing one instance removes its position and subscriptions and revokes the old view token.');
+
+$formerCompletion = $secondSources['LastUpdate'];
+IPS_SetIdent($formerCompletion, 'PreviousLastUpdate');
+$directMap->Update();
+$missing = tileState($directMap)['sources'][2];
+check(!$missing['available'] && !$missing['objects'][0]['current']
+    && $missing['objects'][0]['location'] === $secondDirect['objects'][0]['location'], 'A missing original variable leaves the last known position visible.');
+$replacement = IPS_CreateVariable(VARIABLETYPE_INTEGER);
+IPS_SetParent($replacement, $secondTrackerID);
+IPS_SetIdent($replacement, 'LastUpdate');
+$directMap->MessageSink($now, $secondTrackerID, OM_CHILDADDED, [$replacement]);
+$secondSources['LastUpdate'] = $replacement;
+$watch = (new ReflectionMethod($directMap, 'GetMessageList'))->invoke($directMap);
+check(isset($watch[$replacement]) && !isset($watch[$formerCompletion]), 'The map subscribes to the replacement variable automatically.');
+$newDirectFix = ['latitude' => 52.0, 'longitude' => -0.5, 'timestamp' => $now - 10];
+foreach ($reportValues as $ident => $key) {
+    $send($secondSources, $ident, $newDirectFix[$key]);
+}
+$send($secondSources, 'LastUpdate', $now);
+$rebound = tileState($directMap)['sources'][2];
+check($rebound['id'] === $secondDirect['id'] && $rebound['objects'][0]['current']
+    && $rebound['objects'][0]['location'] === $newDirectFix + ['accuracy' => null], 'A complete report on the replacement binding moves the same marker.');
+echo "OpenWoIst direct Tractive selection and compatibility adapter passed for 1.14 and 1.19 Beta.\n";

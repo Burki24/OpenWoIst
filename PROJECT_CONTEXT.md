@@ -53,9 +53,10 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    iCloud-Marker und Testfahrzeug blieben sichtbar. Die Prüfsummen der
    Testkonfiguration und des Haussteuerungsprofils stimmten nach dem Test
    mit dem Ausgangsstand überein. Demel42 stimmte der Nutzung der
-   Schnittstelle zu. Der Adapter übernimmt Positionen jetzt aus den
-   lokalen Gerätevariablen bei `LastUpdate`. Die Laufzeitabnahme des
-   lokalen Imports steht aus.
+   Schnittstelle zu. Die Karteninstanz bietet eine direkte Liste für mehrere
+   vorhandene Tractive-Geräte. Lokale Tests prüfen zwei gleichnamige Tracker
+   mit simulierten Daten für 1.14 und 1.19 Beta. Die Laufzeitabnahme der
+   direkten Auswahl steht aus.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
    (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation

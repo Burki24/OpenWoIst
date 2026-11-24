@@ -20,6 +20,8 @@ require_once __DIR__ . '/../libs/LocationZones.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
+require_once __DIR__ . '/../libs/TractivePosition.php';
+require_once __DIR__ . '/../libs/TractiveSources.php';
 require_once __DIR__ . '/../libs/VehicleSourceForm.php';
 
 use Burki24\SymconModuleHelper\ConfigurationFormHelper;
@@ -38,6 +40,8 @@ use OpenWoIst\LocationZones;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
 use OpenWoIst\PositionConverter;
+use OpenWoIst\TractivePosition;
+use OpenWoIst\TractiveSources;
 use OpenWoIst\VehicleSourceForm;
 
 class OpenWoIst extends IPSModuleStrict
@@ -56,6 +60,7 @@ class OpenWoIst extends IPSModuleStrict
     use LocationZones;
     use MapColorGuide;
     use MapDesign;
+    use TractiveSources;
     use VehicleSourceForm;
 
     private const ACCOUNT_MODULE = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
@@ -76,6 +81,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterPropertyString('SelectedDevices', '[]');
             $this->RegisterPropertyString('Vehicles', '[]');
             $this->RegisterPropertyString('Trackers', '[]');
+            $this->RegisterPropertyString('TractiveTrackers', '[]');
             $this->RegisterPropertyString('VehicleMode', 'off');
             $this->RegisterPropertyString('VehicleJSONFormat', '');
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
@@ -88,6 +94,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterPropertyInteger('StaleAfter', 900);
             $this->RegisterAttributeString('Snapshot', '');
             $this->RegisterAttributeInteger('DemoStep', 0);
+            $this->RegisterMessage(0, IPS_KERNELMESSAGE);
             $this->RegisterTimer('ReadSources', 0, 'OWIS_Update($_IPS["TARGET"]);');
             $this->registerLocationAddresses();
             $this->registerLocationZones();
@@ -110,11 +117,10 @@ class OpenWoIst extends IPSModuleStrict
             if ($demo && $this->GetValue('DemoPosition') === '') {
                 $this->writeDemoPosition($this->ReadAttributeInteger('DemoStep'));
             }
-            $this->syncReferences();
             if (!$this->ReadPropertyBoolean('EnableAddressResolution')) {
                 $this->ClearReverseGeocodingCache();
             }
-            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] ? 5000 : 0);
+            $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] || $this->configuredTractiveTrackers() !== [] ? 5000 : 0);
             $this->publish(true);
             $this->maintainIPSViewMap();
         }, true);
@@ -144,7 +150,10 @@ class OpenWoIst extends IPSModuleStrict
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($TimeStamp, $SenderID, $Message, $Data): void
         {
             parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-            if ($Message === VM_UPDATE && in_array($SenderID, array_column($this->configuredPositions(), 'trigger'), true)) {
+            if ($Message === VM_UPDATE) {
+                $this->publish(false, ['id' => $SenderID, 'observedAt' => $TimeStamp, 'value' => $Data[0] ?? null]);
+            } elseif (($Message === IPS_KERNELMESSAGE && ($Data[0] ?? null) === KR_READY)
+                || (in_array($Message, TractivePosition::OBJECT_MESSAGES, true) && isset($this->configuredTractiveTrackers()[$SenderID]))) {
                 $this->Update();
             }
         }, true);
@@ -271,18 +280,30 @@ class OpenWoIst extends IPSModuleStrict
         return max(60, min(86400, $this->ReadPropertyInteger('StaleAfter')));
     }
 
-    private function publish(bool $force): void
+    private function publish(bool $force, ?array $message = null): void
     {
         $lock = 'OpenWoIst.Snapshot.' . $this->InstanceID;
         if (!IPS_SemaphoreEnter($lock, 1000)) {
             return;
         }
         try {
+            $now = time();
+            $update = null;
+            if ($message === null) {
+                // The regular source refresh also recovers bindings when a provider creates variables later.
+                if ($force || $this->configuredTractiveTrackers() !== [] || $this->tractiveBindings() !== []) {
+                    $this->syncSourceSubscriptions($this->refreshTractiveBindings());
+                }
+            } else {
+                $update = $this->captureTractiveUpdate($message['id'], $message['observedAt'], $message['value'], $this->configuredTractiveTrackers(), $now);
+                if ($update === null && !in_array($message['id'], array_column($this->configuredPositions(), 'trigger'), true)) {
+                    return;
+                }
+            }
             $scope = $this->sourceScope();
             $previous = $this->storedSnapshot();
             $old = array_column($previous['sources'], null, 'id');
             $sources = [];
-            $now = time();
             $deviceSettings = $this->deviceSettings();
             $selectedDevices = $this->selectedDeviceKeys($deviceSettings);
             foreach ($this->accountIDs() as $id) {
@@ -297,6 +318,7 @@ class OpenWoIst extends IPSModuleStrict
             foreach ($this->configuredPositions() as $key => $position) {
                 $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
             }
+            $sources = array_merge($sources, $this->readTractiveSources($this->configuredTractiveTrackers(), $old, $update));
             if ($scope !== $this->sourceScope()) {
                 return;
             }
@@ -565,19 +587,34 @@ class OpenWoIst extends IPSModuleStrict
         return $this->configuredVehicles() + $this->configuredTrackers();
     }
 
-    private function syncReferences(): void
+    private function syncSourceSubscriptions(array $tractiveBindings): void
     {
         $positions = $this->configuredPositions();
-        $triggers = array_unique(array_column($positions, 'trigger'));
-        foreach ($this->GetMessageList() as $sender => $messages) {
-            if (!in_array($sender, $triggers, true) && in_array(VM_UPDATE, $messages, true)) {
-                $this->UnregisterMessage($sender, VM_UPDATE);
+        $triggers = array_column($positions, 'trigger');
+        $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
+        $desired = [];
+        foreach ($tractiveBindings as $id => $fields) {
+            $desired[$id] = TractivePosition::OBJECT_MESSAGES;
+            $triggers = array_merge($triggers, array_values($fields));
+            $references = array_merge($references, [$id], array_values($fields));
+        }
+        foreach (array_unique($triggers) as $id) {
+            if ($id > 0 && IPS_VariableExists($id)) {
+                $desired[$id] = [VM_UPDATE];
             }
         }
-        foreach (array_filter($triggers, static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)) as $trigger) {
-            $this->RegisterMessage($trigger, VM_UPDATE);
+        $managedMessages = [VM_UPDATE, ...TractivePosition::OBJECT_MESSAGES];
+        $subscriptions = $this->GetMessageList();
+        foreach ($subscriptions as $sender => $messages) {
+            foreach (array_diff(array_intersect($messages, $managedMessages), $desired[$sender] ?? []) as $message) {
+                $this->UnregisterMessage($sender, $message);
+            }
         }
-        $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
+        foreach ($desired as $sender => $messages) {
+            foreach (array_diff($messages, $subscriptions[$sender] ?? []) as $message) {
+                $this->RegisterMessage($sender, $message);
+            }
+        }
         foreach ($positions as $position) {
             if ($position['kind'] !== 'demo') {
                 $references = array_merge($references, array_filter($position['ids'], static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));

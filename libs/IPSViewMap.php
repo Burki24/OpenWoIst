@@ -158,6 +158,11 @@ trait IPSViewMap
             sort($trackers, SORT_STRING);
             $scope['trackers'] = $trackers;
         }
+        $tractive = array_keys($this->configuredTractiveTrackers());
+        if ($tractive !== []) {
+            sort($tractive, SORT_NUMERIC);
+            $scope['tractive'] = $tractive;
+        }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 

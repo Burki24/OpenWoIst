@@ -1,5 +1,9 @@
 # OpenWoIst Tractive
 
+Neue Tracker richtest du in der
+[OpenWoIst-Karteninstanz](../OpenWoIst/README.md#tractive-gps-geräte-hinzufügen)
+ein. Der Adapter bleibt für bestehende JSON-Zuordnungen verfügbar.
+
 Der Adapter übernimmt Koordinaten und Messzeit aus den lokalen Variablen
 einer vorhandenen Tractive-GPS-Geräteinstanz und fasst sie für die Karte
 in einer Symcon-Variable zusammen.

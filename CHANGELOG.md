@@ -2,8 +2,6 @@
 
 ## Fixes
 
-- **OpenWoIst Tractive** übernimmt Positionen aus der gewählten
-  Tractive-GPS-Geräteinstanz. Im Adapter genügt die Auswahl des Geräts.
 - OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
   sichtbar. Die Bedienelemente passen in eine Zeile.
@@ -17,8 +15,9 @@
   Versionsnummer an.
 - Optional ermittelte Adressen und einrichtbare Kreiszonen erscheinen in
   der Kachel und in IPSView. Die Zonenauswertung nutzt die Standortqualität.
-- **OpenWoIst Tractive** stellt die Position eines Tractive-Trackers mit
-  seiner Messzeit als JSON-Variable für die Karte bereit.
+- Unter **Weitere Standortgeräte → Tractive GPS** lassen sich mehrere
+  vorhandene Geräteinstanzen direkt auswählen. Die Karte übernimmt die
+  Positionsvariablen automatisch.
 
 - Das Quellenformular ist in **Fahrzeuge**, **iCloud** und **GoogleCloud**
   gegliedert. Die iCloud-Liste zeigt die Geräte der zugewiesenen Kontocaches.

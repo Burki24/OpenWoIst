@@ -84,6 +84,19 @@ Zugriffsschlüssel. Beim Deaktivieren wird der Zugriff gesperrt. Der
 Ausgabe-Helper bietet für die bestehende Variable eine separate
 Löschfunktion im Instanzformular.
 
+## Tractive-GPS-Geräte hinzufügen
+
+Öffne in der OpenWoIst-Karteninstanz **Weitere Standortgeräte → Tractive GPS**.
+Füge pro Tracker eine Zeile hinzu und wähle die vorhandene Geräteinstanz aus
+dem [Symcon-Modul Tractive GPS](https://www.symcon.de/de/module-store/demel41-tractivegps/).
+Jeder Tracker kann eine eigene Markerfarbe erhalten. OpenWoIst findet die
+Positionsvariablen automatisch und zeigt die Position nach dem nächsten
+vollständigen Bericht in Kachel und IPSView an.
+
+Geprüft sind die Variablenverträge von Tractive GPS 1.14 und 1.19 Beta. Bereits
+zugewiesene Positionsvariablen aus [OpenWoIst Tractive](../OpenWoIstTractive/README.md)
+funktionieren weiter.
+
 ## OwnTracks-Geräte hinzufügen
 
 Unter **Weitere Standortgeräte → Standortgeräte** pro Gerät einen Eintrag

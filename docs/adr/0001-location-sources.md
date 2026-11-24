@@ -12,12 +12,18 @@ und Traccar-Daten aus zugewiesenen JSON-Variablen beim Einlesen.
 Gespeicherte Anbieterwerte in `VehicleMode` gelten weiter, solange kein
 eigenes JSON-Format gewählt wird.
 
-Für Tractive sammelt die optionale Adapterinstanz Variablenaktualisierungen
-einer ausgewählten Tractive-GPS-Geräteinstanz. `LastUpdate` markiert den
-Abschluss. Die Messzeit stammt aus `LastPositionMessage`. Unvollständige
-oder überlappende Folgen werden verworfen. Das Quellmodul übernimmt seine
-Cloud-Abfragen wie bisher. Austauschformat für die Karte bleibt die
-normalisierte Positionsvariable mit derselben ID.
+Bei bekannten Quellmodulen mit verlässlichem Variablenvertrag wählen Benutzer
+die vorhandenen Geräteinstanzen in einer Liste. OpenWoIst ermittelt die
+Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene
+Einstellungen wie die Markerfarbe möglich. Das Quellmodul betreibt den
+Anbieterzugriff.
+
+Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
+Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
+`LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.
+Bereits eingerichtete Adapter behalten die normalisierte Positionsvariable
+mit derselben ID. Der allgemeine Import aus zugewiesenen Variablen bleibt für
+Quellen ohne verlässlichen Modulvertrag verfügbar.
 
 Die Geräteauswahl speichert dieselben kontobezogenen, opaken Kennungen wie
 der Kartenstand. Ohne aktivierte Einschränkung erscheinen weiterhin alle Geräte.
