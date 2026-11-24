@@ -91,7 +91,15 @@ ist lokal geprüft.
 
 **Fressnapf Tracker.** Direkte Instanzauswahl unter **Haustiere** neben
 Tractive. Lokale Tests prüfen Messzeit, unvollständige Berichte und beide
-Kartenausgaben. Die Abnahme mit einem echten Tracker steht aus.
+Kartenausgaben. Auf der Entwicklungsinstanz fehlt das Quellmodul. Die Abnahme
+mit einem echten Tracker steht aus. Der Hersteller beendet den Dienst am
+31.12.2027. [Serviceende bei Fressnapf](https://www.tracker.fressnapf.de/help-center/own/activation/servicedauer/)
+
+**PAJ GPS.** Nächster Kandidat unter **Haustiere**. Die offizielle API liefert
+Geräte-IDs und je Positionsbericht `lat`, `lng` und `dateunix` in Unix-Sekunden.
+Der öffentliche Portal-Demozugang funktioniert, das Demogerät war bei der
+Prüfung offline. Für die API-Abnahme fehlt ein bestätigter API-Testzugang.
+[PAJ-API-Dokumentation](https://connect.paj-gps.de/api/documentation)
 
 **Adressauflösung und Zonen.** Nach dem regulären `dev`-Update auf
 `395aec1` zeigten die native Kachel und IPSView Desktop mit simulierten
