@@ -68,6 +68,7 @@ final class PositionConverter
         $position['timestamp'] = match ($source) {
             'smartcar', 'volvo', 'renault-ze', 'tronity' => is_int($time) ? $time : null,
             'hyundai-kia'                                => self::localPositionTime($time),
+            'fressnapf'                                  => self::measurementTime($time, 'iso8601')[0] ?? null,
             default                                      => null
         };
         return $position;

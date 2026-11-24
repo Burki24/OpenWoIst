@@ -20,10 +20,12 @@
   Dort lassen sich mehrere vorhandene Geräteinstanzen direkt auswählen.
   Die Liste zeigt den Haustiernamen und die Karte übernimmt die
   Positionsvariablen automatisch.
+- **Haustiere** gruppiert **Tractive GPS** und **Fressnapf Tracker**.
+  Fressnapf-Geräte werden direkt aus der vorhandenen Symcon-Instanz ausgewählt.
 
 - Das Quellenformular gruppiert die Quellen unter **Fahrzeuge**,
-  **Apple und Google** sowie **Tracker und Standortgeräte**. Der jeweilige
-  Modulbereich verlinkt zum Modul-Store oder zu GitHub.
+  **Apple und Google**, **Haustiere** sowie **Tracker und Standortgeräte**.
+  Der jeweilige Modulbereich verlinkt zum Modul-Store oder zu GitHub.
 - Einzelne Geräte und Fahrzeuge erhalten eigene Markerfarben in Kachel und
   IPSView. Die Designer liefern die Standardfarben.
 - Die iCloud-Geräteauswahl begrenzt Karte und Objektliste auf ausgewählte

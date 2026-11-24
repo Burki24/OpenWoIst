@@ -26,7 +26,7 @@ $directMap = IPS\InstanceManager::getInstanceInterface($directMapID);
 $tractivePanel = static function (OpenWoIst $map): array
 {
     $form = json_decode($map->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-    $group = array_column($form['elements'], null, 'name')['LocationDeviceSources'];
+    $group = array_column($form['elements'], null, 'name')['PetSources'];
     return array_column($group['items'], null, 'name')['TractiveSources'];
 };
 $beforeSetup = $tractivePanel($directMap);

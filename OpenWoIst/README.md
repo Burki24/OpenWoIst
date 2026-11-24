@@ -25,9 +25,9 @@ Kachel gespeicherte Positionen als **Letzte bekannte Position** an. Beim
 Entfernen eines Kontos aus der Auswahl oder bei dessen Abmeldung werden seine
 Positionen von der Karte entfernt.
 
-Die Modulbereiche stehen unter **Fahrzeuge**, **Apple und Google** sowie
-**Tracker und Standortgeräte**. Im jeweiligen Modulbereich führt die
-Schaltfläche mit dem Modulnamen zum Modul-Store oder zu GitHub.
+Die Modulbereiche stehen unter **Fahrzeuge**, **Apple und Google**,
+**Haustiere** sowie **Tracker und Standortgeräte**. Im jeweiligen Modulbereich
+führt die Schaltfläche mit dem Modulnamen zum Modul-Store oder zu GitHub.
 
 Der Quellenfilter steuert die sichtbaren Marker und Listeneinträge.
 Kachelzugriff umfasst die Standortdaten aller Quellen, die der Instanz
@@ -91,8 +91,8 @@ Löschfunktion im Instanzformular.
 ## Tractive-GPS-Geräte hinzufügen
 
 Installiere das [Symcon-Modul Tractive GPS](https://www.symcon.de/de/module-store/demel41-tractivegps/)
-und richte dort deine Tracker ein. Öffne danach **Tracker und Standortgeräte →
-Tractive GPS** und wähle unter **Hinzufügen** je Tracker die vorhandene
+und richte dort deine Tracker ein. Öffne danach **Haustiere → Tractive GPS**
+und wähle unter **Hinzufügen** je Tracker die vorhandene
 Geräteinstanz. In der Liste kannst du den **Haustiernamen** und die
 **Markerfarbe** je Tracker bearbeiten. Bei leerem Haustiernamen verwendet die
 Liste beim Öffnen den Namen der Geräteinstanz. OpenWoIst findet die
@@ -103,6 +103,18 @@ Variablenverträge von Tractive GPS 1.14 und 1.19 Beta.
 Falls du im Entwicklungsstand den früheren OpenWoIst-Tractive-Adapter
 ausprobiert hast, ersetze seine JSON-Zuordnung vor dem Update durch die
 direkte Geräteauswahl.
+
+## Fressnapf-Tracker hinzufügen
+
+Richte den Tracker im [Symcon-Modul Fressnapf Tracker](https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/)
+ein. Füge unter **Haustiere → Fressnapf Tracker** je Gerät einen Eintrag hinzu
+und wähle die vorhandene Quellinstanz. Haustiername und Markerfarbe lassen
+sich pro Gerät bearbeiten. Der Namensvorschlag stammt aus der lokalen
+Variable `Name` oder dem Namen der Geräteinstanz.
+
+Die Position erscheint nach einem vollständigen Bericht mit beiden
+Koordinaten und `SampledAt` als ISO-8601-Messzeit mit Zeitzone. Die optionale
+Genauigkeit wird aus demselben Bericht übernommen.
 
 ## OwnTracks-Geräte hinzufügen
 

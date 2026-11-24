@@ -68,12 +68,16 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Zuordnungen und das Haussteuerungsprofil blieben erhalten.
    [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
 
-**Formularüberarbeitung.** Die Anbieterlisten stehen in drei thematischen
+**Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.
 Smartcar, Hyundai/Kia, Volvo, Renault Z.E., Tronity und OwnTracks verwenden
 die direkte Instanzauswahl. BMW CarData und Traccar lesen JSON-Variablen.
 Die Übernahme bisheriger Zuordnungen ist lokal geprüft. Die Abnahme im
 Konsolenformular steht aus.
+
+**Fressnapf Tracker.** Direkte Instanzauswahl unter **Haustiere** neben
+Tractive. Lokale Tests prüfen Messzeit, unvollständige Berichte und beide
+Kartenausgaben. Die Abnahme mit einem echten Tracker steht aus.
 
 **Adressauflösung und Zonen.** Nach dem regulären `dev`-Update auf
 `395aec1` zeigten die native Kachel und IPSView Desktop mit simulierten

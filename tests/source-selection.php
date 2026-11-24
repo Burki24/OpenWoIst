@@ -18,25 +18,28 @@ check(count($devices) === 2, 'Existing assignments include all iCloud devices by
 $before = IPS_GetConfiguration($selectionID);
 $configuration = json_decode($selectionMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
 $fields = array_column($configuration['elements'], null, 'name');
-check(array_slice(array_column($configuration['elements'], 'caption'), 0, 3) === ['Vehicles', 'Apple and Google', 'Trackers and location devices'], 'The form starts with thematic source groups.');
+check(array_slice(array_column($configuration['elements'], 'caption'), 0, 4) === ['Vehicles', 'Apple and Google', 'Pets', 'Trackers and location devices'], 'The form starts with thematic source groups.');
 $cloudPanels = array_column($fields['CloudSources']['items'], null, 'name');
+$petPanels = array_column($fields['PetSources']['items'], null, 'name');
 $devicePanels = array_column($fields['LocationDeviceSources']['items'], null, 'name');
 $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
-    && array_keys($devicePanels) === ['TractiveSources', 'OwnTracksDevicesSection', 'TraccarDevicesSection', 'TrackerSources']
+    && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
+    && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'TrackerSources']
     && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
-$modulePanels = $cloudPanels + $devicePanels + $vehiclePanels;
+$modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels;
 $links = [
-    'ICloudSources'              => 'https://github.com/Burki24/SymconiCloud',
-    'TractiveSources'            => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
-    'OwnTracksDevicesSection'    => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
-    'TraccarDevicesSection'      => 'https://github.com/traccar/traccar',
-    'BMWCarDataVehiclesSection'  => 'https://github.com/parcivad/ips-bmw-cardata',
-    'SmartcarVehiclesSection'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
-    'HyundaiKiaVehiclesSection'  => 'https://github.com/da8ter/Bluelink',
-    'VolvoVehiclesSection'       => 'https://github.com/demel42/IPSymconVolvo',
-    'RenaultZEVehiclesSection'   => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
-    'TronityVehiclesSection'     => 'https://github.com/symcon/Tronity'
+    'ICloudSources'               => 'https://github.com/Burki24/SymconiCloud',
+    'TractiveSources'             => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
+    'FressnapfTrackersSection'    => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/',
+    'OwnTracksDevicesSection'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+    'TraccarDevicesSection'       => 'https://github.com/traccar/traccar',
+    'BMWCarDataVehiclesSection'   => 'https://github.com/parcivad/ips-bmw-cardata',
+    'SmartcarVehiclesSection'     => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
+    'HyundaiKiaVehiclesSection'   => 'https://github.com/da8ter/Bluelink',
+    'VolvoVehiclesSection'        => 'https://github.com/demel42/IPSymconVolvo',
+    'RenaultZEVehiclesSection'    => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
+    'TronityVehiclesSection'      => 'https://github.com/symcon/Tronity'
 ];
 foreach ($links as $name => $url) {
     $panel = $modulePanels[$name];

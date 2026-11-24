@@ -14,7 +14,8 @@ trait PositionSourcePanels
         'renault-ze'  => ['RenaultZEVehicles', 'Renault Z.E.', ['{C7AB2E48-7D3A-94B8-E4D6-137CFB91D821}'], ['GPSLatitude', 'GPSLongitude', 'GPSUpdate']],
         'tronity'     => ['TronityVehicles', 'Tronity', ['{D041B19E-6D70-A84F-B67C-4FF51CA38D3A}'], ['Latitude', 'Longitude', 'Timestamp']],
         'owntracks'   => ['OwnTracksDevices', 'OwnTracks', ['{8398750C-51CE-51C8-97A9-9356BB11ABDD}'], ['position']],
-        'traccar'     => ['TraccarDevices', 'Traccar', [], []]
+        'traccar'     => ['TraccarDevices', 'Traccar', [], []],
+        'fressnapf'   => ['FressnapfTrackers', 'Fressnapf Tracker', ['{AF92FA56-B339-6D82-B015-DF819C042C29}'], ['Latitude', 'Longitude', 'SampledAt']]
     ];
 
     private const SOURCE_MODULE_URLS = [
@@ -27,7 +28,8 @@ trait PositionSourcePanels
         'owntracks'   => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
         'traccar'     => 'https://github.com/traccar/traccar',
         'icloud'      => 'https://github.com/Burki24/SymconiCloud',
-        'tractive'    => 'https://www.symcon.de/de/module-store/demel41-tractivegps/'
+        'tractive'    => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
+        'fressnapf'   => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/'
     ];
 
     private function configurePositionPanels(array $form): array
@@ -36,12 +38,15 @@ trait PositionSourcePanels
         $vehicleFields = array_column(array_column($elements['VehicleSources']['items'], null, 'name')['ExistingVehicleSettings']['items'], null, 'name');
         $vehicleModules = [];
         $deviceModules = [];
+        $petModules = [];
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules]) {
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
-            $list['values'] = $this->positionPanelValues($property, $modules);
+            $list['values'] = $this->positionPanelValues($mode, $property, $modules);
             $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [$this->sourceModuleLink($mode, $caption), $list]];
             if (in_array($mode, ['owntracks', 'traccar'], true)) {
                 $deviceModules[] = $panel;
+            } elseif ($mode === 'fressnapf') {
+                $petModules[] = $panel;
             } else {
                 $vehicleModules[] = $panel;
             }
@@ -63,10 +68,11 @@ trait PositionSourcePanels
             'type'    => 'ExpansionPanel',
             'name'    => 'LocationDeviceSources',
             'caption' => 'Trackers and location devices',
-            'items'   => [$tractive, ...$deviceModules, $elements['TrackerSources']]
+            'items'   => [...$deviceModules, $elements['TrackerSources']]
         ];
+        $pets = ['type' => 'ExpansionPanel', 'name' => 'PetSources', 'caption' => 'Pets', 'items' => [$tractive, ...$petModules]];
         unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['TrackerSources']);
-        $form['elements'] = [$vehicles, $clouds, $devices, ...array_values($elements)];
+        $form['elements'] = [$vehicles, $clouds, $pets, $devices, ...array_values($elements)];
         return $form;
     }
 
@@ -85,11 +91,12 @@ trait PositionSourcePanels
     private function positionPanelList(string $mode, string $property, array $modules, array $vehicleFields): array
     {
         $isJSON = PositionConverter::supports($mode);
-        $name = ['type' => 'ValidationTextBox', 'name' => 'SourceName', 'caption' => 'Name on the map'];
+        $nameCaption = $mode === 'fressnapf' ? 'Pet name' : 'Name on the map';
+        $name = ['type' => 'ValidationTextBox', 'name' => 'SourceName', 'caption' => $nameCaption];
         $color = array_diff_key($vehicleFields['VehicleMarkerColor'], ['visible' => true]);
         $color['name'] = 'SourceMarkerColor';
         $columns = [
-            ['name' => 'SourceName', 'caption' => 'Name on the map', 'width' => 'auto', 'add' => '', 'save' => true]
+            ['name' => 'SourceName', 'caption' => $nameCaption, 'width' => 'auto', 'add' => '', 'save' => true]
         ];
         $dialog = [$name];
         if ($modules !== []) {
@@ -101,7 +108,8 @@ trait PositionSourcePanels
 
         $variables = [];
         $assignments = array_column($vehicleFields['VehicleAssignments']['items'], null, 'name');
-        foreach ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp'] as $field) {
+        $variableFields = $mode === 'fressnapf' ? [] : ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp']);
+        foreach ($variableFields as $field) {
             $input = $assignments['Vehicle' . $field];
             $input['name'] = 'Source' . $field;
             unset($input['visible']);
@@ -116,7 +124,7 @@ trait PositionSourcePanels
         }
         if ($modules === []) {
             $dialog = [...$dialog, ...$variables];
-        } else {
+        } elseif ($variables !== []) {
             $dialog[] = ['type' => 'ExpansionPanel', 'caption' => 'Manual variable assignment', 'items' => [
                 ['type' => 'Label', 'caption' => 'Leave the source instance empty to use the variables selected here.'],
                 ...$variables
@@ -150,7 +158,7 @@ trait PositionSourcePanels
         ];
     }
 
-    private function positionPanelValues(string $property, array $modules): array
+    private function positionPanelValues(string $mode, string $property, array $modules): array
     {
         $values = [];
         foreach ($this->positionRows($this->ReadPropertyString($property)) ?? [] as $row) {
@@ -160,7 +168,7 @@ trait PositionSourcePanels
             if (!is_string($row['SourceName'] ?? null) || trim($row['SourceName']) === '') {
                 $instance = $row['SourceInstance'] ?? 0;
                 if (is_int($instance) && $this->isPositionPanelInstance($instance, $modules)) {
-                    $row['SourceName'] = IPS_GetName($instance);
+                    $row['SourceName'] = $this->positionPanelInstanceName($mode, $instance);
                 } else {
                     $variable = $row['SourcePosition'] ?? $row['SourceTimestamp'] ?? 0;
                     $row['SourceName'] = is_int($variable) && $variable > 0 && IPS_VariableExists($variable) ? IPS_GetName($variable) : '';
@@ -176,15 +184,29 @@ trait PositionSourcePanels
         return $modules !== [] && $id > 0 && IPS_InstanceExists($id) && in_array(IPS_GetInstance($id)['ModuleInfo']['ModuleID'], $modules, true);
     }
 
+    private function positionPanelInstanceName(string $mode, int $id): string
+    {
+        if ($mode === 'fressnapf') {
+            $variable = (int) @IPS_GetObjectIDByIdent('Name', $id);
+            if ($variable > 0 && IPS_VariableExists($variable) && IPS_GetVariable($variable)['VariableType'] === VARIABLETYPE_STRING) {
+                $name = trim(GetValueString($variable));
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+        return IPS_GetName($id);
+    }
+
     private function positionPanelSources(string $kind): array
     {
         $positions = [];
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules, $idents]) {
-            if ($kind === 'tracker' && $mode !== 'owntracks') {
+            if ($kind === 'tracker' && !in_array($mode, ['owntracks', 'fressnapf'], true)) {
                 continue;
             }
             foreach ($this->positionRows($this->ReadPropertyString($property)) ?? [] as $row) {
-                $rowKind = $mode === 'owntracks' && ($row['SourceKind'] ?? '') !== 'vehicle' ? 'tracker' : 'vehicle';
+                $rowKind = $mode === 'fressnapf' || ($mode === 'owntracks' && ($row['SourceKind'] ?? '') !== 'vehicle') ? 'tracker' : 'vehicle';
                 if ($rowKind !== $kind) {
                     continue;
                 }
@@ -199,9 +221,9 @@ trait PositionSourcePanels
                 $position = [
                     'mode'             => $mode,
                     'kind'             => $kind,
-                    'name'             => $name !== '' ? $name : ($known ? IPS_GetName($instance) : ($instance > 0 ? $this->Translate($caption) : '')),
+                    'name'             => $name !== '' ? $name : ($known ? $this->positionPanelInstanceName($mode, $instance) : ($instance > 0 ? $this->Translate($caption) : '')),
                     'ids'              => $ids,
-                    'trigger'          => $ids[array_key_last($ids)] ?? 0,
+                    'trigger'          => $ids[$mode === 'fressnapf' ? 2 : array_key_last($ids)] ?? 0,
                     'markerColor'      => LocationSnapshot::markerColor($row['SourceMarkerColor'] ?? null),
                     'timeFormat'       => is_string($row['SourceTimeFormat'] ?? null) ? $row['SourceTimeFormat'] : 'default',
                     'decimalSeparator' => is_string($row['SourceDecimalSeparator'] ?? null) ? $row['SourceDecimalSeparator'] : '.'
@@ -226,6 +248,9 @@ trait PositionSourcePanels
     {
         $isJSON = PositionConverter::supports($mode);
         if ($instance === 0) {
+            if ($mode === 'fressnapf') {
+                return [];
+            }
             $keys = $isJSON ? ['SourcePosition'] : ['SourceLatitude', 'SourceLongitude', 'SourceTimestamp'];
             $ids = array_map(static fn (string $name): mixed => $row[$name] ?? 0, $keys);
             return count(array_filter($ids, static fn (mixed $id): bool => is_int($id) && $id > 0)) === count($ids)
@@ -234,7 +259,7 @@ trait PositionSourcePanels
         if (!$known) {
             return [];
         }
-        $types = $isJSON ? [VARIABLETYPE_STRING] : [VARIABLETYPE_FLOAT, VARIABLETYPE_FLOAT, $mode === 'hyundai-kia' ? VARIABLETYPE_STRING : VARIABLETYPE_INTEGER];
+        $types = $isJSON ? [VARIABLETYPE_STRING] : [VARIABLETYPE_FLOAT, VARIABLETYPE_FLOAT, in_array($mode, ['hyundai-kia', 'fressnapf'], true) ? VARIABLETYPE_STRING : VARIABLETYPE_INTEGER];
         $ids = [];
         foreach ($idents as $index => $ident) {
             $id = (int) @IPS_GetObjectIDByIdent($ident, $instance);
@@ -242,6 +267,12 @@ trait PositionSourcePanels
                 return [];
             }
             $ids[] = $id;
+        }
+        if ($mode === 'fressnapf') {
+            $accuracy = (int) @IPS_GetObjectIDByIdent('Accuracy', $instance);
+            if ($accuracy > 0 && IPS_VariableExists($accuracy) && IPS_GetVariable($accuracy)['VariableType'] === VARIABLETYPE_INTEGER) {
+                $ids[] = $accuracy;
+            }
         }
         return $ids;
     }

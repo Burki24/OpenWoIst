@@ -17,7 +17,7 @@ check(mapRequest($trackerMap, $path, token: $originalAccess['token'])[0] === 200
 $form = json_decode($trackerMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
 $group = array_column($form['elements'], null, 'name')['LocationDeviceSources'];
 $panels = array_column($group['items'], null, 'name');
-check(isset($panels['TractiveSources'], $panels['OwnTracksDevicesSection'], $panels['TrackerSources']), 'Tractive, OwnTracks and other trackers have separate configuration areas within one group.');
+check(isset($panels['OwnTracksDevicesSection'], $panels['TraccarDevicesSection'], $panels['TrackerSources']), 'OwnTracks, Traccar and generic JSON trackers have separate configuration areas within one group.');
 $trackerLists = array_column($panels['TrackerSources']['items'], null, 'name');
 check(!isset($trackerLists['TractiveTrackers']), 'The Tractive device selection is outside the generic tracker section.');
 $columns = array_column($trackerLists['Trackers']['columns'], null, 'name');

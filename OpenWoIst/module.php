@@ -12,6 +12,7 @@ require_once __DIR__ . '/../libs/helper/OpenFreeMapHelper.php';
 require_once __DIR__ . '/../libs/helper/ResponsiveVisualizationHelper.php';
 require_once __DIR__ . '/../libs/helper/ReverseGeocodingHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
+require_once __DIR__ . '/../libs/FressnapfPosition.php';
 require_once __DIR__ . '/../libs/IPSViewMap.php';
 require_once __DIR__ . '/../libs/ICloudDeviceSelection.php';
 require_once __DIR__ . '/../libs/LocationAddresses.php';
@@ -33,6 +34,7 @@ use Burki24\SymconModuleHelper\IPSViewStyleConfigurationHelper;
 use Burki24\SymconModuleHelper\OpenFreeMapHelper;
 use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
+use OpenWoIst\FressnapfPosition;
 use OpenWoIst\ICloudDeviceSelection;
 use OpenWoIst\IPSViewMap;
 use OpenWoIst\LocationAddresses;
@@ -307,7 +309,11 @@ class OpenWoIst extends IPSModuleStrict
         try {
             $now = time();
             $update = null;
+            $fressnapf = null;
             if ($message === null) {
+                if ($force) {
+                    $this->SetBuffer('FressnapfReports', '');
+                }
                 // The regular source refresh also recovers bindings when a provider creates variables later.
                 $positions = $this->configuredPositions();
                 if ($force || $this->configuredTractiveTrackers() !== [] || $this->tractiveBindings() !== [] || array_column($positions, 'sourceInstance') !== []) {
@@ -315,7 +321,9 @@ class OpenWoIst extends IPSModuleStrict
                 }
             } else {
                 $update = $this->captureTractiveUpdate($message['id'], $message['observedAt'], $message['value'], $this->configuredTractiveTrackers(), $now);
-                if ($update === null && !in_array($message['id'], array_column($this->configuredPositions(), 'trigger'), true)) {
+                $positions = $this->configuredPositions();
+                $fressnapf = $this->captureFressnapfUpdate($positions, $message);
+                if ($update === null && $fressnapf === null && !in_array($message['id'], array_column($positions, 'trigger'), true)) {
                     return;
                 }
             }
@@ -335,7 +343,8 @@ class OpenWoIst extends IPSModuleStrict
                 $sources[] = $source;
             }
             foreach ($this->configuredPositions() as $key => $position) {
-                $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now);
+                $observed = ($fressnapf['key'] ?? null) === $key ? $fressnapf['position'] : null;
+                $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now, $observed);
             }
             $sources = array_merge($sources, $this->readTractiveSources($this->configuredTractiveTrackers(), $old, $update));
             if ($scope !== $this->sourceScope()) {
@@ -437,7 +446,7 @@ class OpenWoIst extends IPSModuleStrict
         return $source;
     }
 
-    private function readPositionSource(array $position, string $key, ?array $previous, int $now): array
+    private function readPositionSource(array $position, string $key, ?array $previous, int $now, ?array $observed = null): array
     {
         $mode = $position['mode'];
         $kind = $position['kind'];
@@ -453,13 +462,16 @@ class OpenWoIst extends IPSModuleStrict
         $data = null;
         try {
             if ($ids !== [] && count(array_unique($ids)) === count($ids) && array_reduce($ids, static fn ($ok, $id): bool => $ok && IPS_VariableExists($id), true)) {
-                $data = $this->readPositionData($position);
+                $data = $mode === 'fressnapf' ? $observed : $this->readPositionData($position);
                 $source['available'] = true;
             }
         } catch (Throwable $exception) {
             $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesenen Positionsvariablen konnten nicht gelesen werden.', ['Fehlerklasse' => $exception::class]);
         }
         $fix = LocationSnapshot::fix($data, $now);
+        if ($mode === 'fressnapf' && $source['available'] && ($fix === null || $fix['timestamp'] <= ($previous['timestamp'] ?? 0))) {
+            $fix = $previous;
+        }
         if ((PositionConverter::supports($mode) || isset(self::VEHICLE_PRESETS[$mode]))
             && $fix !== null && ($previous['timestamp'] ?? null) === $fix['timestamp']) {
             $fix = $previous;
@@ -607,9 +619,40 @@ class OpenWoIst extends IPSModuleStrict
         return $this->configuredVehicles() + $this->configuredTrackers();
     }
 
+    private function captureFressnapfUpdate(array $positions, array $message): ?array
+    {
+        foreach ($positions as $key => $position) {
+            if ($position['mode'] !== 'fressnapf') {
+                continue;
+            }
+            $field = array_search($message['id'], $position['ids'], true);
+            if ($field === false) {
+                continue;
+            }
+            $reports = json_decode($this->GetBuffer('FressnapfReports'), true) ?? [];
+            $required = array_slice($position['ids'], 0, 3);
+            $prior = $reports[$key] ?? [];
+            $pending = ($prior['ids'] ?? []) === $required ? $prior['pending'] : [];
+            [$next, $fix] = FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt']);
+            if ($next === []) {
+                unset($reports[$key]);
+            } else {
+                $reports[$key] = ['ids' => $required, 'pending' => $next];
+            }
+            $this->SetBuffer('FressnapfReports', json_encode($reports, JSON_THROW_ON_ERROR));
+            return $fix === null ? null : ['key' => $key, 'position' => $fix];
+        }
+        return null;
+    }
+
     private function syncSourceSubscriptions(array $positions, array $tractiveBindings): void
     {
         $triggers = array_column($positions, 'trigger');
+        foreach ($positions as $position) {
+            if ($position['mode'] === 'fressnapf') {
+                $triggers = array_merge($triggers, $position['ids']);
+            }
+        }
         $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
         $desired = [];
         foreach ($tractiveBindings as $id => $fields) {
