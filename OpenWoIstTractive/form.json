@@ -3,43 +3,20 @@
         {
             "type": "SelectInstance",
             "name": "TrackerInstance",
-            "caption": "Tractive tracker",
+            "caption": "Tractive GPS device instance",
             "validModules": [
                 "{A259E80D-C7B4-F5A9-F82B-B9B05F71B4F3}"
             ]
         },
         {
-            "type": "Select",
-            "name": "PollInterval",
-            "caption": "Retrieve position",
-            "options": [
-                {
-                    "caption": "Manually only",
-                    "value": 0
-                },
-                {
-                    "caption": "Every 5 minutes",
-                    "value": 5
-                },
-                {
-                    "caption": "Every 10 minutes",
-                    "value": 10
-                },
-                {
-                    "caption": "Every 15 minutes",
-                    "value": 15
-                }
-            ]
-        },
-        {
             "type": "Label",
-            "caption": "Connect the adapter to the existing Tractive I/O of the selected tracker. Each retrieval triggers an additional Tractive request."
+            "caption": "Select a device from Tractive GPS. The adapter updates its position after the next completed position report."
         }
     ],
     "actions": [
         {
             "type": "Button",
-            "caption": "Retrieve position now",
+            "caption": "Check assigned device",
             "onClick": "OWIT_Update($id);"
         }
     ],
@@ -47,17 +24,17 @@
         {
             "code": 201,
             "icon": "error",
-            "caption": "Select a tracker and connect its Tractive I/O"
+            "caption": "Select a Tractive GPS device instance"
         },
         {
             "code": 202,
             "icon": "error",
-            "caption": "Tractive module version unsupported"
+            "caption": "Required Tractive GPS position variables are missing"
         },
         {
             "code": 203,
             "icon": "error",
-            "caption": "No valid Tractive position received"
+            "caption": "The last Tractive GPS update did not contain a complete position"
         }
     ]
 }

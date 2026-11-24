@@ -13,13 +13,19 @@ class OpenWoIstTractive extends IPSModuleStrict
 {
     use DebugFlowHelper;
 
-    private const TRACTIVE_LIBRARY = '{85B63C47-3DA6-7B2F-6472-537D9CA24360}';
-    private const TRACTIVE_IO = '{0661D1B3-4375-1B37-7D59-1592111C8F8D}';
     private const TRACTIVE_DEVICE = '{A259E80D-C7B4-F5A9-F82B-B9B05F71B4F3}';
-    private const TRACTIVE_REQUEST = '{94B20D14-415B-1E19-8EA4-839F948B6CBE}';
     private const SOURCE_MISSING = 201;
-    private const VERSION_UNSUPPORTED = 202;
+    private const VARIABLES_MISSING = 202;
     private const POSITION_MISSING = 203;
+    private const MAX_CYCLE_SECONDS = 15;
+    private const OBJECT_MESSAGES = [OM_CHILDADDED, OM_CHILDREMOVED, OM_UNREGISTER];
+    private const POSITION_VARIABLES = [
+        'timestamp'          => ['LastPositionMessage', VARIABLETYPE_INTEGER],
+        'latitude'           => ['LastLatitude', VARIABLETYPE_FLOAT],
+        'longitude'          => ['LastLongitude', VARIABLETYPE_FLOAT],
+        'horizontalAccuracy' => ['PositionUncertainty', VARIABLETYPE_FLOAT],
+        'completed'          => ['LastUpdate', VARIABLETYPE_INTEGER]
+    ];
 
     public function Create(): void
     {
@@ -27,9 +33,10 @@ class OpenWoIstTractive extends IPSModuleStrict
         {
             parent::Create();
             $this->RegisterPropertyInteger('TrackerInstance', 0);
-            $this->RegisterPropertyInteger('PollInterval', 0);
             $this->RegisterAttributeString('TrackerBinding', '');
             $this->RegisterVariableString('Position', $this->Translate('Position (OpenWoIst JSON)'), '', 0);
+            $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+            // Keep the timer ident so updates can stop schedules created by the former adapter.
             $this->RegisterTimer('ReadPosition', 0, 'OWIT_Update($_IPS["TARGET"]);');
         }, true);
     }
@@ -39,76 +46,78 @@ class OpenWoIstTractive extends IPSModuleStrict
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): void
         {
             parent::ApplyChanges();
-            $tracker = $this->ReadPropertyInteger('TrackerInstance');
-            $assigned = $tracker > 0 && IPS_InstanceExists($tracker)
-                && IPS_GetInstance($tracker)['ModuleInfo']['ModuleID'] === self::TRACTIVE_DEVICE;
-            foreach ($this->GetReferenceList() as $reference) {
-                if (!$assigned || $reference !== $tracker) {
-                    $this->UnregisterReference($reference);
-                }
-            }
-            if ($assigned) {
-                $this->RegisterReference($tracker);
-            }
-
-            if ($this->syncBinding($this->binding()) !== null) {
-                $this->SetStatus(IS_ACTIVE);
-            }
-            $interval = $this->ReadPropertyInteger('PollInterval');
-            $this->SetTimerInterval('ReadPosition', $assigned && in_array($interval, [5, 10, 15], true) ? $interval * 60000 : 0);
+            $this->SetTimerInterval('ReadPosition', 0);
+            $this->Update();
         }, true);
     }
 
-    /** Retrieves the selected tracker position through its connected Tractive I/O. */
+    /** Refreshes the local variable subscriptions of the selected Tractive tracker. */
     public function Update(): void
     {
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): void
         {
             $lock = 'OpenWoIstTractive.' . $this->InstanceID;
-            if (!IPS_SemaphoreEnter($lock, 0)) {
+            if (!IPS_SemaphoreEnter($lock, 1000)) {
                 return;
             }
             try {
-                $binding = $this->binding();
-                $command = $this->syncBinding($binding);
-                if ($command === null) {
+                $tracker = $this->ReadPropertyInteger('TrackerInstance');
+                if ($tracker <= 0 || !IPS_InstanceExists($tracker) || IPS_GetInstance($tracker)['ModuleInfo']['ModuleID'] !== self::TRACTIVE_DEVICE) {
+                    $this->bindTracker(0, []);
+                    $this->SetStatus(self::SOURCE_MISSING);
                     return;
                 }
-                if (!$this->HasActiveParent()) {
-                    $this->SetStatus(self::POSITION_MISSING);
-                    return;
-                }
+                $fields = $this->trackerVariables($tracker);
+                $this->bindTracker($tracker, $fields);
+                $this->SetStatus($fields === [] ? self::VARIABLES_MISSING : IS_ACTIVE);
+            } finally {
+                IPS_SemaphoreLeave($lock);
+            }
+        }, true);
+    }
 
-                $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'SENDEN', 'Position über die zugewiesene Tractive-I/O-Instanz anfragen.', ['Befehl' => $command]);
-                try {
-                    $response = $this->SendDataToParent(json_encode([
-                        'DataID'     => self::TRACTIVE_REQUEST,
-                        'CallerID'   => $this->InstanceID,
-                        'Function'   => $command,
-                        'tracker_id' => $binding['tracker'],
-                        'pet_id'     => $binding['pet']
-                    ], JSON_THROW_ON_ERROR));
-                } catch (Throwable $exception) {
-                    $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die Positionsanfrage ist fehlgeschlagen.', ['Fehlerklasse' => $exception::class]);
-                    $response = '';
-                }
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
+    {
+        $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($TimeStamp, $SenderID, $Message, $Data): void
+        {
+            parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+            if ($Message === IPS_KERNELMESSAGE && ($Data[0] ?? null) === KR_READY) {
+                $this->Update();
+                return;
+            }
+            if ($SenderID === $this->ReadPropertyInteger('TrackerInstance') && in_array($Message, self::OBJECT_MESSAGES, true)) {
+                $this->Update();
+                return;
+            }
+            if ($Message !== VM_UPDATE) {
+                return;
+            }
 
-                $current = $this->binding();
-                if ($current !== $binding) {
-                    $this->syncBinding($current);
+            $lock = 'OpenWoIstTractive.' . $this->InstanceID;
+            if (!IPS_SemaphoreEnter($lock, 1000)) {
+                return;
+            }
+            try {
+                $fields = json_decode($this->GetBuffer('TrackerVariables'), true) ?? [];
+                $field = array_search($SenderID, $fields, true);
+                if ($field === false) {
                     return;
                 }
-                $fix = TractivePosition::fromResponse($response, $binding['tracker'], time());
-                if ($fix === null) {
-                    $this->SetStatus(self::POSITION_MISSING);
-                    $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'EMPFANG', 'Gemeldete Position fehlt oder ist ungültig. Die letzte Messung bleibt erhalten.');
+                $pending = json_decode($this->GetBuffer('PendingPosition'), true) ?? [];
+                $started = $pending['started'] ?? $TimeStamp;
+                if ($TimeStamp < $started || $TimeStamp - $started > self::MAX_CYCLE_SECONDS) {
+                    $pending = [];
+                    $started = $TimeStamp;
+                }
+                if ($field !== 'completed') {
+                    $pending = TractivePosition::record($pending, $field, $Data[0] ?? null);
+                    $this->SetBuffer('PendingPosition', $pending === [] ? '' : json_encode($pending + ['started' => $started], JSON_THROW_ON_ERROR));
                     return;
                 }
-
-                $this->SetStatus(IS_ACTIVE);
-                $previous = json_decode($this->GetValue('Position'), true, 8);
-                if ($fix['timestamp'] > ($previous['timestamp'] ?? 0)) {
-                    $this->DebugFlowWriteValue('Position', json_encode($fix, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), __FUNCTION__, __LINE__, false);
+                $remaining = ($pending['cycles'] ?? 0) - 1;
+                $this->SetBuffer('PendingPosition', $remaining > 0 ? json_encode(['cycles' => $remaining, 'invalid' => true, 'started' => $started], JSON_THROW_ON_ERROR) : '');
+                if ($pending !== []) {
+                    $this->publishPosition(TractivePosition::completed($pending, time()));
                 }
             } finally {
                 IPS_SemaphoreLeave($lock);
@@ -116,54 +125,71 @@ class OpenWoIstTractive extends IPSModuleStrict
         }, true);
     }
 
-    private function binding(): ?array
+    private function trackerVariables(int $tracker): array
     {
-        $trackerInstance = $this->ReadPropertyInteger('TrackerInstance');
-        $io = IPS_GetInstance($this->InstanceID)['ConnectionID'];
-        if ($trackerInstance <= 0 || $io <= 0 || !IPS_InstanceExists($trackerInstance) || !IPS_InstanceExists($io)) {
-            return null;
+        $fields = [];
+        foreach (self::POSITION_VARIABLES as $field => [$ident, $type]) {
+            $id = (int) @IPS_GetObjectIDByIdent($ident, $tracker);
+            if ($id > 0 && IPS_VariableExists($id) && IPS_GetVariable($id)['VariableType'] === $type) {
+                $fields[$field] = $id;
+            } elseif ($field !== 'horizontalAccuracy') {
+                return [];
+            }
         }
-        $device = IPS_GetInstance($trackerInstance);
-        if ($device['ModuleInfo']['ModuleID'] !== self::TRACTIVE_DEVICE || $device['ConnectionID'] !== $io
-            || IPS_GetInstance($io)['ModuleInfo']['ModuleID'] !== self::TRACTIVE_IO || !IPS_LibraryExists(self::TRACTIVE_LIBRARY)) {
-            return null;
-        }
-        try {
-            $tracker = IPS_GetProperty($trackerInstance, 'tracker_id');
-            $pet = IPS_GetProperty($trackerInstance, 'pet_id');
-        } catch (Throwable $exception) {
-            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesene Tracker-Konfiguration ist nicht lesbar.', ['Fehlerklasse' => $exception::class]);
-            return null;
-        }
-        if (!is_string($tracker) || $tracker === '' || !is_string($pet)) {
-            return null;
-        }
-
-        return [
-            'identity' => hash('sha256', json_encode([$io, $trackerInstance, $tracker, $pet], JSON_THROW_ON_ERROR)),
-            'version'  => (string) IPS_GetLibrary(self::TRACTIVE_LIBRARY)['Version'],
-            'tracker'  => $tracker,
-            'pet'      => $pet
-        ];
+        return $fields;
     }
 
-    private function syncBinding(?array $binding): ?string
+    private function bindTracker(int $tracker, array $fields): void
     {
-        $identity = $binding['identity'] ?? '';
+        $identity = $tracker > 0 ? hash('sha256', json_encode([$tracker, $fields], JSON_THROW_ON_ERROR)) : '';
         if ($identity !== $this->ReadAttributeString('TrackerBinding')) {
+            $this->SetBuffer('PendingPosition', '');
             if ($this->GetValue('Position') !== '') {
                 $this->DebugFlowWriteValue('Position', '', __FUNCTION__, __LINE__, false);
             }
             $this->WriteAttributeString('TrackerBinding', $identity);
         }
-        $command = match ($binding['version'] ?? '') {
-            '1.14'  => 'GetUpdateData',
-            '1.19'  => 'GetDeviceData',
-            default => null
-        };
-        if ($command === null) {
-            $this->SetStatus($binding === null ? self::SOURCE_MISSING : self::VERSION_UNSUPPORTED);
+        $this->SetBuffer('TrackerVariables', json_encode($fields, JSON_THROW_ON_ERROR));
+
+        $desired = [0 => [IPS_KERNELMESSAGE]];
+        if ($tracker > 0) {
+            $desired[$tracker] = self::OBJECT_MESSAGES;
         }
-        return $command;
+        foreach ($fields as $id) {
+            $desired[$id] = [VM_UPDATE];
+        }
+        $registered = $this->GetMessageList();
+        foreach ($registered as $id => $messages) {
+            foreach (array_diff($messages, $desired[$id] ?? []) as $message) {
+                $this->UnregisterMessage($id, $message);
+            }
+        }
+        foreach ($desired as $id => $messages) {
+            foreach (array_diff($messages, $registered[$id] ?? []) as $message) {
+                $this->RegisterMessage($id, $message);
+            }
+        }
+        $references = $this->GetReferenceList();
+        $requiredReferences = $tracker > 0 ? [$tracker, ...array_values($fields)] : [];
+        foreach (array_diff($references, $requiredReferences) as $id) {
+            $this->UnregisterReference($id);
+        }
+        foreach (array_diff($requiredReferences, $references) as $id) {
+            $this->RegisterReference($id);
+        }
+    }
+
+    private function publishPosition(?array $fix): void
+    {
+        if ($fix === null) {
+            $this->SetStatus(self::POSITION_MISSING);
+            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'AKTION', 'Lokale Positionswerte sind unvollständig oder uneindeutig.');
+            return;
+        }
+        $this->SetStatus(IS_ACTIVE);
+        $previous = json_decode($this->GetValue('Position'), true, 8);
+        if ($fix['timestamp'] > ($previous['timestamp'] ?? 0)) {
+            $this->DebugFlowWriteValue('Position', json_encode($fix, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), __FUNCTION__, __LINE__, false);
+        }
     }
 }

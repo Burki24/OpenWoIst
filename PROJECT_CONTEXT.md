@@ -52,8 +52,10 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    ursprünglicher Messzeit in der nativen Kachel und in IPSView Desktop.
    iCloud-Marker und Testfahrzeug blieben sichtbar. Die Prüfsummen der
    Testkonfiguration und des Haussteuerungsprofils stimmten nach dem Test
-   mit dem Ausgangsstand überein. Die Rückmeldung von demel42 zur Nutzung
-   der internen I/O-Schnittstelle steht aus. Der Live-Abruf ist offen.
+   mit dem Ausgangsstand überein. Demel42 stimmte der Nutzung der
+   Schnittstelle zu. Der Adapter übernimmt Positionen jetzt aus den
+   lokalen Gerätevariablen bei `LastUpdate`. Die Laufzeitabnahme des
+   lokalen Imports steht aus.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
    (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation
@@ -67,12 +69,12 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
 drei Positionsvariablen mit gemeinsamer Zuordnung und Anbieter-Voreinstellung.
 Die Abnahme im Konsolenformular steht aus.
 
-**Adressauflösung und Zonen.** Die Darstellung nutzt die zentralen Helper
-für Reverse Geocoding und Geofencing. Lokale Tests mit simulierten
-Adressantworten und Zonenwechseln sind bestanden. Vor dem Modulcommit
-die abonnierten Helper regulär verteilen, einschließlich des
-Deklarationsschutzes für SymconiCloud. Die Abnahme auf der
-Entwicklungsinstanz steht aus.
+**Adressauflösung und Zonen.** Nach dem regulären `dev`-Update auf
+`395aec1` zeigten die native Kachel und IPSView Desktop mit simulierten
+Nominatim-Antworten den Adresswechsel beim Verlassen einer Kreiszone.
+Der Zonenkreis blieb sichtbar, beide Karten blieben geöffnet.
+Der Prüfsummenvergleich bestätigte die unveränderten Zuordnungen und
+das unveränderte Haussteuerungsprofil.
 
 **Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
 einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub
