@@ -21,7 +21,10 @@ die zugehörigen zentralen Standards.
 - Zielplattform ist IP-Symcon 9 / PHP 8.5 mit `IPSModuleStrict`.
 - Lizenz für OpenWoIst ist die PolyForm Noncommercial License 1.0.0 gemäß
   [LICENSE](LICENSE). Integrierte Komponenten führen ihre eigenen Lizenzhinweise.
-- OpenWoIst liest zugewiesene Symcon-Variablen und optional den normalisierten Cache zugewiesener SymconiCloud-Konten. Zugangsdaten und Anbieterzugriffe liegen beim jeweiligen Quellmodul.
+- OpenWoIst liest zugewiesene Symcon-Variablen und optional den normalisierten
+  Cache zugewiesener SymconiCloud-Konten. Quellmodule verwalten ihre
+  Anbieterzugriffe. Garmin LiveTrack liest freigegebene Sitzungen direkt
+  aus Symcon. Der Zugriffsschlüssel gehört allein zum serverseitigen Abruf.
 - OpenWoIst wird weder direkt noch als Datenbrücke mit konkurrierenden
   Hausautomationssystemen wie Home Assistant gekoppelt. Das gilt auch für
   Empfehlungen und Beispiele. Standortquellen werden direkt an Symcon oder

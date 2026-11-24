@@ -19,6 +19,14 @@ angebunden. Konkurrierende Hausautomationssysteme wie Home Assistant
 sind weder als Datenquelle noch als Vermittler vorgesehen. MQTT dient
 als Transport zwischen Standortanbieter oder Gerät und Symcon.
 
+Für Garmin Connect LiveTrack ruft ein Library-eigener Helper die ausdrücklich
+freigegebene Sitzung direkt ab. Ein eigener Timer trennt die HTTP-Abfrage vom
+Lesen lokaler Quellen. Die gespeicherte Zeilenkennung verbindet aufeinander-
+folgende Sitzungen mit demselben Kartenobjekt. Freigabelinks und Zugriffstoken
+bleiben in der Instanzkonfiguration und der Anfrage an Garmin. Kachel und
+IPSView erhalten nur den normalisierten Standortzustand. Der Webabruf nutzt
+die undokumentierte Garmin-Webschnittstelle. [Referenz zum Webabruf](https://github.com/tjuuljensen/ha-garmin-livetrack/blob/main/docs/GARMIN_FETCH_STRATEGY.md)
+
 Bei bekannten Quellmodulen mit verlässlichem Variablenvertrag wählen Benutzer
 die vorhandenen Geräteinstanzen in einer Liste. OpenWoIst ermittelt die
 Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene

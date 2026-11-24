@@ -74,6 +74,38 @@ final class PositionConverter
         return $position;
     }
 
+    /** Returns Unix seconds and the fractional part for exact measurement ordering. */
+    public static function measurementTime(mixed $value, string $format): ?array
+    {
+        if ($format === 'iso8601') {
+            if (!is_string($value) || preg_match(
+                '/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?(Z|[+-](?:[01]\d|2[0-3]):?[0-5]\d)$/D',
+                $value,
+                $parts
+            ) !== 1) {
+                return null;
+            }
+            $date = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:sP', $parts[1] . $parts[3]);
+            if ($date === false || DateTimeImmutable::getLastErrors() !== false) {
+                return null;
+            }
+
+            return [$date->getTimestamp(), str_pad($parts[2], 9, '0')];
+        }
+
+        if (!is_int($value) && !is_string($value)) {
+            return null;
+        }
+        $integer = filter_var($value, FILTER_VALIDATE_INT);
+        if ($integer === false || $integer <= 0) {
+            return null;
+        }
+
+        return $format === 'unix-milliseconds'
+            ? [intdiv($integer, 1000), str_pad((string) ($integer % 1000), 3, '0', STR_PAD_LEFT) . '000000']
+            : [$integer, '000000000'];
+    }
+
     private static function localPositionTime(mixed $value): ?int
     {
         if (!is_string($value) || preg_match('/^[0-9]{14}$/D', $value) !== 1) {
@@ -109,37 +141,5 @@ final class PositionConverter
         }
 
         return (is_int($value) || is_float($value)) && is_finite($value) ? (float) $value : null;
-    }
-
-    /** Returns Unix seconds and a separate fraction for exact BMW timestamp comparison. */
-    private static function measurementTime(mixed $value, string $format): ?array
-    {
-        if ($format === 'iso8601') {
-            if (!is_string($value) || preg_match(
-                '/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?(Z|[+-](?:[01]\d|2[0-3]):?[0-5]\d)$/D',
-                $value,
-                $parts
-            ) !== 1) {
-                return null;
-            }
-            $date = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:sP', $parts[1] . $parts[3]);
-            if ($date === false || DateTimeImmutable::getLastErrors() !== false) {
-                return null;
-            }
-
-            return [$date->getTimestamp(), str_pad($parts[2], 9, '0')];
-        }
-
-        if (!is_int($value) && !is_string($value)) {
-            return null;
-        }
-        $integer = filter_var($value, FILTER_VALIDATE_INT);
-        if ($integer === false || $integer <= 0) {
-            return null;
-        }
-
-        return $format === 'unix-milliseconds'
-            ? [intdiv($integer, 1000), str_pad((string) ($integer % 1000), 3, '0', STR_PAD_LEFT) . '000000']
-            : [$integer, '000000000'];
     }
 }

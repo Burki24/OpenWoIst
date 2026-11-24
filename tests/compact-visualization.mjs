@@ -9,19 +9,21 @@ import {setTimeout as delay} from 'node:timers/promises';
 const chrome = process.env.OPENWOIST_CHROME;
 assert.ok(chrome, 'Set OPENWOIST_CHROME to a Chromium executable.');
 const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture', '--zone-fixture'], {maxBuffer: 4 * 1024 * 1024}));
-function withTrackerAddress(state) {
+const garmin = JSON.parse(execFileSync('php', ['tests/run.php', '--garmin-motion-fixtures']));
+function withTestSources(state) {
     const tracker = state.sources.find(source => source.kind === 'tracker').objects[0];
     tracker.address = '<i>Test City</i>';
     tracker.addressApproximate = true;
     state.addressProvider = 'geoapify';
+    state.sources.push(garmin.initial);
     return state;
 }
 fixture.tile = fixture.tile.replace(/window\.SymconVisualization = (.+);<\/script>/, (_match, json) => {
     const bootstrap = JSON.parse(json);
-    withTrackerAddress(bootstrap.state);
+    withTestSources(bootstrap.state);
     return 'window.SymconVisualization = ' + JSON.stringify(bootstrap).replaceAll('<', '\\u003c') + ';</script>';
 });
-fixture.state = JSON.stringify(withTrackerAddress(JSON.parse(fixture.state)));
+const initialIPSViewState = JSON.stringify(withTestSources(JSON.parse(fixture.state)));
 const renderer = readFileSync('libs/helper/maps/vendor/maplibre-gl.js');
 const observeWheels = html => html.replace('<head>', `<head><script>
     window.testWheels = {map: 0, objects: 0};
@@ -117,7 +119,8 @@ try {
 
     for (const mode of ['tile', 'ipsview']) {
         const html = mode === 'tile' ? fixture.tile : fixture.page;
-        const {translations} = JSON.parse(/window\.SymconVisualization = (.+);<\/script>/.exec(html)[1]);
+        const {translations, state: tileState} = JSON.parse(/window\.SymconVisualization = (.+);<\/script>/.exec(html)[1]);
+        fixture.state = initialIPSViewState;
         const expectedAddress = (translations?.['Approximate address'] ?? 'Approximate address') + ' · <i>Test City</i>';
         async function inspect(code) {
             const frame = mode === 'tile' ? 'outer' : 'outer?.document.querySelector("#ipsview-map")?.contentWindow';
@@ -143,9 +146,9 @@ try {
 
         await resize(288, 189);
         await call('Page.navigate', {url: `http://127.0.0.1:${server.address().port}/host/${mode}`});
-        await until(() => inspect('return d.querySelectorAll(".location-marker").length === 27;'), `${mode} marker fixture did not load.`);
-        const tracker = await inspect(`const marker = d.querySelector('.location-marker[data-kind="tracker"]');
-            const row = d.querySelector('.object[data-kind="tracker"]');
+        await until(() => inspect('return d.querySelectorAll(".location-marker").length === 28;'), `${mode} marker fixture did not load.`);
+        const tracker = await inspect(`const marker = d.querySelector('.location-marker[title^="OwnTracks test device"]');
+            const row = [...d.querySelectorAll('.object[data-kind="tracker"]')].find(node => node.querySelector('.object-name')?.textContent === 'OwnTracks test device');
             return {title: marker?.title, name: row?.querySelector('.object-name')?.textContent,
                 zone: row?.querySelector('.location-zone-detail')?.textContent,
                 address: row?.querySelector('.location-address')?.textContent,
@@ -182,6 +185,21 @@ try {
         assert.equal(scrolled.zoomed, unzoomed.zoomed);
         assert.equal(restored.zoomed, unzoomed.zoomed);
 
+        const garminMarker = () => inspect(`const marker = d.querySelector('.location-marker[title^="Garmin test ride"]');
+            return {position: marker.style.transform, color: w.getComputedStyle(marker.querySelector('.symbol')).backgroundColor,
+                count: d.querySelectorAll('.location-marker').length};`);
+        const beforeGarmin = await garminMarker();
+        const nextState = mode === 'tile' ? tileState : JSON.parse(initialIPSViewState);
+        nextState.sources = nextState.sources.map(source => source.id === garmin.updated.id ? garmin.updated : source);
+        if (mode === 'tile') {
+            await inspect(`w.handleMessage(${JSON.stringify(nextState)});`);
+        } else {
+            fixture.state = JSON.stringify(nextState);
+        }
+        await until(async () => (await garminMarker()).position !== beforeGarmin.position, `${mode} Garmin marker must move after the simulated update.`);
+        assert.deepEqual({...(await garminMarker()), position: beforeGarmin.position}, beforeGarmin);
+        assert.equal(beforeGarmin.color, 'rgb(85, 138, 204)');
+
         await inspect('d.documentElement.style.setProperty("--openwoist-font-size", "28px");');
         assert.ok((await geometry()).mapHeight >= 72, `${mode} must keep a compact map at the largest tile font.`);
         await inspect('d.documentElement.style.removeProperty("--openwoist-font-size");');
@@ -190,7 +208,7 @@ try {
             const g = await geometry();
             return g.listTop >= g.mapBottom && g.mapHeight >= 150;
         }, `${mode} must keep the stacked layout at portrait height.`);
-        console.log(`${mode}: ${Math.floor(compact.mapHeight)}px map at 288×189, independent zoom and scroll passed.`);
+        console.log(`${mode}: ${Math.floor(compact.mapHeight)}px map at 288×189, Garmin update and independent zoom and scroll passed.`);
     }
 } finally {
     socket?.close();

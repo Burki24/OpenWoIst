@@ -12,6 +12,9 @@
 
 ## Neu
 
+- Unter **Tracker und Standortgeräte → Garmin LiveTrack** lassen sich
+  Garmin-Connect-Freigaben mit eigener Markerfarbe hinzufügen. Kachel und
+  IPSView zeigen den jüngsten gemeldeten Punkt je Sitzung.
 - Symcon zeigt für neue Entwicklungsstände aus `dev` eine fortlaufende
   Versionsnummer an.
 - Optional ermittelte Adressen und einrichtbare Kreiszonen erscheinen in

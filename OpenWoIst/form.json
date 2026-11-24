@@ -324,6 +324,82 @@
         },
         {
             "type": "ExpansionPanel",
+            "name": "GarminLiveTrackSources",
+            "caption": "Garmin LiveTrack",
+            "items": [
+                {
+                    "type": "Label",
+                    "caption": "Paste the Garmin Connect share link and replace it in the same entry when a new activity starts."
+                },
+                {
+                    "type": "List",
+                    "name": "GarminLiveTrackSessions",
+                    "caption": "Garmin LiveTrack",
+                    "rowCount": 4,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "name": "GarminName",
+                            "caption": "Name on the map",
+                            "width": "auto",
+                            "add": "",
+                            "save": true
+                        },
+                        {
+                            "name": "GarminMarkerColor",
+                            "caption": "Marker color",
+                            "width": "140px",
+                            "add": -1,
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent": true,
+                                "transparentCaption": "Designer default"
+                            }
+                        },
+                        {
+                            "name": "GarminEntryID",
+                            "visible": false,
+                            "save": true
+                        },
+                        {
+                            "name": "GarminShareLink",
+                            "visible": false,
+                            "add": "",
+                            "save": true
+                        }
+                    ],
+                    "form": [
+                        {
+                            "type": "ValidationTextBox",
+                            "name": "GarminEntryID",
+                            "caption": "",
+                            "visible": false
+                        },
+                        {
+                            "type": "ValidationTextBox",
+                            "name": "GarminName",
+                            "caption": "Name on the map",
+                            "validate": ".*\\S.*"
+                        },
+                        {
+                            "type": "PasswordTextBox",
+                            "name": "GarminShareLink",
+                            "caption": "LiveTrack share link"
+                        },
+                        {
+                            "type": "SelectColor",
+                            "name": "GarminMarkerColor",
+                            "caption": "Marker color",
+                            "allowTransparent": true,
+                            "transparentCaption": "Designer default"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "name": "TrackerSources",
             "caption": "Additional location devices",
             "items": [

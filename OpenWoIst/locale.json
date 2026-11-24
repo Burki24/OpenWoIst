@@ -29,6 +29,8 @@
             "Leave the source instance empty to use the variables selected here.": "Lasse die Quellinstanz leer, um die hier zugeordneten Variablen zu verwenden.",
             "Advanced position settings": "Erweiterte Positionseinstellungen",
             "Use OpenWoIst JSON with latitude, longitude and measurement time.": "Verwende OpenWoIst-JSON mit Breitengrad, Längengrad und Messzeit.",
+            "Paste the Garmin Connect share link and replace it in the same entry when a new activity starts.": "Trage den Garmin-Connect-Freigabelink ein und ersetze ihn bei einer neuen Aktivität im selben Eintrag.",
+            "LiveTrack share link": "LiveTrack-Freigabelink",
             "Tractive GPS device": "Tractive-GPS-Gerät",
             "Tractive devices": "Tractive-Geräte",
             "Pet name": "Haustiername",

@@ -66,8 +66,11 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Position sichtbar. Zuordnungen und Haussteuerungsprofil blieben erhalten.
    [Einrichtung](OpenWoIst/README.md#mqtt-gps-anschließen)
 
-**Garmin LiveTrack.** Für eine mögliche Anbindung kommt der Abruf aus
-Symcon infrage. Die Prüfung mit einer echten Freigabesitzung steht aus.
+**Garmin LiveTrack.** Direkter Abruf freigegebener Garmin-Connect-Sitzungen
+aus Symcon. Mit simulierten Antworten sind Garmin-Messzeit, Positionswechsel,
+Sitzungsende und Linkwechsel lokal in Kachel und IPSView geprüft. Beide
+Browser-Testframes zeigten den Markerwechsel. Die Abnahme mit einer echten
+Freigabesitzung und den nativen Hosts steht aus.
 
 **Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.

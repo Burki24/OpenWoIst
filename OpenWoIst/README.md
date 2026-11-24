@@ -1,7 +1,7 @@
 # OpenWoIst
 
-Die Kachel zeigt Geräte aus den zugewiesenen iCloud-Konten und Fahrzeuge aus
-Symcon-Variablen. Beide Quellenarten lassen sich auch einzeln verwenden.
+Die Kachel zeigt Apple-Geräte, Fahrzeuge und weitere Standortgeräte
+auf einer gemeinsamen Karte. Die Quellen lassen sich auch einzeln verwenden.
 
 ## Einrichten und mit dem Testfahrzeug ausprobieren
 
@@ -125,6 +125,27 @@ vorliegt, verwende **Manuelle Variablenzuordnung**. Das JSON enthält `lat`,
 `lon`, `tst` als Unix-Sekunden und optional `acc` in Metern. Geräte können
 einen Namen und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
+
+## Garmin LiveTrack hinzufügen
+
+1. Starte in Garmin Connect eine LiveTrack-Aktivität und kopiere ihren
+   freigegebenen Sitzungslink.
+2. Öffne **Tracker und Standortgeräte → Garmin LiveTrack → Hinzufügen**.
+   Trage **Name auf der Karte**, **LiveTrack-Freigabelink** und bei Bedarf
+   die **Markerfarbe** ein. Übernimm die Konfiguration.
+3. Ersetze bei einer neuen Aktivität den Freigabelink im selben Eintrag.
+
+Symcon fragt den jüngsten Garmin-Positionspunkt je Sitzung etwa alle
+30 Sekunden ab. Die Karte verwendet die Messzeit von Garmin. Nach Ende der
+Sitzung bleibt der letzte Punkt als **Letzte bekannte Position** sichtbar.
+
+Der Freigabelink enthält den Zugriffsschlüssel zur Sitzung. Er wird in der
+Symcon-Konfiguration gespeichert und im Eingabefeld maskiert. Garmin LiveTrack
+nutzt für diesen Abruf die Schnittstelle der Garmin-Webkarte. Der Datenweg
+ist mit simulierten Antworten geprüft. Ein Test mit einer echten
+Freigabesitzung steht aus.
+
+[Garmin: LiveTrack in Garmin Connect](https://support.garmin.com/en-CA/?faq=HbqxxbiBGA3mDhlLX4GUw8&searchType=noProduct)
 
 ## MQTT-GPS anschließen
 

@@ -171,6 +171,11 @@ trait IPSViewMap
             sort($tractive, SORT_NUMERIC);
             $scope['tractive'] = $tractive;
         }
+        $garmin = array_keys($this->configuredGarminLiveTrack());
+        if ($garmin !== []) {
+            sort($garmin, SORT_STRING);
+            $scope['garmin'] = $garmin;
+        }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 
