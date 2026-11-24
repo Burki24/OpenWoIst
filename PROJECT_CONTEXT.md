@@ -74,16 +74,20 @@ IPSView-Testansicht und das unveränderte Haussteuerungsprofil. Sitzungsende
 und Linkwechsel sind lokal simuliert geprüft. Die Prüfung mit einer echten
 Garmin-Freigabe steht aus.
 
-**Garmin inReach / MapShare.** Der KML-Feed wird pro Geräte-IMEI abgefragt.
-Simulierte Antworten bestätigen Positionswechsel in beiden lokalen
-Kartenframes und den Erhalt der letzten Position bei einem Abruffehler.
-Die Abnahme in den nativen Hosts und mit einem echten Feed steht aus.
+**Garmin inReach / MapShare.** Auf `dev` (`efd4fe8`) ließ sich ein Gerät in
+der Symcon-Konsole hinzufügen. Zwei simulierte KML-Meldungen bewegten den
+Marker neben iCloud-Gerät und Testfahrzeug in der nativen Kachel und in
+IPSView Desktop. Beim Abruffehler blieb der letzte Punkt sichtbar. Prüfsummen
+bestätigten unveränderte Zuordnungen, IPSView-Testansicht und Haussteuerungsprofil.
+Ein Test mit echtem Feed steht aus.
 
 **Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.
 Smartcar, Hyundai/Kia, Volvo, Renault Z.E., Tronity und OwnTracks verwenden
-die direkte Instanzauswahl. Die Formularhinweise nennen den benötigten
-Eingabeweg. Die Übernahme bisheriger Zuordnungen ist lokal geprüft.
+die direkte Instanzauswahl. Die Hinweise zur Instanzauswahl, zur Eingabe
+eines Freigabelinks und zur Zuordnung einer Positionsvariable wurden auf `dev`
+(`efd4fe8`) in der Symcon-Konsole geprüft. Die Übernahme bisheriger Zuordnungen
+ist lokal geprüft.
 
 **Fressnapf Tracker.** Direkte Instanzauswahl unter **Haustiere** neben
 Tractive. Lokale Tests prüfen Messzeit, unvollständige Berichte und beide
