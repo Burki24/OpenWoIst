@@ -358,11 +358,6 @@
                             }
                         },
                         {
-                            "name": "GarminEntryID",
-                            "visible": false,
-                            "save": true
-                        },
-                        {
                             "name": "GarminShareLink",
                             "visible": false,
                             "add": "",

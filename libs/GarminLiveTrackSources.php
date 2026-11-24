@@ -106,9 +106,9 @@ trait GarminLiveTrackSources
             $field['caption'] = $this->Translate($field['caption']);
         }
         unset($field);
-        // New rows receive their own ID. Symcon restores the stored fields when editing a row.
+        // The dialog owns the ID so no list column default can replace it on add.
         $list['form'] = '$fields = ' . var_export($list['form'], true) . '; '
-            . '$fields[0]["value"] = $GarminLiveTrackSessions["GarminEntryID"] ?? bin2hex(random_bytes(16)); return $fields;';
+            . '$fields[0]["value"] = ($GarminLiveTrackSessions["GarminEntryID"] ?? "") ?: bin2hex(random_bytes(16)); return $fields;';
         return $panel;
     }
 

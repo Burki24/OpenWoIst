@@ -2,6 +2,7 @@
 
 ## Fixes
 
+- Im Formular lassen sich Garmin-LiveTrack-Einträge über **Hinzufügen** anlegen.
 - OpenWoIst bietet ein einziges Modul für die Karteninstanz an.
 - OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander

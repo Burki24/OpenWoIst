@@ -6,15 +6,18 @@ $garminForm = array_column(json_decode($map->GetConfigurationForm(), true, 64, J
 $garminPanel = array_column($garminForm['LocationDeviceSources']['items'], null, 'name')['GarminLiveTrackSources'];
 $garminList = array_column($garminPanel['items'], null, 'name')['GarminLiveTrackSessions'];
 check($garminList['add'] && $garminList['delete'] && !isset($garminForm['GarminLiveTrackSources']), 'Garmin has its own list under location devices.');
+$garminColumns = array_column($garminList['columns'], null, 'name');
+check(array_filter($garminColumns, static fn (array $column): bool => !array_key_exists('add', $column)) === [], 'Symcon requires an add value for every column before opening the new row dialog.');
+check(!isset($garminColumns['GarminEntryID']), 'The dialog assigns its own ID without a column default overwriting the generated value.');
 $garminDialog = static function (array $GarminLiveTrackSessions) use ($garminList): array
 {
     return array_column(eval($garminList['form']), null, 'name');
 };
 $firstDialog = $garminDialog([]);
 $entryID = $firstDialog['GarminEntryID']['value'];
-$otherID = $garminDialog([])['GarminEntryID']['value'];
+$otherID = $garminDialog(['GarminEntryID' => ''])['GarminEntryID']['value'];
 check($entryID !== $otherID && $garminDialog(['GarminEntryID' => $entryID])['GarminEntryID']['value'] === $entryID, 'New rows have independent IDs and editing preserves the row ID.');
-check($firstDialog['GarminShareLink']['type'] === 'PasswordTextBox' && !array_column($garminList['columns'], null, 'name')['GarminShareLink']['visible'], 'The share link is masked and excluded from the list overview.');
+check($firstDialog['GarminShareLink']['type'] === 'PasswordTextBox' && !$garminColumns['GarminShareLink']['visible'], 'The share link is masked and excluded from the list overview.');
 
 final class GarminSimulationOpenWoIst extends OpenWoIst
 {
