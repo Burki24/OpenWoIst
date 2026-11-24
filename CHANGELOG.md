@@ -13,6 +13,8 @@
 
 ## Neu
 
+- Symcon zeigt für neue Entwicklungsstände aus `dev` eine fortlaufende
+  Versionsnummer an.
 - Optional ermittelte Adressen und einrichtbare Kreiszonen erscheinen in
   der Kachel und in IPSView. Die Zonenauswertung nutzt die Standortqualität.
 - **OpenWoIst Tractive** stellt die Position eines Tractive-Trackers mit
