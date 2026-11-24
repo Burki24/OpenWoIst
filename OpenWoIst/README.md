@@ -86,16 +86,19 @@ Löschfunktion im Instanzformular.
 
 ## Tractive-GPS-Geräte hinzufügen
 
-Öffne in der OpenWoIst-Karteninstanz **Weitere Standortgeräte → Tractive GPS**.
-Füge pro Tracker eine Zeile hinzu und wähle die vorhandene Geräteinstanz aus
-dem [Symcon-Modul Tractive GPS](https://www.symcon.de/de/module-store/demel41-tractivegps/).
-Jeder Tracker kann eine eigene Markerfarbe erhalten. OpenWoIst findet die
-Positionsvariablen automatisch und zeigt die Position nach dem nächsten
-vollständigen Bericht in Kachel und IPSView an.
+Installiere das [Symcon-Modul Tractive GPS](https://www.symcon.de/de/module-store/demel41-tractivegps/)
+und richte dort deine Tracker ein. Öffne danach in OpenWoIst den Bereich
+**Tractive GPS** und wähle unter **Hinzufügen** je Tracker die vorhandene
+Geräteinstanz. In der Liste kannst du den **Haustiernamen** und die
+**Markerfarbe** je Tracker bearbeiten. Bei leerem Haustiernamen verwendet die
+Liste beim Öffnen den Namen der Geräteinstanz. OpenWoIst findet die
+Positionsvariablen automatisch und zeigt die Position nach dem
+nächsten vollständigen Bericht in Kachel und IPSView an. Geprüft sind die
+Variablenverträge von Tractive GPS 1.14 und 1.19 Beta.
 
-Geprüft sind die Variablenverträge von Tractive GPS 1.14 und 1.19 Beta. Bereits
-zugewiesene Positionsvariablen aus [OpenWoIst Tractive](../OpenWoIstTractive/README.md)
-funktionieren weiter.
+Falls du im Entwicklungsstand den früheren OpenWoIst-Tractive-Adapter
+ausprobiert hast, ersetze seine JSON-Zuordnung vor dem Update durch die
+direkte Geräteauswahl.
 
 ## OwnTracks-Geräte hinzufügen
 

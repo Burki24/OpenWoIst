@@ -269,6 +269,62 @@
         },
         {
             "type": "ExpansionPanel",
+            "name": "TractiveSources",
+            "caption": "Tractive GPS",
+            "expanded": true,
+            "items": [
+                {
+                    "type": "List",
+                    "name": "TractiveTrackers",
+                    "caption": "Tractive devices",
+                    "rowCount": 3,
+                    "add": true,
+                    "delete": true,
+                    "loadValuesFromConfiguration": false,
+                    "columns": [
+                        {
+                            "name": "TractiveInstance",
+                            "caption": "Tractive GPS device",
+                            "width": "auto",
+                            "add": 0,
+                            "edit": {
+                                "type": "SelectInstance",
+                                "validModules": [
+                                    "{A259E80D-C7B4-F5A9-F82B-B9B05F71B4F3}"
+                                ]
+                            }
+                        },
+                        {
+                            "name": "TractivePetName",
+                            "caption": "Pet name",
+                            "width": "220px",
+                            "add": "",
+                            "edit": {
+                                "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "TractiveMarkerColor",
+                            "caption": "Marker color",
+                            "width": "140px",
+                            "add": -1,
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent": true,
+                                "transparentCaption": "Designer default"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "Label",
+                    "name": "TractiveSetupRequired",
+                    "caption": "No Tractive GPS device found. Install Tractive GPS from the Module Store and set up a device there."
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "name": "TrackerSources",
             "caption": "Additional location devices",
             "items": [
@@ -336,43 +392,6 @@
                 {
                     "type": "Label",
                     "caption": "Use OpenWoIst JSON for a complete position from sources such as Home Assistant or MQTT GPS."
-                },
-                {
-                    "type": "List",
-                    "name": "TractiveTrackers",
-                    "caption": "Tractive GPS",
-                    "rowCount": 3,
-                    "add": true,
-                    "delete": true,
-                    "columns": [
-                        {
-                            "name": "TractiveInstance",
-                            "caption": "Tractive GPS device",
-                            "width": "auto",
-                            "add": 0,
-                            "edit": {
-                                "type": "SelectInstance",
-                                "validModules": [
-                                    "{A259E80D-C7B4-F5A9-F82B-B9B05F71B4F3}"
-                                ]
-                            }
-                        },
-                        {
-                            "name": "TractiveMarkerColor",
-                            "caption": "Marker color",
-                            "width": "140px",
-                            "add": -1,
-                            "edit": {
-                                "type": "SelectColor",
-                                "allowTransparent": true,
-                                "transparentCaption": "Designer default"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "type": "Label",
-                    "caption": "Select configured devices from the Tractive GPS module. The map shows each device after its next complete position report."
                 }
             ]
         },

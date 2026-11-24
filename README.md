@@ -22,8 +22,9 @@ Die Bibliothek wird über **Module Control** aus einem bereitgestellten
 Git-Repository eingebunden. Anschließend eine Instanz **OpenWoIst** anlegen
 und die Quellen gemäß der [Modulanleitung](OpenWoIst/README.md) auswählen.
 
-Eingerichtete Tractive-Tracker lassen sich in der Karte unter
-[Weitere Standortgeräte](OpenWoIst/README.md#tractive-gps-geräte-hinzufügen)
+Alle Tracker werden in derselben OpenWoIst-Instanz eingerichtet.
+Eingerichtete Tractive-Tracker lassen sich dort unter
+[Tractive GPS](OpenWoIst/README.md#tractive-gps-geräte-hinzufügen)
 direkt als Geräteinstanz auswählen.
 
 ## Lizenz

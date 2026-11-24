@@ -2,6 +2,7 @@
 
 ## Fixes
 
+- OpenWoIst bietet ein einziges Modul für die Karteninstanz an.
 - OpenWoIst-Instanzen lassen sich unter Symcon 9.1 anlegen und konfigurieren.
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
   sichtbar. Die Bedienelemente passen in eine Zeile.
@@ -15,8 +16,9 @@
   Versionsnummer an.
 - Optional ermittelte Adressen und einrichtbare Kreiszonen erscheinen in
   der Kachel und in IPSView. Die Zonenauswertung nutzt die Standortqualität.
-- Unter **Weitere Standortgeräte → Tractive GPS** lassen sich mehrere
-  vorhandene Geräteinstanzen direkt auswählen. Die Karte übernimmt die
+- In der OpenWoIst-Instanz gibt es den eigenen Bereich **Tractive GPS**.
+  Dort lassen sich mehrere vorhandene Geräteinstanzen direkt auswählen.
+  Die Liste zeigt den Haustiernamen und die Karte übernimmt die
   Positionsvariablen automatisch.
 
 - Das Quellenformular ist in **Fahrzeuge**, **iCloud** und **GoogleCloud**

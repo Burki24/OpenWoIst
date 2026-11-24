@@ -37,7 +37,7 @@ final class TractivePosition
         return $fields;
     }
 
-    /** Returns the pending state, the accepted fix and whether a report reached LastUpdate. */
+    /** Returns the pending state and the accepted fix. */
     public static function receive(array $pending, string $field, mixed $value, int $observedAt, int $now): array
     {
         $started = $pending['started'] ?? $observedAt;
@@ -47,11 +47,11 @@ final class TractivePosition
         }
         if ($field !== 'completed') {
             $pending = self::record($pending, $field, $value);
-            return [$pending === [] ? [] : $pending + ['started' => $started], null, false];
+            return [$pending === [] ? [] : $pending + ['started' => $started], null];
         }
         $remaining = ($pending['cycles'] ?? 0) - 1;
         $next = $remaining > 0 ? ['cycles' => $remaining, 'invalid' => true, 'started' => $started] : [];
-        return [$next, self::completed($pending, $now), $pending !== []];
+        return [$next, self::completed($pending, $now)];
     }
 
     private static function record(array $pending, string $field, mixed $value): array
@@ -82,14 +82,6 @@ final class TractivePosition
         if (($pending['cycles'] ?? 0) !== 1 || ($pending['invalid'] ?? false)) {
             return null;
         }
-        $fix = LocationSnapshot::fix($pending, $now);
-        if ($fix === null) {
-            return null;
-        }
-        if ($fix['accuracy'] !== null) {
-            $fix['horizontalAccuracy'] = $fix['accuracy'];
-        }
-        unset($fix['accuracy']);
-        return $fix;
+        return LocationSnapshot::fix($pending, $now);
     }
 }

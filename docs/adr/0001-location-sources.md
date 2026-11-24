@@ -3,7 +3,9 @@
 Status angenommen für die erste Ausbaustufe. Der Ausgabeweg wird durch
 [ADR 0002](0002-visualization.md) um IPSView ergänzt.
 
-OpenWoIst ist eine eigene Symcon-Bibliothek. Ein zugewiesenes iCloud-Konto
+OpenWoIst ist eine eigene Symcon-Bibliothek mit einem Modul. Alle
+Standortquellen einer Karte werden in derselben OpenWoIst-Instanz eingerichtet.
+Ein zugewiesenes iCloud-Konto
 liefert seinen lokalen Gerätestand über `ICAC_GetDevices`. Eine
 Fahrzeugintegration kann ihre Messungen über Symcon-Variablen bereitstellen.
 Damit hängt die Karteninstanz für Fahrzeugdaten allein von Symcon ab.
@@ -21,9 +23,10 @@ Anbieterzugriff.
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
 `LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.
-Bereits eingerichtete Adapter behalten die normalisierte Positionsvariable
-mit derselben ID. Der allgemeine Import aus zugewiesenen Variablen bleibt für
-Quellen ohne verlässlichen Modulvertrag verfügbar.
+Der frühere Tractive-Adapter aus dem Entwicklungsstand entfällt. Dessen
+Testzuordnungen können vor dem Update auf die direkte Geräteauswahl umgestellt
+werden. Der allgemeine Import aus zugewiesenen Variablen bleibt für Quellen
+ohne verlässlichen Modulvertrag verfügbar.
 
 Die Geräteauswahl speichert dieselben kontobezogenen, opaken Kennungen wie
 der Kartenstand. Ohne aktivierte Einschränkung erscheinen weiterhin alle Geräte.

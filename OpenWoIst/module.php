@@ -131,6 +131,8 @@ class OpenWoIst extends IPSModuleStrict
         return $this->DebugFlowCall(__FUNCTION__, __LINE__, function (): string
         {
             $form = $this->configureDeviceSelection($this->configureVehicleForm($this->LoadConfigurationForm()));
+            $form = $this->configureTractiveForm($form);
+            $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['TractiveSetupRequired'], IPS_GetInstanceListByModuleID(TractivePosition::DEVICE_MODULE) === []);
             $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['AddressConfigurationError'], $this->ReadPropertyBoolean('EnableAddressResolution') && $this->addressConfiguration() === null);
             $invalidZones = false;
             try {

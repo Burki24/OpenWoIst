@@ -6,11 +6,46 @@ namespace OpenWoIst;
 
 trait TractiveSources
 {
+    private function tractiveTrackerRows(): array
+    {
+        $rows = json_decode($this->ReadPropertyString('TractiveTrackers'), true, 8);
+        return is_array($rows) && array_is_list($rows) ? array_values(array_filter($rows, 'is_array')) : [];
+    }
+
+    private function configureTractiveForm(array $form): array
+    {
+        $values = [];
+        foreach ($this->tractiveTrackerRows() as $row) {
+            $id = is_int($row['TractiveInstance'] ?? null) ? $row['TractiveInstance'] : 0;
+            $name = is_string($row['TractivePetName'] ?? null) ? trim($row['TractivePetName']) : '';
+            if ($name === '' && TractivePosition::isDevice($id)) {
+                $name = IPS_GetName($id);
+            }
+            $values[] = [
+                'TractiveInstance'    => $id,
+                'TractivePetName'     => $name,
+                'TractiveMarkerColor' => LocationSnapshot::markerColor($row['TractiveMarkerColor'] ?? null) ?? -1
+            ];
+        }
+        foreach ($form['elements'] as &$element) {
+            if (($element['name'] ?? '') !== 'TractiveSources') {
+                continue;
+            }
+            foreach ($element['items'] as &$field) {
+                if (($field['name'] ?? '') === 'TractiveTrackers') {
+                    $field['values'] = $values;
+                }
+            }
+            unset($field);
+        }
+        unset($element);
+        return $form;
+    }
+
     private function configuredTractiveTrackers(): array
     {
         $trackers = [];
-        $rows = json_decode($this->ReadPropertyString('TractiveTrackers'), true, 8);
-        foreach (is_array($rows) && array_is_list($rows) ? $rows : [] as $row) {
+        foreach ($this->tractiveTrackerRows() as $row) {
             $id = $row['TractiveInstance'] ?? null;
             if (is_int($id) && $id > 0) {
                 $trackers[$id] ??= LocationSnapshot::markerColor($row['TractiveMarkerColor'] ?? null) ?? -1;
@@ -64,7 +99,7 @@ trait TractiveSources
                 }
                 $this->SetBuffer('TractiveReports', json_encode($reports, JSON_THROW_ON_ERROR));
             }
-            return $fix === null ? null : ['tracker' => $id, 'location' => LocationSnapshot::fix($fix, $now)];
+            return $fix === null ? null : ['tracker' => $id, 'location' => $fix];
         }
         return null;
     }
