@@ -55,13 +55,13 @@ try {
     $formInputs = array_column(array_slice($vehicleList['form'], 2), 'items', 'caption');
     $jsonInputs = array_column($options['json']['items'] ?? $formInputs[$options['json']['caption']], null, 'name');
     $coordinateInputs = $options['fields']['items'] ?? $formInputs[$options['fields']['caption']];
-    check(array_column($jsonInputs['CarFormat']['options'], 'value') === ['json', 'bmw-cardata', 'owntracks', 'traccar'] && $jsonInputs['CarPosition']['validVariableTypes'] === [VARIABLETYPE_STRING], 'The JSON input offers the existing formats and a single string variable.');
+    check(array_keys($jsonInputs) === ['CarPosition'] && $jsonInputs['CarPosition']['validVariableTypes'] === [VARIABLETYPE_STRING], 'The generic JSON input accepts a single string variable.');
     $coordinateInputs = array_column($coordinateInputs, null, 'name');
-    check(array_column($coordinateInputs['CarPreset']['options'], 'value') === ['fields', 'smartcar', 'hyundai-kia', ...array_keys($additionalPresets)], 'The three-variable input offers generic variables and the existing provider presets.');
-    check($coordinateInputs['CarTimestamp']['validVariableTypes'] === [VARIABLETYPE_INTEGER, VARIABLETYPE_STRING] && !isset($coordinateInputs['CarFormat']), 'The three-variable input accepts both timestamp variable types and has no JSON format.');
+    check(array_keys($coordinateInputs) === ['CarLatitude', 'CarLongitude', 'CarTimestamp']
+        && $coordinateInputs['CarTimestamp']['validVariableTypes'] === [VARIABLETYPE_INTEGER], 'Generic coordinates use an integer measurement time; provider-specific timestamps have their own sections.');
     $columns = array_column($vehicleList['columns'], null, 'name');
-    foreach (['CarLatitude', 'CarLongitude', 'CarTimestamp', 'CarPreset'] as $key) {
-        check(isset($coordinateInputs[$key]) && $columns[$key]['save'] === true, 'Every coordinate source stores the same variable selectors and its preset.');
+    foreach (['CarLatitude', 'CarLongitude', 'CarTimestamp'] as $key) {
+        check(isset($coordinateInputs[$key]) && $columns[$key]['save'] === true, 'The generic vehicle retains its variable assignments.');
     }
     check(IPS_GetConfiguration($presetID) === $config && IPS_GetProperty($presetID, 'Vehicles') === $assigned, 'Reading the form must preserve saved assignments.');
 

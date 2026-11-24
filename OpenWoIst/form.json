@@ -347,22 +347,9 @@
                         },
                         {
                             "name": "TrackerFormat",
-                            "caption": "JSON format",
-                            "width": "170px",
-                            "add": "owntracks",
-                            "edit": {
-                                "type": "Select",
-                                "options": [
-                                    {
-                                        "caption": "OwnTracks",
-                                        "value": "owntracks"
-                                    },
-                                    {
-                                        "caption": "OpenWoIst JSON",
-                                        "value": "json"
-                                    }
-                                ]
-                            }
+                            "visible": false,
+                            "add": "json",
+                            "save": true
                         },
                         {
                             "name": "TrackerPosition",

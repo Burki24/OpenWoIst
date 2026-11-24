@@ -127,7 +127,16 @@ trait IPSViewMap
     {
         $accounts = $this->accountIDs();
         sort($accounts, SORT_NUMERIC);
+        $vehicles = $this->configuredVehicles();
         $legacy = $this->legacyVehicle();
+        if ($legacy['mode'] === 'off') {
+            foreach ($vehicles as $vehicle) {
+                if ($vehicle['legacySingle'] ?? false) {
+                    $legacy = $vehicle;
+                    break;
+                }
+            }
+        }
         $mode = $legacy['mode'];
         $scope = [
             $accounts, $mode, $mode === 'demo' ? [] : $legacy['ids']
@@ -139,14 +148,13 @@ trait IPSViewMap
         if ($selection !== null) {
             $scope['devices'] = array_keys($selection);
         }
-        $vehicles = $this->configuredVehicles();
         if ($mode !== 'off') {
             unset($vehicles[$this->vehicleKey($legacy)]);
         }
         if ($vehicles !== []) {
             ksort($vehicles, SORT_STRING);
             $scope['vehicles'] = array_map(static fn (array $vehicle): array => [
-                $vehicle['mode'], $vehicle['ids'], $vehicle['timeFormat'], $vehicle['decimalSeparator']
+                $vehicle['mode'], isset($vehicle['sourceInstance']) ? ['instance', $vehicle['sourceInstance']] : $vehicle['ids'], $vehicle['timeFormat'], $vehicle['decimalSeparator']
             ], $vehicles);
         }
         $trackers = [];

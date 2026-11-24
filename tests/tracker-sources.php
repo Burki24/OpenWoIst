@@ -16,13 +16,12 @@ check(mapRequest($trackerMap, $path, token: $originalAccess['token'])[0] === 200
 
 $form = json_decode($trackerMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
 $panels = array_column($form['elements'], null, 'name');
-check(array_slice(array_column($form['elements'], 'caption'), 0, 5) === ['Vehicles', 'iCloud', 'GoogleCloud', 'Tractive GPS', 'Additional location devices'], 'Tractive and other trackers have separate top-level configuration areas.');
+check(isset($panels['TractiveSources'], $panels['OwnTracksDevicesSection'], $panels['TrackerSources']), 'Tractive, OwnTracks and other trackers have separate top-level configuration areas.');
 $trackerLists = array_column($panels['TrackerSources']['items'], null, 'name');
 check(!isset($trackerLists['TractiveTrackers']), 'The Tractive device selection is outside the generic tracker section.');
 $columns = array_column($trackerLists['Trackers']['columns'], null, 'name');
 check($columns['TrackerPosition']['edit']['validVariableTypes'] === [VARIABLETYPE_STRING] && $columns['TrackerMarkerColor']['edit']['type'] === 'SelectColor', 'Tracker entries have a JSON variable input and an individual marker color.');
-$trackerFormats = array_column($columns['TrackerFormat']['edit']['options'], 'caption', 'value');
-check($columns['TrackerFormat']['add'] === 'owntracks' && $trackerFormats === ['owntracks' => 'OwnTracks', 'json' => 'OpenWoIst JSON'], 'The format selector uses the shared format name while preserving both stored values and the default.');
+check($columns['TrackerFormat']['add'] === 'json' && !$columns['TrackerFormat']['visible'] && $columns['TrackerFormat']['save'], 'New generic trackers always use OpenWoIst JSON.');
 
 $mainTracker = IPS_CreateVariable(VARIABLETYPE_STRING);
 $otherTracker = IPS_CreateVariable(VARIABLETYPE_STRING);

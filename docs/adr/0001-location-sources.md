@@ -20,6 +20,12 @@ Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene
 Einstellungen wie die Markerfarbe möglich. Das Quellmodul betreibt den
 Anbieterzugriff.
 
+Die Quellmodule haben eigene Listen im Konfigurationsformular. Die bisherigen
+benannten Einträge aus den gemeinsamen Listen und der einzelnen Fahrzeugquelle
+werden beim Laden der gespeicherten Konfiguration den neuen Listen zugeordnet.
+Dabei bleiben die Variablen-IDs und die Kartenidentität erhalten. BMW CarData
+und Traccar übernehmen vollständige Positionsberichte aus JSON-Variablen.
+
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
 `LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.

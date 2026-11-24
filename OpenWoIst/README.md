@@ -102,12 +102,11 @@ direkte Geräteauswahl.
 
 ## OwnTracks-Geräte hinzufügen
 
-Unter **Weitere Standortgeräte → Standortgeräte** pro Gerät einen Eintrag
-mit **JSON-Format → OwnTracks** anlegen. Ordne die String-Variable **Position**
-einer OwnTracks-Data-Instanz mit aktivierter Positionsübernahme oder eine
-String-Variable mit OwnTracks-JSON zu. Das JSON enthält `lat`, `lon`, `tst` als
-Unix-Sekunden und optional `acc` in Metern. Geräte können je einen Anzeigenamen
-und eine Markerfarbe erhalten.
+Wähle unter **OwnTracks → Hinzufügen** je Gerät die vorhandene OwnTracks-Data-
+Instanz aus. Aktiviere im Quellmodul die Positionsübernahme. Wenn der
+Positionsdatensatz bereits als Symcon-String vorliegt, verwende **Manuelle
+Variablenzuordnung**. Das JSON enthält `lat`, `lon`, `tst` als Unix-Sekunden und
+optional `acc` in Metern. Geräte können einen Namen und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
 
 ## Home Assistant und MQTT-GPS anschließen
@@ -118,9 +117,8 @@ Broker abonniert der [MQTT Client in Symcon](https://www.symcon.de/de/service/do
 das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-server/)
 sendet die Quelle direkt dorthin. Sende eine erste Meldung auf das gewünschte
 Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
-**String** an. Wähle in OpenWoIst unter **Weitere Standortgeräte → Standortgeräte**
-das JSON-Format **OpenWoIst-JSON** und ordne die jeweilige
-String-Variable zu.
+**String** an. Ordne sie in OpenWoIst unter **Weitere Standortgeräte**
+als **Positionsvariable (JSON)** zu.
 
 ### Home Assistant
 
@@ -187,8 +185,7 @@ Die Liste zeigt die Namen und Quellenarten der hinzugefügten Fahrzeuge.
 Die zuvor konfigurierte Einzelquelle steht weiterhin unter **Bisherige
 Fahrzeugquelle und Testfahrzeug**.
 
-- **Eine JSON-Variable** zeigt einen Variablenselektor und die Wahl des
-  **JSON-Formats**. **OpenWoIst-JSON** erwartet `latitude` und
+- **Eine JSON-Variable** erwartet OpenWoIst-JSON mit `latitude` und
   `longitude` in Grad, `timestamp` als ganze Unix-Sekunde und optional
   `horizontalAccuracy` in Metern.
 - **Drei Positionsvariablen** erwartet je eine Variable für Breitengrad,
@@ -209,31 +206,27 @@ SetValueString($positionsVariableID, json_encode([
 ], JSON_THROW_ON_ERROR));
 ```
 
-### BMW CarData, OwnTracks und Traccar anschließen
+### BMW CarData und Traccar anschließen
 
-Wähle **Eine JSON-Variable** und das passende **JSON-Format**. Ordne unter
-**Positionsvariable (JSON)** die String-Variable mit den Originaldaten zu.
-OpenWoIst konvertiert sie beim Einlesen.
+Öffne **BMW CarData** oder **Traccar** und füge einen Eintrag je Fahrzeug
+oder Tracker hinzu. Ordne unter **Positionsvariable (JSON)** die String-Variable
+mit den Originaldaten zu. OpenWoIst konvertiert sie beim Einlesen.
 
 Für BMW kann die Variable das Ergebnis von `BMW_getTelematicData`,
 eine CarData-REST-Antwort oder eine Stream-Meldung enthalten. Beide
-Koordinaten müssen denselben Messzeitpunkt haben. OwnTracks liefert
-`lat`, `lon`, `tst` und optional `acc` in Metern.
+Koordinaten müssen denselben Messzeitpunkt haben.
 
 Traccar unterstützt ein einzelnes Positionsobjekt und Weiterleitungen mit
 `position`. OpenWoIst verwendet `fixTime` als Messzeit und übernimmt
 optional `accuracy` in Metern. Mit `valid: false` markierte Positionen
 werden verworfen.
 
-Unter **Erweiterte Fahrzeugeinstellungen** gilt ISO 8601 mit Zeitzone
+Unter **Erweiterte Positionseinstellungen** gilt ISO 8601 mit Zeitzone
 als Standard für BMW und Traccar und Unix-Sekunden für OwnTracks.
 Unix-Millisekunden und das Dezimalkomma sind bei Bedarf wählbar.
 Ungültige oder ältere Meldungen lassen die letzte gültige Position auf
 der Karte stehen. Bei gleicher Messzeit bleiben die bisherigen Koordinaten
 erhalten.
-
-**Übernommene Quelle prüfen** liest die gespeicherte Zuordnung und
-meldet das Messalter oder ein fehlendes bzw. ungültiges Feld.
 
 ### Traccar direkt über MQTT einbinden
 
@@ -247,8 +240,8 @@ Topic per MQTT 3.1.1 abonnieren. [Traccar-Weiterleitung](https://www.traccar.org
    wie `openwoist/traccar/test`.
 2. Abonniere das Topic mit dem **MQTT Client** in Symcon. Lege ein
    **MQTT Client Device** mit einer Nutzdatenvariable vom Typ **String** an.
-3. Wähle in OpenWoIst unter **Fahrzeuge → Weitere Fahrzeuge** die Quelle
-   **Eine JSON-Variable** und das Format **Traccar**. Ordne die String-Variable zu.
+3. Wähle in OpenWoIst unter **Traccar → Hinzufügen** die String-Variable als
+   Positionsvariable aus.
 
 Eine gekürzte Testmeldung enthält die Position samt GPS-Messzeit.
 
@@ -269,13 +262,14 @@ Verwende zum Testen eine aktuelle Messzeit. Bei einem gemeinsamen Topic für
 mehrere Tracker teile die Meldungen nach `position.deviceId` auf. Jede
 zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
-### Fahrzeug-Voreinstellungen verwenden
+### Fahrzeuge aus vorhandenen Modulen auswählen
 
-Wähle unter **Weitere Fahrzeuge** die Fahrzeugquelle **Drei Positionsvariablen**,
-dann die passende **Voreinstellung**. Ordne die drei Variablen aus derselben
-Fahrzeuginstanz zu.
+Öffne den Bereich des Quellmoduls und wähle unter **Hinzufügen** pro Fahrzeug
+die vorhandene Instanz. OpenWoIst findet die lokalen Variablen anhand der
+folgenden Idents. Über **Manuelle Variablenzuordnung** kannst du eigene
+Variablen aus derselben Quelle verwenden. Lasse dafür die Quellinstanz leer.
 
-| Voreinstellung | Koordinaten | Messzeit |
+| Quellmodul | Koordinaten | Messzeit |
 | --- | --- | --- |
 | **Smartcar** | `Latitude`, `Longitude` | `Sig_location_preciselocation_OEMUpdatedAt` als Unix-Sekunden. Aktiviere in Smartcar die zusätzliche OEM-Aktualisierungszeit für das Standortsignal. |
 | **Hyundai Bluelink / Kia Connect** | `Latitude`, `Longitude` | `PositionTimestamp` als Text im Format `JJJJMMTThhmmss` in der Symcon-Zeitzone. |
@@ -288,8 +282,11 @@ OpenWoIst übernimmt bei einer neuen gültigen Messzeit die vollständige
 Position. Bei ungültiger oder durch die Zeitumstellung mehrdeutiger Messzeit
 bleibt der letzte gültige Standort sichtbar. Beim Hyundai/Kia-Modul kann eine
 fehlende Messzeit als Abrufzeit im ISO-Format erscheinen. OpenWoIst verwirft
-dieses Zeitformat für die Voreinstellung. Kartenpositionen können je nach
+dieses Zeitformat für Hyundai/Kia. Kartenpositionen können je nach
 Fahrzeug und Dienst zuletzt gemeldete Parkpositionen sein.
+
+Beim Modulupdate erscheinen bisherige Zuordnungen in den jeweiligen
+Anbieterlisten. Namen, Variablen und Markerfarben werden übernommen.
 
 ## Adressen und Zonen
 

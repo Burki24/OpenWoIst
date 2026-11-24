@@ -7,8 +7,8 @@
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
   sichtbar. Die Bedienelemente passen in eine Zeile.
 - Die Fahrzeugliste bietet **Eine JSON-Variable** oder **Drei Positionsvariablen**
-  an. Fahrzeug-Voreinstellungen stehen bei den drei Positionsvariablen.
-  Home Assistant und MQTT-GPS verwenden die Auswahl **OpenWoIst-JSON**.
+  an. Home Assistant und MQTT-GPS verwenden OpenWoIst-JSON unter
+  **Weitere Standortgeräte**.
 
 ## Neu
 
@@ -29,21 +29,17 @@
   Geräte aus den zugewiesenen Kontocaches.
 - Unter **Weitere Fahrzeuge** lassen sich mehrere Fahrzeuge mit eigenen
   Symcon-Variablen hinzufügen und verwalten.
-- Die Fahrzeug-Voreinstellungen für Smartcar und Hyundai Bluelink / Kia Connect
-  übernehmen Koordinaten und Messzeiten aus den vorhandenen Symcon-Variablen.
-- Weitere Fahrzeug-Voreinstellungen lesen die Positionsvariablen von Volvo,
-  Renault Z.E. und Tronity.
-- OwnTracks-Geräte lassen sich unter **Weitere Standortgeräte** mit eigenem
-  Namen und eigener Markerfarbe hinzufügen.
+- Smartcar, Hyundai Bluelink / Kia Connect, Volvo, Renault Z.E., Tronity
+  und OwnTracks haben eigene Listen für mehrere Geräteinstanzen. OpenWoIst
+  findet ihre Positionsvariablen automatisch. BMW CarData und Traccar
+  haben eigene Listen für ihre JSON-Quellen. Gespeicherte Zuordnungen
+  erscheinen nach dem Modulupdate in den jeweiligen Listen.
 - Standortgeräte können generisches OpenWoIst-JSON lesen. Die Modulanleitung
   zeigt Beispiele für Home Assistant und MQTT-GPS.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das
   Instanzformular bewegen.
-- Die Fahrzeugquelle liest BMW-CarData-, OwnTracks- und Traccar-JSON
-  direkt ein. Das Formular zeigt die benötigten Eingaben zur Quellenart
-  und bietet eine Prüfung der übernommenen Zuordnung.
 - Die Kachel zeigt Messalter und letzte bekannte Positionen an. Der Quellenfilter
   begrenzt die angezeigten Marker und Listeneinträge.
 - Dieselbe Standortkarte steht optional als WebContent für IPSView bereit.

@@ -20,6 +20,7 @@ require_once __DIR__ . '/../libs/LocationZones.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
+require_once __DIR__ . '/../libs/PositionSourcePanels.php';
 require_once __DIR__ . '/../libs/TractivePosition.php';
 require_once __DIR__ . '/../libs/TractiveSources.php';
 require_once __DIR__ . '/../libs/VehicleSourceForm.php';
@@ -40,6 +41,7 @@ use OpenWoIst\LocationZones;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
 use OpenWoIst\PositionConverter;
+use OpenWoIst\PositionSourcePanels;
 use OpenWoIst\TractivePosition;
 use OpenWoIst\TractiveSources;
 use OpenWoIst\VehicleSourceForm;
@@ -60,6 +62,7 @@ class OpenWoIst extends IPSModuleStrict
     use LocationZones;
     use MapColorGuide;
     use MapDesign;
+    use PositionSourcePanels;
     use TractiveSources;
     use VehicleSourceForm;
 
@@ -82,6 +85,9 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterPropertyString('Vehicles', '[]');
             $this->RegisterPropertyString('Trackers', '[]');
             $this->RegisterPropertyString('TractiveTrackers', '[]');
+            foreach (self::POSITION_PANELS as [$property]) {
+                $this->RegisterPropertyString($property, '[]');
+            }
             $this->RegisterPropertyString('VehicleMode', 'off');
             $this->RegisterPropertyString('VehicleJSONFormat', '');
             $this->RegisterPropertyString('VehicleName', 'Vehicle');
@@ -103,6 +109,15 @@ class OpenWoIst extends IPSModuleStrict
             $this->SetVisualizationType(1);
             $this->registerMapHook();
         }, true);
+    }
+
+    public function Migrate(string $JSONData): string
+    {
+        return $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($JSONData): string
+        {
+            parent::Migrate($JSONData);
+            return $this->migratePositionPanels($JSONData);
+        });
     }
 
     public function ApplyChanges(): void
@@ -132,6 +147,7 @@ class OpenWoIst extends IPSModuleStrict
         {
             $form = $this->configureDeviceSelection($this->configureVehicleForm($this->LoadConfigurationForm()));
             $form = $this->configureTractiveForm($form);
+            $form = $this->configurePositionPanels($form);
             $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['TractiveSetupRequired'], IPS_GetInstanceListByModuleID(TractivePosition::DEVICE_MODULE) === []);
             $form['elements'] = $this->SetFormFieldVisibility($form['elements'], ['AddressConfigurationError'], $this->ReadPropertyBoolean('EnableAddressResolution') && $this->addressConfiguration() === null);
             $invalidZones = false;
@@ -293,8 +309,9 @@ class OpenWoIst extends IPSModuleStrict
             $update = null;
             if ($message === null) {
                 // The regular source refresh also recovers bindings when a provider creates variables later.
-                if ($force || $this->configuredTractiveTrackers() !== [] || $this->tractiveBindings() !== []) {
-                    $this->syncSourceSubscriptions($this->refreshTractiveBindings());
+                $positions = $this->configuredPositions();
+                if ($force || $this->configuredTractiveTrackers() !== [] || $this->tractiveBindings() !== [] || array_column($positions, 'sourceInstance') !== []) {
+                    $this->syncSourceSubscriptions($positions, $this->refreshTractiveBindings());
                 }
             } else {
                 $update = $this->captureTractiveUpdate($message['id'], $message['observedAt'], $message['value'], $this->configuredTractiveTrackers(), $now);
@@ -552,7 +569,8 @@ class OpenWoIst extends IPSModuleStrict
             ];
             $vehicles[$this->vehicleKey($vehicle)] ??= $vehicle;
         }
-        return $vehicles;
+        $panels = $this->positionPanelSources('vehicle');
+        return $vehicles + array_filter($panels, static fn (array $position): bool => $position['legacySingle'] ?? false) + $panels;
     }
 
     private function vehicleKey(array $vehicle): string
@@ -581,7 +599,7 @@ class OpenWoIst extends IPSModuleStrict
                 'decimalSeparator' => '.'
             ];
         }
-        return $trackers;
+        return $trackers + $this->positionPanelSources('tracker');
     }
 
     private function configuredPositions(): array
@@ -589,9 +607,8 @@ class OpenWoIst extends IPSModuleStrict
         return $this->configuredVehicles() + $this->configuredTrackers();
     }
 
-    private function syncSourceSubscriptions(array $tractiveBindings): void
+    private function syncSourceSubscriptions(array $positions, array $tractiveBindings): void
     {
-        $positions = $this->configuredPositions();
         $triggers = array_column($positions, 'trigger');
         $references = array_filter($this->accountIDs(), 'IPS_InstanceExists');
         $desired = [];
@@ -618,6 +635,9 @@ class OpenWoIst extends IPSModuleStrict
             }
         }
         foreach ($positions as $position) {
+            if ($position['instanceAvailable'] ?? false) {
+                $references[] = $position['sourceInstance'];
+            }
             if ($position['kind'] !== 'demo') {
                 $references = array_merge($references, array_filter($position['ids'], static fn (int $id): bool => $id > 0 && IPS_VariableExists($id)));
             }

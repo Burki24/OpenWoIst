@@ -68,9 +68,11 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Zuordnungen und das Haussteuerungsprofil blieben erhalten.
    [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
 
-**Formularüberarbeitung.** Die Fahrzeugliste bietet eine JSON-Variable oder
-drei Positionsvariablen mit gemeinsamer Zuordnung und Anbieter-Voreinstellung.
-Die Abnahme im Konsolenformular steht aus.
+**Formularüberarbeitung.** Jede unterstützte Quelle hat einen eigenen Bereich.
+Smartcar, Hyundai/Kia, Volvo, Renault Z.E., Tronity und OwnTracks verwenden
+die direkte Instanzauswahl. BMW CarData und Traccar lesen JSON-Variablen.
+Die Übernahme bisheriger Zuordnungen ist lokal geprüft. Die Abnahme im
+Konsolenformular steht aus.
 
 **Adressauflösung und Zonen.** Nach dem regulären `dev`-Update auf
 `395aec1` zeigten die native Kachel und IPSView Desktop mit simulierten
