@@ -8,6 +8,7 @@ trait PositionSourcePanels
 {
     private const POSITION_PANELS = [
         'bmw-cardata' => ['BMWCarDataVehicles', 'BMW CarData', [], []],
+        'tesla-fleet' => ['TeslaFleetVehicles', 'Tesla Fleet Telemetry', [], []],
         'tessie'      => ['TessieVehicles', 'Tessie', [], []],
         'smartcar'    => ['SmartcarVehicles', 'Smartcar', ['{1E1B7C9A-2D4F-4E8A-9C3B-7F6D5A4E2B10}'], ['Latitude', 'Longitude', 'Sig_location_preciselocation_OEMUpdatedAt']],
         'hyundai-kia' => ['HyundaiKiaVehicles', 'Hyundai Bluelink / Kia Connect', ['{C3D4E5F6-789A-BCDE-F012-3456789ABCDE}'], ['Latitude', 'Longitude', 'PositionTimestamp']],
@@ -21,6 +22,7 @@ trait PositionSourcePanels
 
     private const SOURCE_MODULE_URLS = [
         'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
+        'tesla-fleet' => 'https://developer.tesla.com/docs/fleet-api/fleet-telemetry',
         'tessie'      => 'https://developer.tessie.com/reference/get-vehicle',
         'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
         'hyundai-kia' => 'https://github.com/da8ter/Bluelink',
@@ -88,7 +90,7 @@ trait PositionSourcePanels
     {
         $url = self::SOURCE_MODULE_URLS[$mode];
         $format = match (true) {
-            $mode === 'tessie'                           => '%s API documentation',
+            str_starts_with($url, 'https://developer.')  => '%s API documentation',
             str_starts_with($url, 'https://github.com/') => '%s on GitHub',
             default                                      => '%s in the Module Store'
         };
@@ -143,7 +145,7 @@ trait PositionSourcePanels
             ]];
         }
 
-        if ($isJSON && $mode !== 'tessie') {
+        if ($isJSON && !in_array($mode, ['tesla-fleet', 'tessie'], true)) {
             $advanced = $vehicleFields['VehicleAdvanced'];
             foreach ($advanced['items'] as &$input) {
                 $input['name'] = 'Source' . substr($input['name'], strlen('Vehicle'));

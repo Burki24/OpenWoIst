@@ -296,6 +296,21 @@ Verwende zum Testen eine aktuelle Messzeit. Bei einem gemeinsamen Topic für
 mehrere Tracker teile die Meldungen nach `position.deviceId` auf. Jede
 zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
+### Tesla Fleet Telemetry anschließen
+
+Wähle unter **Fahrzeuge → Tesla Fleet Telemetry** pro Fahrzeug die
+Symcon-String-Variable mit dem vollständigen JSON-Positionsbericht. Der
+Fleet-Telemetry-Server kann Fahrzeugberichte mit
+`transmit_decoded_records: true` als JSON ausgeben. Leite pro Fahrzeug die
+Berichte mit `Location` an dessen Variable weiter.
+
+OpenWoIst liest `Location` aus `data` und verwendet `createdAt` aus
+demselben Bericht. Die einzelnen Feld-Topics des Tesla-MQTT-Dispatchers
+enthalten nur den jeweiligen Feldwert. Für MQTT muss die Weiterleitung
+den vollständigen Positionsbericht als eine Nachricht liefern.
+[Tesla Fleet Telemetry](https://github.com/teslamotors/fleet-telemetry#personalized-backendsdispatchers) ·
+[Tesla-MQTT-Format](https://github.com/teslamotors/fleet-telemetry/tree/main/datastore/mqtt#payload-formats)
+
 ### Tessie-Positionsdaten anschließen
 
 Wähle unter **Fahrzeuge → Tessie** pro Fahrzeug die Symcon-String-Variable,

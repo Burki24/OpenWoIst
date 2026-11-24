@@ -67,10 +67,13 @@ $bmwPayload = static function (float $latitude, int $time) use ($bmwPrefix): arr
 $bmwSource = IPS_CreateVariable(VARIABLETYPE_STRING);
 $traccarSource = IPS_CreateVariable(VARIABLETYPE_STRING);
 $tessieSource = IPS_CreateVariable(VARIABLETYPE_STRING);
+$teslaSource = IPS_CreateVariable(VARIABLETYPE_STRING);
+$teslaLocation = static fn (float $lat, float $lon): array => ['key' => 'Location', 'value' => ['locationValue' => ['latitude' => $lat, 'longitude' => $lon]]];
 $jsonSources = [
     'BMWCarDataVehicles' => ['BMW', $bmwSource],
     'TraccarDevices'     => ['Traccar', $traccarSource],
-    'TessieVehicles'     => ['Tessie', $tessieSource]
+    'TessieVehicles'     => ['Tessie', $tessieSource],
+    'TeslaFleetVehicles' => ['Tesla Fleet Test', $teslaSource]
 ];
 foreach ($jsonSources as $property => [$name, $variable]) {
     check(isset($panels[$property . 'Section']), 'A dedicated form is available for ' . $name . '.');
@@ -102,11 +105,20 @@ foreach ([0, 1] as $step) {
     SetValueString($traccarSource, json_encode(['latitude' => 50.25 + $step / 2, 'longitude' => 8.25, 'fixTime' => gmdate('c', $time)], JSON_THROW_ON_ERROR));
     $driveState = ['latitude' => 50.25 + $step / 2, 'longitude' => 8.25, 'gps_as_of' => $time, 'timestamp' => ($time + 12) * 1000];
     SetValueString($tessieSource, json_encode($step === 0 ? ['drive_state' => $driveState] : $driveState, JSON_THROW_ON_ERROR));
-    foreach ([$bmwSource, $traccarSource, $tessieSource] as $variable) {
+    $teslaPayload = [
+        'vin'       => 'SYNTHETIC-TESLA-VIN',
+        'createdAt' => gmdate('Y-m-d\TH:i:s', $time) . '.123456789Z',
+        'data'      => [
+            ['key' => 'DestinationLocation', 'value' => ['locationValue' => ['latitude' => 48.0, 'longitude' => 8.25]]],
+            $teslaLocation(50.25 + $step / 2, 8.25)
+        ]
+    ];
+    SetValueString($teslaSource, json_encode($teslaPayload, JSON_THROW_ON_ERROR));
+    foreach ([$bmwSource, $traccarSource, $tessieSource, $teslaSource] as $variable) {
         $positionPanelMap->MessageSink($time, $variable, VM_UPDATE, []);
     }
     $sources = tileState($positionPanelMap)['sources'];
-    check(count($sources) === 15 && count(array_unique(array_column($sources, 'id'))) === 15, 'All named providers contribute their own uniquely identified positions.');
+    check(count($sources) === 16 && count(array_unique(array_column($sources, 'id'))) === 16, 'All named providers contribute their own uniquely identified positions.');
     foreach ($sources as $entry) {
         $fix = $entry['objects'][0]['location'];
         check($fix['timestamp'] === $time
@@ -114,6 +126,21 @@ foreach ([0, 1] as $step) {
     }
     [$status, $body] = mapRequest($positionPanelMap, $panelPath, token: $panelAccess['token']);
     check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $sources, 'Both visualization outputs receive every provider position.');
+    check(!str_contains($body . $positionPanelMap->GetVisualizationTile(), 'SYNTHETIC-TESLA-VIN'), 'The Tesla VIN stays out of both map outputs.');
+}
+$lastTesla = array_column($sources, null, 'name')['Tesla Fleet Test']['objects'][0];
+check($lastTesla['location']['longitude'] === 8.25, 'Tesla keeps the longitude from Location.');
+$teslaPayload['createdAt'] = gmdate('c', $now);
+foreach ([
+    ['latitude' => 51.75, 'longitude' => 8.5],
+    ['data' => [$teslaLocation(51.75, 8.5)]],
+    array_replace($teslaPayload, ['data' => [$teslaPayload['data'][0]]]),
+    array_replace($teslaPayload, ['data' => [['key' => 'Location', 'value' => ['invalid' => true]]]])
+] as $incomplete) {
+    SetValueString($teslaSource, json_encode($incomplete, JSON_THROW_ON_ERROR));
+    $positionPanelMap->MessageSink($now, $teslaSource, VM_UPDATE, []);
+    $teslaAfter = array_column(tileState($positionPanelMap)['sources'], null, 'name')['Tesla Fleet Test']['objects'][0];
+    check(!$teslaAfter['current'] && $teslaAfter['location'] === $lastTesla['location'], 'A Tesla report requires a valid vehicle location and its original timestamp.');
 }
 $lastTessie = array_column($sources, null, 'name')['Tessie']['objects'][0];
 $driveState['latitude'] = 51.25;

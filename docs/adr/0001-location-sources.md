@@ -9,8 +9,8 @@ Ein zugewiesenes iCloud-Konto
 liefert seinen lokalen Gerätestand über `ICAC_GetDevices`. Eine
 Fahrzeugintegration kann ihre Messungen über Symcon-Variablen bereitstellen.
 Damit hängt die Karteninstanz für Fahrzeugdaten allein von Symcon ab.
-Ein Helper in der OpenWoIst-Library normalisiert BMW-CarData-, OwnTracks-,
-Traccar- und Tessie-Daten aus zugewiesenen JSON-Variablen beim Einlesen.
+Ein Helper in der OpenWoIst-Library normalisiert Standortdaten aus
+zugewiesenen JSON-Variablen beim Einlesen.
 Gespeicherte Anbieterwerte in `VehicleMode` gelten weiter, solange kein
 eigenes JSON-Format gewählt wird.
 
@@ -49,7 +49,8 @@ Die Quellmodule haben eigene Listen im Konfigurationsformular. Die bisherigen
 benannten Einträge aus den gemeinsamen Listen und der einzelnen Fahrzeugquelle
 werden beim Laden der gespeicherten Konfiguration den neuen Listen zugeordnet.
 Dabei bleiben die Variablen-IDs und die Kartenidentität erhalten. BMW CarData,
-Traccar und Tessie übernehmen vollständige Positionsberichte aus JSON-Variablen.
+Traccar, Tessie und Tesla Fleet Telemetry übernehmen vollständige
+Positionsberichte aus JSON-Variablen.
 
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus

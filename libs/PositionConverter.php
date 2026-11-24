@@ -10,7 +10,7 @@ final class PositionConverter
 {
     public static function supports(string $source): bool
     {
-        return in_array($source, ['bmw-cardata', 'owntracks', 'traccar', 'tessie'], true);
+        return in_array($source, ['bmw-cardata', 'owntracks', 'traccar', 'tessie', 'tesla-fleet'], true);
     }
 
     public static function convert(string $source, array $data, string $format, string $separator): ?array
@@ -49,6 +49,18 @@ final class PositionConverter
             $lon = $position['longitude'] ?? null;
             // The vehicle status timestamp can be newer than the GPS fix.
             $time = self::measurementTime($position['gps_as_of'] ?? null, 'unix-seconds');
+        } elseif ($source === 'tesla-fleet') {
+            $fields = $data['data'] ?? null;
+            if (!is_array($fields) || !array_is_list($fields)) {
+                return null;
+            }
+            $location = array_column($fields, 'value', 'key')['Location'] ?? [];
+            if (($location['invalid'] ?? false) === true) {
+                return null;
+            }
+            $lat = $location['locationValue']['latitude'] ?? null;
+            $lon = $location['locationValue']['longitude'] ?? null;
+            $time = self::measurementTime($data['createdAt'] ?? null, 'iso8601');
         } else {
             $position = $data['position'] ?? $data;
             if (!is_array($position) || (array_key_exists('valid', $position) && $position['valid'] !== true)) {

@@ -120,9 +120,14 @@ Die direkte Instanzauswahl für NRG-Stack Tessie bleibt offen. Dessen
 Standortvariablen enthalten die Koordinaten, die Empfangszeit gilt für
 beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
 
+**Tesla Fleet Telemetry.** Der JSON-Import übernimmt `Location` und
+`createdAt` aus demselben Fahrzeugbericht. Positionswechsel und ungültige
+Berichte sind lokal mit Testdaten geprüft. Die Abnahme auf der
+Entwicklungsinstanz und die direkte Tesla-Instanzauswahl stehen aus.
+[Tesla-Fahrzeugbericht](https://github.com/teslamotors/fleet-telemetry/blob/bb7c8a931e46da3b3eb6d20a67541c8f755f1ee6/protos/vehicle_data.proto)
+
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
-Parkkoordinaten ohne zugehörige Messzeit. Für die direkte Tesla-Instanzanbindung
-fehlt ein bestätigter Positionsvertrag. Für Google Find Hub ist eine
+Parkkoordinaten ohne zugehörige Messzeit. Für Google Find Hub ist eine
 unterstützte Schnittstelle für Gerätestandorte Voraussetzung.
 [Google Find Hub](https://developers.google.com/nearby/fast-pair/landing-page-find-hub)
 
