@@ -95,12 +95,13 @@ Kartenausgaben. Auf der Entwicklungsinstanz fehlt das Quellmodul. Die Abnahme
 mit einem echten Tracker steht aus. Der Hersteller beendet den Dienst am
 31.12.2027. [Serviceende bei Fressnapf](https://www.tracker.fressnapf.de/help-center/own/activation/servicedauer/)
 
-**PAJ GPS.** Unter **Tracker und Standortgeräte** lassen sich Geräte aus
-einem FINDER-Portal-Konto auswählen. Die offizielle API liefert `lat`, `lng`
-und `dateunix` in Unix-Sekunden. Auswahl, Positionswechsel, Token-Erneuerung und Abruffehler
-sind lokal simuliert. Markerwechsel, Zoom und Listenscrollen sind für beide
-Browser-Testeinbettungen bei 288 × 189 px geprüft. Die Abnahme in nativer
-Kachel und IPSView Desktop auf `dev` steht aus, ebenso ein echter API-Abruf.
+**PAJ GPS.** Auf `dev` (`590e5f6`, Version 0.18) wurde die Geräteauswahl
+unter **Tracker und Standortgeräte** mit simulierten FINDER-Portal-Antworten
+geprüft. In der nativen Kachel wechselte die Position live. Bei einem
+Abruffehler blieb der letzte Standort sichtbar. Der PAJ-Marker neben
+iCloud-Gerät und Testfahrzeug wurde in IPSView Desktop bestätigt. Nach dem
+Test blieben die Quellzuordnungen und das Haussteuerungsprofil erhalten.
+Ein echter API-Abruf steht aus.
 [PAJ-API-Dokumentation](https://connect.paj-gps.de/api/documentation)
 
 **Adressauflösung und Zonen.** Nach dem regulären `dev`-Update auf
@@ -183,10 +184,10 @@ und das zugewiesene iCloud-Konto referenziert.
 - Echte Mausradaktionen in Chromium prüften Kartenzoom und unabhängiges
   Listenscrollen in beide Richtungen mit den Ausgaben des Entwicklungsservers.
 
-- Auf der Entwicklungsinstanz gibt es getrennte, passwortgeschützte
-  Testansichten für die native Kachel und IPSView Desktop. Die Kachel
-  verweist auf die OpenWoIst-Testinstanz. Die IPSView-Ansicht bindet deren
-  WebContent-Variable in einer HTML-Box ein.
+- Auf der Entwicklungsinstanz gibt es getrennte Testansichten für die
+  native Kachel und IPSView Desktop. Die Kachel-Testansicht öffnet ohne
+  Passwort und verweist auf die OpenWoIst-Testinstanz. Die IPSView-Ansicht
+  bindet deren WebContent-Variable in einer HTML-Box ein.
 - Der native Live-Push wurde im regulären Symcon-Visualisierungshost
   nachgewiesen. Nach Auswahl und Zoom auf das Testfahrzeug wurde ein
   Positionswechsel serverseitig ausgelöst. Der Fahrzeugmarker wanderte im
