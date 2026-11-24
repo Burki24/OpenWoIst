@@ -19,10 +19,13 @@ require_once __DIR__ . '/../libs/GarminSources.php';
 require_once __DIR__ . '/../libs/IPSViewMap.php';
 require_once __DIR__ . '/../libs/ICloudDeviceSelection.php';
 require_once __DIR__ . '/../libs/LocationAddresses.php';
+require_once __DIR__ . '/../libs/LocationHttpTransport.php';
 require_once __DIR__ . '/../libs/LocationSnapshot.php';
 require_once __DIR__ . '/../libs/LocationZones.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
+require_once __DIR__ . '/../libs/PajGPSClient.php';
+require_once __DIR__ . '/../libs/PajSources.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
 require_once __DIR__ . '/../libs/PositionSourcePanels.php';
 require_once __DIR__ . '/../libs/TractivePosition.php';
@@ -46,6 +49,7 @@ use OpenWoIst\LocationSnapshot;
 use OpenWoIst\LocationZones;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
+use OpenWoIst\PajSources;
 use OpenWoIst\PositionConverter;
 use OpenWoIst\PositionSourcePanels;
 use OpenWoIst\TractivePosition;
@@ -69,6 +73,7 @@ class OpenWoIst extends IPSModuleStrict
     use LocationZones;
     use MapColorGuide;
     use MapDesign;
+    use PajSources;
     use PositionSourcePanels;
     use TractiveSources;
     use VehicleSourceForm;
@@ -110,6 +115,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterMessage(0, IPS_KERNELMESSAGE);
             $this->RegisterTimer('ReadSources', 0, 'OWIS_Update($_IPS["TARGET"]);');
             $this->registerGarminSources();
+            $this->registerPajSources();
             $this->registerLocationAddresses();
             $this->registerLocationZones();
             $this->registerMapDesign();
@@ -145,6 +151,7 @@ class OpenWoIst extends IPSModuleStrict
             }
             $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] || $this->configuredTractiveTrackers() !== [] ? 5000 : 0);
             $this->maintainGarminSources();
+            $this->maintainPajSources();
             $this->publish(true);
             $this->maintainIPSViewMap();
         }, true);
@@ -225,7 +232,7 @@ class OpenWoIst extends IPSModuleStrict
     {
         $this->DebugFlowCall(__FUNCTION__, __LINE__, function () use ($Ident, $Value): void
         {
-            if ($this->HandleIPSViewHTMLPageAction($Ident, $Value) || $this->handleVehicleFormAction($Ident, $Value)) {
+            if ($this->HandleIPSViewHTMLPageAction($Ident, $Value) || $this->handleVehicleFormAction($Ident, $Value) || $this->handlePajAction($Ident, $Value)) {
                 return;
             }
             if ($Ident !== 'GetState') {
@@ -355,6 +362,7 @@ class OpenWoIst extends IPSModuleStrict
             }
             $sources = array_merge($sources, $this->readTractiveSources($this->configuredTractiveTrackers(), $old, $update));
             $sources = array_merge($sources, $this->readGarminSources($old));
+            $sources = array_merge($sources, $this->readPajSources($old));
             if ($scope !== $this->sourceScope()) {
                 return;
             }

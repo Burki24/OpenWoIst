@@ -181,6 +181,11 @@ trait IPSViewMap
             sort($mapShare, SORT_STRING);
             $scope['mapShare'] = $mapShare;
         }
+        $paj = array_keys($this->configuredPajSources());
+        if ($paj !== []) {
+            sort($paj, SORT_STRING);
+            $scope['paj'] = $paj;
+        }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 

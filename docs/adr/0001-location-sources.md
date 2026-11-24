@@ -33,6 +33,12 @@ den Feed im Fünfminutentakt ab und übernimmt den jüngsten gültigen Punkt
 mit seiner Garmin-Messzeit. Die optionale HTTP-Anmeldung bleibt serverseitig.
 [Garmin zum MapShare-KML-Feed](https://support.garmin.com/en-US/?faq=tdlDCyo1fJ5UxjUbA9rMY8)
 
+PAJ GPS nutzt die dokumentierte FINDER-Portal-API direkt aus Symcon.
+Ein Konto pro OpenWoIst-Instanz liefert die Geräteliste. Der Timer fragt alle
+ausgewählten Geräte zusammen ab. Eine Geräte-ID ist an das Konto gebunden.
+Die Ansichten erhalten nur den normalisierten Standortzustand mit opaken IDs.
+[PAJ-API-Dokumentation](https://connect.paj-gps.de/api/documentation)
+
 Bei bekannten Quellmodulen mit verlässlichem Variablenvertrag wählen Benutzer
 die vorhandenen Geräteinstanzen in einer Liste. OpenWoIst ermittelt die
 Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene

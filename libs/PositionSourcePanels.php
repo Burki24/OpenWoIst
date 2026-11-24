@@ -76,8 +76,8 @@ trait PositionSourcePanels
             'caption' => 'Trackers and location devices',
             'items'   => [...$deviceModules, $this->garminLiveTrackPanel($elements['GarminLiveTrackSources']), $mapShare, $elements['TrackerSources']]
         ];
-        $pets = ['type' => 'ExpansionPanel', 'name' => 'PetSources', 'caption' => 'Pets', 'items' => [$tractive, ...$petModules]];
-        unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['GarminLiveTrackSources'], $elements['GarminMapShareSources'], $elements['TrackerSources']);
+        $pets = ['type' => 'ExpansionPanel', 'name' => 'PetSources', 'caption' => 'Pets', 'items' => [$tractive, ...$petModules, $this->pajPanel($elements['PajSources'])]];
+        unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['PajSources'], $elements['GarminLiveTrackSources'], $elements['GarminMapShareSources'], $elements['TrackerSources']);
         $form['elements'] = [$vehicles, $clouds, $pets, $devices, ...array_values($elements)];
         return $form;
     }

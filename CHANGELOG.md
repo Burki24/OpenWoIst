@@ -15,6 +15,8 @@
 
 ## Neu
 
+- **PAJ GPS** lädt Geräte aus dem FINDER Portal unter **Haustiere**. Jedes
+  ausgewählte Gerät hat eine eigene Markerfarbe und zeigt seine PAJ-Messzeit.
 - **Garmin inReach / MapShare** übernimmt je Geräte-IMEI den jüngsten
   Standort mit Garmin-Messzeit aus einem freigegebenen KML-Feed.
 - Unter **Tracker und Standortgeräte → Garmin LiveTrack** lassen sich

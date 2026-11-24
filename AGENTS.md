@@ -24,7 +24,8 @@ die zugehörigen zentralen Standards.
 - OpenWoIst liest zugewiesene Symcon-Variablen und optional den normalisierten
   Cache zugewiesener SymconiCloud-Konten. Quellmodule verwalten ihre
   Anbieterzugriffe. Garmin LiveTrack und MapShare lesen freigegebene
-  Standortdaten direkt aus Symcon. Zugangsdaten bleiben serverseitig.
+  Standortdaten direkt aus Symcon. PAJ GPS nutzt direkt die FINDER-Portal-API.
+  Zugangsdaten bleiben serverseitig.
 - OpenWoIst wird weder direkt noch als Datenbrücke mit konkurrierenden
   Hausautomationssystemen wie Home Assistant gekoppelt. Das gilt auch für
   Empfehlungen und Beispiele. Standortquellen werden direkt an Symcon oder

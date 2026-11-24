@@ -324,6 +324,88 @@
         },
         {
             "type": "ExpansionPanel",
+            "name": "PajSources",
+            "caption": "PAJ GPS",
+            "items": [
+                {
+                    "type": "Button",
+                    "caption": "PAJ GPS – FINDER Portal",
+                    "link": true,
+                    "onClick": "echo 'https://v2.finder-portal.com/';"
+                },
+                {
+                    "type": "Label",
+                    "caption": "Apply your FINDER Portal credentials, then load the device list."
+                },
+                {
+                    "type": "ValidationTextBox",
+                    "name": "PajEmail",
+                    "caption": "FINDER Portal email"
+                },
+                {
+                    "type": "PasswordTextBox",
+                    "name": "PajPassword",
+                    "caption": "FINDER Portal password"
+                },
+                {
+                    "type": "Button",
+                    "caption": "Load PAJ GPS devices",
+                    "onClick": "IPS_RequestAction($id, 'LoadPajDevices', is_string($PajDevices) ? $PajDevices : json_encode($PajDevices));"
+                },
+                {
+                    "type": "Label",
+                    "name": "PajDiscoveryStatus",
+                    "caption": "",
+                    "visible": false
+                },
+                {
+                    "type": "List",
+                    "name": "PajDevices",
+                    "caption": "PAJ GPS devices",
+                    "rowCount": 4,
+                    "loadValuesFromConfiguration": false,
+                    "columns": [
+                        {
+                            "name": "PajDeviceID",
+                            "visible": false,
+                            "save": true
+                        },
+                        {
+                            "name": "PajAccountKey",
+                            "visible": false,
+                            "save": true
+                        },
+                        {
+                            "name": "PajDeviceName",
+                            "caption": "Device name",
+                            "width": "auto",
+                            "quickFilter": true,
+                            "save": true
+                        },
+                        {
+                            "name": "PajSelected",
+                            "caption": "Selected",
+                            "width": "110px",
+                            "edit": {
+                                "type": "CheckBox"
+                            }
+                        },
+                        {
+                            "name": "PajMarkerColor",
+                            "caption": "Marker color",
+                            "width": "140px",
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent": true,
+                                "transparentCaption": "Designer default"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "name": "GarminLiveTrackSources",
             "caption": "Garmin LiveTrack",
             "items": [

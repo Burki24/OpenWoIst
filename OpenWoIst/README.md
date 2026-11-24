@@ -116,6 +116,20 @@ Die Position erscheint nach einem vollständigen Bericht mit beiden
 Koordinaten und `SampledAt` als ISO-8601-Messzeit mit Zeitzone. Die optionale
 Genauigkeit wird aus demselben Bericht übernommen.
 
+## PAJ-GPS-Geräte hinzufügen
+
+1. Öffne **Haustiere → PAJ GPS**. Trage die E-Mail-Adresse und das Passwort
+   des [FINDER Portals](https://v2.finder-portal.com/) ein und übernimm die
+   Einstellungen.
+2. Wähle **PAJ-GPS-Geräte laden**. Setze in der Liste **Ausgewählt** für die
+   gewünschten Geräte und vergib bei Bedarf eine **Markerfarbe** je Gerät.
+   Übernimm die Auswahl.
+
+Pro OpenWoIst-Instanz ist ein FINDER-Portal-Konto möglich. OpenWoIst ruft
+die Positionen der ausgewählten Geräte alle fünf Minuten ab und übernimmt
+die von PAJ gemeldete Messzeit. Fehlt ein gültiger Bericht, bleibt der
+letzte bekannte Standort sichtbar. Zugangsdaten und API-Token bleiben in Symcon.
+
 ## OwnTracks-Geräte hinzufügen
 
 Wähle unter **Tracker und Standortgeräte → OwnTracks → Hinzufügen** je Gerät

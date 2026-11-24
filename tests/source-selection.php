@@ -24,7 +24,7 @@ $petPanels = array_column($fields['PetSources']['items'], null, 'name');
 $devicePanels = array_column($fields['LocationDeviceSources']['items'], null, 'name');
 $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
-    && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
+    && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection', 'PajSources']
     && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'TrackerSources']
     && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
 $modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels;
@@ -32,6 +32,7 @@ $links = [
     'ICloudSources'               => 'https://github.com/Burki24/SymconiCloud',
     'TractiveSources'             => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
     'FressnapfTrackersSection'    => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/',
+    'PajSources'                  => 'https://v2.finder-portal.com/',
     'OwnTracksDevicesSection'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
     'TraccarDevicesSection'       => 'https://github.com/traccar/traccar',
     'BMWCarDataVehiclesSection'   => 'https://github.com/parcivad/ips-bmw-cardata',

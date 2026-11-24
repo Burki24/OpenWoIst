@@ -80,38 +80,7 @@ final class GarminLiveTrackClient
     /** Reuses cookies across requests for one session poll. */
     public static function transport(): Closure
     {
-        $handle = function_exists('curl_init') ? curl_init() : false;
-        return static function (string $url, array $headers) use ($handle): array
-        {
-            if ($handle === false) {
-                return ['status' => 0, 'body' => ''];
-            }
-
-            $body = '';
-            curl_setopt_array($handle, [
-                CURLOPT_URL            => $url,
-                CURLOPT_HTTPHEADER     => $headers,
-                CURLOPT_USERAGENT      => 'OpenWoIst (Symcon)',
-                CURLOPT_COOKIEFILE     => '',
-                CURLOPT_FOLLOWLOCATION => false,
-                CURLOPT_CONNECTTIMEOUT => 3,
-                CURLOPT_TIMEOUT        => 5,
-                CURLOPT_ENCODING       => '',
-                CURLOPT_WRITEFUNCTION  => static function ($curl, string $chunk) use (&$body): int
-                {
-                    $length = strlen($chunk);
-                    if (strlen($body) + $length > 2 * 1024 * 1024) {
-                        return 0;
-                    }
-                    $body .= $chunk;
-                    return $length;
-                }
-            ]);
-            if (curl_exec($handle) === false) {
-                return ['status' => 0, 'body' => ''];
-            }
-            return ['status' => (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE), 'body' => $body];
-        };
+        return LocationHttpTransport::create(true);
     }
 
     private static function pointFix(array $point, int $timestamp, int $now): ?array

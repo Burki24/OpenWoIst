@@ -9,15 +9,18 @@ import {setTimeout as delay} from 'node:timers/promises';
 const chrome = process.env.OPENWOIST_CHROME;
 assert.ok(chrome, 'Set OPENWOIST_CHROME to a Chromium executable.');
 const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture', '--zone-fixture'], {maxBuffer: 4 * 1024 * 1024}));
+const usePaj = process.argv.includes('--paj');
 const useMapShare = process.argv.includes('--mapshare');
-const garmin = JSON.parse(execFileSync('php', ['tests/run.php', useMapShare ? '--mapshare-motion-fixtures' : '--garmin-motion-fixtures']));
-const garminSelector = '.location-marker[title^="' + garmin.initial.name + '"]';
+const provider = usePaj ? 'PAJ GPS' : (useMapShare ? 'Garmin MapShare' : 'Garmin LiveTrack');
+const motionOption = usePaj ? '--paj-motion-fixtures' : (useMapShare ? '--mapshare-motion-fixtures' : '--garmin-motion-fixtures');
+const motion = JSON.parse(execFileSync('php', ['tests/run.php', motionOption]));
+const motionSelector = '.location-marker[title^="' + motion.initial.name + '"]';
 function withTestSources(state) {
     const tracker = state.sources.find(source => source.kind === 'tracker').objects[0];
     tracker.address = '<i>Test City</i>';
     tracker.addressApproximate = true;
     state.addressProvider = 'geoapify';
-    state.sources.push(garmin.initial);
+    state.sources.push(motion.initial);
     return state;
 }
 fixture.tile = fixture.tile.replace(/window\.SymconVisualization = (.+);<\/script>/, (_match, json) => {
@@ -187,20 +190,20 @@ try {
         assert.equal(scrolled.zoomed, unzoomed.zoomed);
         assert.equal(restored.zoomed, unzoomed.zoomed);
 
-        const garminMarker = () => inspect(`const marker = d.querySelector(${JSON.stringify(garminSelector)});
+        const motionMarker = () => inspect(`const marker = d.querySelector(${JSON.stringify(motionSelector)});
             return {position: marker.style.transform, color: w.getComputedStyle(marker.querySelector('.symbol')).backgroundColor,
                 count: d.querySelectorAll('.location-marker').length};`);
-        const beforeGarmin = await garminMarker();
+        const beforeMotion = await motionMarker();
         const nextState = mode === 'tile' ? tileState : JSON.parse(initialIPSViewState);
-        nextState.sources = nextState.sources.map(source => source.id === garmin.updated.id ? garmin.updated : source);
+        nextState.sources = nextState.sources.map(source => source.id === motion.updated.id ? motion.updated : source);
         if (mode === 'tile') {
             await inspect(`w.handleMessage(${JSON.stringify(nextState)});`);
         } else {
             fixture.state = JSON.stringify(nextState);
         }
-        await until(async () => (await garminMarker()).position !== beforeGarmin.position, `${mode} Garmin marker must move after the simulated update.`);
-        assert.deepEqual({...(await garminMarker()), position: beforeGarmin.position}, beforeGarmin);
-        assert.equal(beforeGarmin.color, 'rgb(85, 138, 204)');
+        await until(async () => (await motionMarker()).position !== beforeMotion.position, `${mode} ${provider} marker must move after the simulated update.`);
+        assert.deepEqual({...(await motionMarker()), position: beforeMotion.position}, beforeMotion);
+        assert.equal(beforeMotion.color, usePaj ? 'rgb(18, 52, 86)' : 'rgb(85, 138, 204)');
 
         await inspect('d.documentElement.style.setProperty("--openwoist-font-size", "28px");');
         assert.ok((await geometry()).mapHeight >= 72, `${mode} must keep a compact map at the largest tile font.`);
@@ -210,7 +213,6 @@ try {
             const g = await geometry();
             return g.listTop >= g.mapBottom && g.mapHeight >= 150;
         }, `${mode} must keep the stacked layout at portrait height.`);
-        const provider = useMapShare ? 'Garmin MapShare' : 'Garmin LiveTrack';
         console.log(`${mode}: ${Math.floor(compact.mapHeight)}px map at 288×189, ${provider} update and independent zoom and scroll passed.`);
     }
 } finally {

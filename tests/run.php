@@ -262,6 +262,7 @@ require __DIR__ . '/position-panels.php';
 require __DIR__ . '/fressnapf-sources.php';
 require __DIR__ . '/garmin-livetrack.php';
 require __DIR__ . '/garmin-mapshare.php';
+require __DIR__ . '/paj-sources.php';
 require __DIR__ . '/tractive-sources.php';
 echo "OpenWoIst source, address, zone and tile integration passed.\n";
 require __DIR__ . '/validate_structure.php';
