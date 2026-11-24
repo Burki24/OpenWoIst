@@ -95,9 +95,9 @@ Kartenausgaben. Auf der Entwicklungsinstanz fehlt das Quellmodul. Die Abnahme
 mit einem echten Tracker steht aus. Der Hersteller beendet den Dienst am
 31.12.2027. [Serviceende bei Fressnapf](https://www.tracker.fressnapf.de/help-center/own/activation/servicedauer/)
 
-**PAJ GPS.** Unter **Haustiere** lassen sich Geräte aus einem FINDER-Portal-
-Konto auswählen. Die offizielle API liefert `lat`, `lng` und `dateunix` in
-Unix-Sekunden. Auswahl, Positionswechsel, Token-Erneuerung und Abruffehler
+**PAJ GPS.** Unter **Tracker und Standortgeräte** lassen sich Geräte aus
+einem FINDER-Portal-Konto auswählen. Die offizielle API liefert `lat`, `lng`
+und `dateunix` in Unix-Sekunden. Auswahl, Positionswechsel, Token-Erneuerung und Abruffehler
 sind lokal simuliert. Markerwechsel, Zoom und Listenscrollen sind für beide
 Browser-Testeinbettungen bei 288 × 189 px geprüft. Die Abnahme in nativer
 Kachel und IPSView Desktop auf `dev` steht aus, ebenso ein echter API-Abruf.

@@ -24,8 +24,8 @@ $petPanels = array_column($fields['PetSources']['items'], null, 'name');
 $devicePanels = array_column($fields['LocationDeviceSources']['items'], null, 'name');
 $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
-    && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection', 'PajSources']
-    && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'TrackerSources']
+    && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
+    && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'PajSources', 'TrackerSources']
     && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
 $modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels;
 $links = [

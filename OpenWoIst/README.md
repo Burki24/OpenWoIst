@@ -118,9 +118,12 @@ Genauigkeit wird aus demselben Bericht übernommen.
 
 ## PAJ-GPS-Geräte hinzufügen
 
-1. Öffne **Haustiere → PAJ GPS**. Trage die E-Mail-Adresse und das Passwort
-   des [FINDER Portals](https://v2.finder-portal.com/) ein und übernimm die
-   Einstellungen.
+[PAJ GPS](https://www.paj-gps.de/) bietet Tracker für Fahrzeuge, Gegenstände,
+Personen und Tiere an.
+
+1. Öffne **Tracker und Standortgeräte → PAJ GPS**. Trage die E-Mail-Adresse
+   und das Passwort des [FINDER Portals](https://v2.finder-portal.com/) ein
+   und übernimm die Einstellungen.
 2. Wähle **PAJ-GPS-Geräte laden**. Setze in der Liste **Ausgewählt** für die
    gewünschten Geräte und vergib bei Bedarf eine **Markerfarbe** je Gerät.
    Übernimm die Auswahl.

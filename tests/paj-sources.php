@@ -46,8 +46,8 @@ $pajMap->clock = time();
 $pajForm = static function () use ($pajMap): array
 {
     $form = array_column(json_decode($pajMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR)['elements'], null, 'name');
-    $panels = array_column($form['PetSources']['items'], null, 'name');
-    check(isset($panels['PajSources']), 'PAJ GPS has its own panel under Pets.');
+    $panels = array_column($form['LocationDeviceSources']['items'], null, 'name');
+    check(isset($panels['PajSources']), 'PAJ GPS has its own panel under Trackers and location devices.');
     return array_column($panels['PajSources']['items'], null, 'name');
 };
 $pajSetup = $pajForm();
