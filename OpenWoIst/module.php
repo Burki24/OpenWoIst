@@ -14,7 +14,8 @@ require_once __DIR__ . '/../libs/helper/ReverseGeocodingHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
 require_once __DIR__ . '/../libs/FressnapfPosition.php';
 require_once __DIR__ . '/../libs/GarminLiveTrackClient.php';
-require_once __DIR__ . '/../libs/GarminLiveTrackSources.php';
+require_once __DIR__ . '/../libs/GarminMapShareClient.php';
+require_once __DIR__ . '/../libs/GarminSources.php';
 require_once __DIR__ . '/../libs/IPSViewMap.php';
 require_once __DIR__ . '/../libs/ICloudDeviceSelection.php';
 require_once __DIR__ . '/../libs/LocationAddresses.php';
@@ -37,7 +38,7 @@ use Burki24\SymconModuleHelper\OpenFreeMapHelper;
 use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
 use OpenWoIst\FressnapfPosition;
-use OpenWoIst\GarminLiveTrackSources;
+use OpenWoIst\GarminSources;
 use OpenWoIst\ICloudDeviceSelection;
 use OpenWoIst\IPSViewMap;
 use OpenWoIst\LocationAddresses;
@@ -61,7 +62,7 @@ class OpenWoIst extends IPSModuleStrict
     use OpenFreeMapHelper;
     use ResponsiveVisualizationHelper;
     use VisualizationThemeConfigurationHelper;
-    use GarminLiveTrackSources;
+    use GarminSources;
     use IPSViewMap;
     use ICloudDeviceSelection;
     use LocationAddresses;
@@ -108,7 +109,7 @@ class OpenWoIst extends IPSModuleStrict
             $this->RegisterAttributeInteger('DemoStep', 0);
             $this->RegisterMessage(0, IPS_KERNELMESSAGE);
             $this->RegisterTimer('ReadSources', 0, 'OWIS_Update($_IPS["TARGET"]);');
-            $this->registerGarminLiveTrack();
+            $this->registerGarminSources();
             $this->registerLocationAddresses();
             $this->registerLocationZones();
             $this->registerMapDesign();
@@ -143,7 +144,7 @@ class OpenWoIst extends IPSModuleStrict
                 $this->ClearReverseGeocodingCache();
             }
             $this->SetTimerInterval('ReadSources', $this->accountIDs() !== [] || $this->configuredPositions() !== [] || $this->configuredTractiveTrackers() !== [] ? 5000 : 0);
-            $this->maintainGarminLiveTrack();
+            $this->maintainGarminSources();
             $this->publish(true);
             $this->maintainIPSViewMap();
         }, true);
@@ -353,7 +354,7 @@ class OpenWoIst extends IPSModuleStrict
                 $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now, $observed);
             }
             $sources = array_merge($sources, $this->readTractiveSources($this->configuredTractiveTrackers(), $old, $update));
-            $sources = array_merge($sources, $this->readGarminLiveTrackSources($old));
+            $sources = array_merge($sources, $this->readGarminSources($old));
             if ($scope !== $this->sourceScope()) {
                 return;
             }

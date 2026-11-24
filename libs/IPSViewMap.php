@@ -176,6 +176,11 @@ trait IPSViewMap
             sort($garmin, SORT_STRING);
             $scope['garmin'] = $garmin;
         }
+        $mapShare = array_keys($this->configuredGarminMapShare());
+        if ($mapShare !== []) {
+            sort($mapShare, SORT_STRING);
+            $scope['mapShare'] = $mapShare;
+        }
         return hash('sha256', $this->EncodeVisualizationHTMLJSON($scope));
     }
 

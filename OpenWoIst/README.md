@@ -147,6 +147,25 @@ Freigabesitzung steht aus.
 
 [Garmin: LiveTrack in Garmin Connect](https://support.garmin.com/en-CA/?faq=HbqxxbiBGA3mDhlLX4GUw8&searchType=noProduct)
 
+## Garmin inReach / MapShare hinzufügen
+
+1. Aktiviere MapShare in Garmin Explore und kopiere den MapShare-Freigabelink
+   oder den direkten KML-Link.
+2. Öffne **Tracker und Standortgeräte → Garmin inReach / MapShare →
+   Hinzufügen**. Trage Name, Freigabelink und die 15-stellige **Geräte-IMEI**
+   ein. Lege bei mehreren Geräten je Gerät eine Zeile mit eigener Markerfarbe
+   an. Mehrere Zeilen können denselben Freigabelink verwenden.
+3. Falls der Feed geschützt ist, trage unter **Passwortgeschützter MapShare-Feed**
+   das MapShare-Passwort und gegebenenfalls den Benutzernamen ein. Übernimm die
+   Konfiguration.
+
+Symcon ruft den Feed etwa alle fünf Minuten ab und zeigt den jüngsten
+gemeldeten Punkt je Gerät mit Garmin-Messzeit an. Bei einem Abruffehler
+bleibt der letzte gültige Punkt als **Letzte bekannte Position** sichtbar.
+Freigabelinks, IMEIs und Zugangsdaten bleiben in der Symcon-Konfiguration.
+
+[Garmin: MapShare-KML-Feed und Zugriffsschutz](https://support.garmin.com/en-US/?faq=tdlDCyo1fJ5UxjUbA9rMY8)
+
 ## MQTT-GPS anschließen
 
 Der GPS-Sender veröffentlicht die vollständige Position als eine MQTT-Nachricht.

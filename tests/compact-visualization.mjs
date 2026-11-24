@@ -9,7 +9,9 @@ import {setTimeout as delay} from 'node:timers/promises';
 const chrome = process.env.OPENWOIST_CHROME;
 assert.ok(chrome, 'Set OPENWOIST_CHROME to a Chromium executable.');
 const fixture = JSON.parse(execFileSync('php', ['tests/run.php', '--visualization-fixtures', '--tracker-fixture', '--zone-fixture'], {maxBuffer: 4 * 1024 * 1024}));
-const garmin = JSON.parse(execFileSync('php', ['tests/run.php', '--garmin-motion-fixtures']));
+const useMapShare = process.argv.includes('--mapshare');
+const garmin = JSON.parse(execFileSync('php', ['tests/run.php', useMapShare ? '--mapshare-motion-fixtures' : '--garmin-motion-fixtures']));
+const garminSelector = '.location-marker[title^="' + garmin.initial.name + '"]';
 function withTestSources(state) {
     const tracker = state.sources.find(source => source.kind === 'tracker').objects[0];
     tracker.address = '<i>Test City</i>';
@@ -185,7 +187,7 @@ try {
         assert.equal(scrolled.zoomed, unzoomed.zoomed);
         assert.equal(restored.zoomed, unzoomed.zoomed);
 
-        const garminMarker = () => inspect(`const marker = d.querySelector('.location-marker[title^="Garmin test ride"]');
+        const garminMarker = () => inspect(`const marker = d.querySelector(${JSON.stringify(garminSelector)});
             return {position: marker.style.transform, color: w.getComputedStyle(marker.querySelector('.symbol')).backgroundColor,
                 count: d.querySelectorAll('.location-marker').length};`);
         const beforeGarmin = await garminMarker();
@@ -208,7 +210,8 @@ try {
             const g = await geometry();
             return g.listTop >= g.mapBottom && g.mapHeight >= 150;
         }, `${mode} must keep the stacked layout at portrait height.`);
-        console.log(`${mode}: ${Math.floor(compact.mapHeight)}px map at 288×189, Garmin update and independent zoom and scroll passed.`);
+        const provider = useMapShare ? 'Garmin MapShare' : 'Garmin LiveTrack';
+        console.log(`${mode}: ${Math.floor(compact.mapHeight)}px map at 288×189, ${provider} update and independent zoom and scroll passed.`);
     }
 } finally {
     socket?.close();

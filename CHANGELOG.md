@@ -10,9 +10,13 @@
 - Die Fahrzeugliste bietet **Eine JSON-Variable** oder **Drei Positionsvariablen**
   an. Unter **Weitere Standortgeräte** erklärt das Formular, welche Daten
   OpenWoIst-JSON benötigt.
+- Die Anbieterbereiche erklären, wo eine Symcon-Instanz, ein Freigabelink
+  oder eine Positionsvariable benötigt wird.
 
 ## Neu
 
+- **Garmin inReach / MapShare** übernimmt je Geräte-IMEI den jüngsten
+  Standort mit Garmin-Messzeit aus einem freigegebenen KML-Feed.
 - Unter **Tracker und Standortgeräte → Garmin LiveTrack** lassen sich
   Garmin-Connect-Freigaben mit eigener Markerfarbe hinzufügen. Kachel und
   IPSView zeigen den jüngsten gemeldeten Punkt je Sitzung.

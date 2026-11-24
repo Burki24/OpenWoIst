@@ -42,7 +42,11 @@ trait PositionSourcePanels
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules]) {
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
             $list['values'] = $this->positionPanelValues($mode, $property, $modules);
-            $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [$this->sourceModuleLink($mode, $caption), $list]];
+            $hint = $modules === [] ? sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption)
+                : 'Select an existing Symcon device instance.';
+            $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [
+                $this->sourceModuleLink($mode, $caption), ['type' => 'Label', 'caption' => $hint], $list
+            ]];
             if (in_array($mode, ['owntracks', 'traccar'], true)) {
                 $deviceModules[] = $panel;
             } elseif ($mode === 'fressnapf') {
@@ -58,6 +62,8 @@ trait PositionSourcePanels
         array_unshift($iCloud['items'], $this->sourceModuleLink('icloud', 'SymconiCloud'));
         $tractive = $elements['TractiveSources'];
         array_unshift($tractive['items'], $this->sourceModuleLink('tractive', 'Tractive GPS'));
+        $mapShare = $elements['GarminMapShareSources'];
+        $mapShare['items'][1]['form'][1]['validate'] = GarminMapShareClient::LINK_PATTERN;
         $clouds = [
             'type'    => 'ExpansionPanel',
             'name'    => 'CloudSources',
@@ -68,10 +74,10 @@ trait PositionSourcePanels
             'type'    => 'ExpansionPanel',
             'name'    => 'LocationDeviceSources',
             'caption' => 'Trackers and location devices',
-            'items'   => [...$deviceModules, $this->garminLiveTrackPanel($elements['GarminLiveTrackSources']), $elements['TrackerSources']]
+            'items'   => [...$deviceModules, $this->garminLiveTrackPanel($elements['GarminLiveTrackSources']), $mapShare, $elements['TrackerSources']]
         ];
         $pets = ['type' => 'ExpansionPanel', 'name' => 'PetSources', 'caption' => 'Pets', 'items' => [$tractive, ...$petModules]];
-        unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['GarminLiveTrackSources'], $elements['TrackerSources']);
+        unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['GarminLiveTrackSources'], $elements['GarminMapShareSources'], $elements['TrackerSources']);
         $form['elements'] = [$vehicles, $clouds, $pets, $devices, ...array_values($elements)];
         return $form;
     }

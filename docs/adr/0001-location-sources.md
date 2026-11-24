@@ -27,6 +27,12 @@ bleiben in der Instanzkonfiguration und der Anfrage an Garmin. Kachel und
 IPSView erhalten nur den normalisierten Standortzustand. Der Webabruf nutzt
 die undokumentierte Garmin-Webschnittstelle. [Referenz zum Webabruf](https://github.com/tjuuljensen/ha-garmin-livetrack/blob/main/docs/GARMIN_FETCH_STRATEGY.md)
 
+Garmin inReach / MapShare verwendet den dokumentierten KML-Feed. Je Eintrag
+bestimmen Feed und IMEI das Kartenobjekt. Der gemeinsame Garmin-Timer ruft
+den Feed im Fünfminutentakt ab und übernimmt den jüngsten gültigen Punkt
+mit seiner Garmin-Messzeit. Die optionale HTTP-Anmeldung bleibt serverseitig.
+[Garmin zum MapShare-KML-Feed](https://support.garmin.com/en-US/?faq=tdlDCyo1fJ5UxjUbA9rMY8)
+
 Bei bekannten Quellmodulen mit verlässlichem Variablenvertrag wählen Benutzer
 die vorhandenen Geräteinstanzen in einer Liste. OpenWoIst ermittelt die
 Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene

@@ -6,9 +6,9 @@ namespace OpenWoIst;
 
 use Closure;
 
-trait GarminLiveTrackSources
+trait GarminSources
 {
-    /** Polls one due Garmin Connect LiveTrack session. */
+    /** Polls one due Garmin source. The existing timer entry point is retained. */
     public function PollGarminLiveTrack(): void
     {
         $lock = 'OpenWoIst.Garmin.' . $this->InstanceID;
@@ -16,7 +16,7 @@ trait GarminLiveTrackSources
             return;
         }
         try {
-            $rows = $this->configuredGarminLiveTrack();
+            $rows = $this->configuredGarminSources();
             $stored = $this->garminLiveTrackPolls();
             $polls = array_intersect_key($stored, $rows);
             $now = $this->garminLiveTrackTime();
@@ -39,18 +39,23 @@ trait GarminLiveTrackSources
             }
             asort($due, SORT_NUMERIC);
             $key = array_key_first($due);
-            $binding = $rows[$key]['binding'];
+            $row = $rows[$key];
+            $binding = $row['binding'];
             $previous = $polls[$key] ?? [];
-            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'SENDEN', 'Garmin-LiveTrack-Sitzung abfragen.');
-            $result = GarminLiveTrackClient::poll($rows[$key]['session'], $previous['cursor'] ?? null, $now, $this->garminLiveTrackTransport());
-            $configured = $this->configuredGarminLiveTrack();
+            $mapShare = $row['provider'] === 'MapShare';
+            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'SENDEN', 'Garmin-Position abfragen.', ['Quelle' => $row['provider']]);
+            $request = $this->garminLiveTrackTransport();
+            $cursor = $previous['cursor'] ?? null;
+            $result = $mapShare ? GarminMapShareClient::poll($row['session'], $cursor, $now, $request)
+                : GarminLiveTrackClient::poll($row['session'], $cursor, $now, $request);
+            $configured = $this->configuredGarminSources();
             if (($configured[$key]['binding'] ?? null) !== $binding) {
                 return;
             }
 
             $status = $result['status'];
-            $terminal = ($result['ended'] ?? false) || in_array($status, [404, 410], true);
-            $delay = match ($status) {
+            $terminal = !$mapShare && (($result['ended'] ?? false) || in_array($status, [404, 410], true));
+            $delay = $mapShare ? ($status === 429 ? 600 : 300) : match ($status) {
                 200     => 30,
                 429     => 120,
                 default => 60
@@ -63,8 +68,8 @@ trait GarminLiveTrackSources
                 'cursor'   => $result['cursor'] ?? $previous['cursor'] ?? null,
                 'fix'      => $result['fix'] ?? $previous['fix'] ?? null
             ];
-            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'EMPFANG', 'Garmin-LiveTrack-Sitzung ausgewertet.', [
-                'HTTPStatus' => $status, 'SitzungBeendet' => $terminal, 'NeuerStandort' => isset($result['fix'])
+            $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'EMPFANG', 'Garmin-Antwort ausgewertet.', [
+                'Quelle' => $row['provider'], 'HTTPStatus' => $status, 'SitzungBeendet' => $terminal, 'NeuerStandort' => isset($result['fix'])
             ]);
             $this->SetBuffer('GarminLiveTrackPolls', json_encode(array_intersect_key($polls, $configured), JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR));
             $this->publish(false);
@@ -83,19 +88,25 @@ trait GarminLiveTrackSources
         return time();
     }
 
-    private function registerGarminLiveTrack(): void
+    private function registerGarminSources(): void
     {
         $this->RegisterPropertyString('GarminLiveTrackSessions', '[]');
+        $this->RegisterPropertyString('GarminMapShareDevices', '[]');
         $this->RegisterTimer('ReadGarminLiveTrack', 0, 'OWIS_PollGarminLiveTrack($_IPS["TARGET"]);');
     }
 
-    private function maintainGarminLiveTrack(): void
+    private function maintainGarminSources(): void
     {
-        $rows = $this->configuredGarminLiveTrack();
+        $rows = $this->configuredGarminSources();
         $this->SetTimerInterval('ReadGarminLiveTrack', array_filter(array_column($rows, 'session')) === [] ? 0 : 5000);
         if ($rows === []) {
             $this->SetBuffer('GarminLiveTrackPolls', '');
         }
+    }
+
+    private function configuredGarminSources(): array
+    {
+        return $this->configuredGarminLiveTrack() + $this->configuredGarminMapShare();
     }
 
     private function garminLiveTrackPanel(array $panel): array
@@ -126,10 +137,35 @@ trait GarminLiveTrackSources
             $name = is_string($row['GarminName'] ?? null) ? trim($row['GarminName']) : '';
             $key = LocationSnapshot::key('garmin', $this->InstanceID, $entry);
             $sources[$key] ??= [
+                'provider'    => 'LiveTrack',
                 'name'        => $name === '' ? 'Garmin LiveTrack' : $name,
                 'markerColor' => LocationSnapshot::markerColor($row['GarminMarkerColor'] ?? null),
                 'session'     => $session,
                 'binding'     => $session === null ? null : hash('sha256', $session['url'])
+            ];
+        }
+        return $sources;
+    }
+
+    private function configuredGarminMapShare(): array
+    {
+        $rows = json_decode($this->ReadPropertyString('GarminMapShareDevices'), true, 8);
+        $sources = [];
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $feed = GarminMapShareClient::feed($row['MapShareLink'] ?? null, $row['MapShareIMEI'] ?? null);
+            if ($feed === null) {
+                continue;
+            }
+            $name = is_string($row['MapShareName'] ?? null) ? trim($row['MapShareName']) : '';
+            $feed['username'] = is_string($row['MapShareUsername'] ?? null) ? trim($row['MapShareUsername']) : '';
+            $feed['password'] = is_string($row['MapSharePassword'] ?? null) ? $row['MapSharePassword'] : '';
+            $key = LocationSnapshot::key('mapshare', $this->InstanceID, $feed['url']);
+            $sources[$key] ??= [
+                'provider'    => 'MapShare',
+                'name'        => $name === '' ? 'Garmin MapShare' : $name,
+                'markerColor' => LocationSnapshot::markerColor($row['MapShareMarkerColor'] ?? null),
+                'session'     => $feed,
+                'binding'     => hash('sha256', json_encode($feed, JSON_THROW_ON_ERROR))
             ];
         }
         return $sources;
@@ -140,11 +176,11 @@ trait GarminLiveTrackSources
         return json_decode($this->GetBuffer('GarminLiveTrackPolls'), true, 16) ?? [];
     }
 
-    private function readGarminLiveTrackSources(array $previous): array
+    private function readGarminSources(array $previous): array
     {
         $polls = $this->garminLiveTrackPolls();
         $sources = [];
-        foreach ($this->configuredGarminLiveTrack() as $key => $row) {
+        foreach ($this->configuredGarminSources() as $key => $row) {
             $poll = $polls[$key] ?? [];
             if ($row['binding'] !== ($poll['binding'] ?? null)) {
                 $poll = [];

@@ -56,9 +56,9 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Schnittstelle zu. Die Karteninstanz hat einen eigenen Formularbereich
    **Tractive GPS** für mehrere Geräte aus dem Quellmodul. Auf der
    Entwicklungsinstanz liefert ein deaktivierter Pseudo-Tracker
-   simulierte Berichte auf Abruf. Die direkte Auswahl ist lokal mit
-   simulierten Daten für 1.14 und 1.19 Beta geprüft. Die Laufzeitabnahme
-   des neuen Formulars steht aus.
+   simulierte Berichte auf Abruf. Die direkte Auswahl mit Haustiernamen
+   wurde auf `dev` (`8d4d442`) in der Symcon-Konsole mit dem Pseudo-Tracker
+   geprüft. Die Testzeile wurde verworfen.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
 4. [x] **Weitere Quellen über Symcon-MQTT.** Auf `dev` (`aba702d`) zeigten
    Kachel und IPSView Desktop Positionswechsel mit simuliertem OpenWoIst-JSON
@@ -74,12 +74,16 @@ IPSView-Testansicht und das unveränderte Haussteuerungsprofil. Sitzungsende
 und Linkwechsel sind lokal simuliert geprüft. Die Prüfung mit einer echten
 Garmin-Freigabe steht aus.
 
+**Garmin inReach / MapShare.** Der KML-Feed wird pro Geräte-IMEI abgefragt.
+Simulierte Antworten bestätigen Positionswechsel in beiden lokalen
+Kartenframes und den Erhalt der letzten Position bei einem Abruffehler.
+Die Abnahme in den nativen Hosts und mit einem echten Feed steht aus.
+
 **Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.
 Smartcar, Hyundai/Kia, Volvo, Renault Z.E., Tronity und OwnTracks verwenden
-die direkte Instanzauswahl. BMW CarData und Traccar lesen JSON-Variablen.
-Die Übernahme bisheriger Zuordnungen ist lokal geprüft. Die Abnahme im
-Konsolenformular steht aus.
+die direkte Instanzauswahl. Die Formularhinweise nennen den benötigten
+Eingabeweg. Die Übernahme bisheriger Zuordnungen ist lokal geprüft.
 
 **Fressnapf Tracker.** Direkte Instanzauswahl unter **Haustiere** neben
 Tractive. Lokale Tests prüfen Messzeit, unvollständige Berichte und beide

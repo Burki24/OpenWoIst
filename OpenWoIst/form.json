@@ -395,6 +395,111 @@
         },
         {
             "type": "ExpansionPanel",
+            "name": "GarminMapShareSources",
+            "caption": "Garmin inReach / MapShare",
+            "items": [
+                {
+                    "type": "Label",
+                    "caption": "Use the MapShare link from Garmin Explore and the 15-digit IMEI of the inReach device."
+                },
+                {
+                    "type": "List",
+                    "name": "GarminMapShareDevices",
+                    "caption": "MapShare devices",
+                    "rowCount": 4,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "name": "MapShareName",
+                            "caption": "Name on the map",
+                            "width": "auto",
+                            "add": "",
+                            "save": true
+                        },
+                        {
+                            "name": "MapShareMarkerColor",
+                            "caption": "Marker color",
+                            "width": "140px",
+                            "add": -1,
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent": true,
+                                "transparentCaption": "Designer default"
+                            }
+                        },
+                        {
+                            "name": "MapShareLink",
+                            "visible": false,
+                            "add": "",
+                            "save": true
+                        },
+                        {
+                            "name": "MapShareIMEI",
+                            "visible": false,
+                            "add": "",
+                            "save": true
+                        },
+                        {
+                            "name": "MapShareUsername",
+                            "visible": false,
+                            "add": "",
+                            "save": true
+                        },
+                        {
+                            "name": "MapSharePassword",
+                            "visible": false,
+                            "add": "",
+                            "save": true
+                        }
+                    ],
+                    "form": [
+                        {
+                            "type": "ValidationTextBox",
+                            "name": "MapShareName",
+                            "caption": "Name on the map",
+                            "validate": ".*\\S.*"
+                        },
+                        {
+                            "type": "PasswordTextBox",
+                            "name": "MapShareLink",
+                            "caption": "MapShare share link"
+                        },
+                        {
+                            "type": "ValidationTextBox",
+                            "name": "MapShareIMEI",
+                            "caption": "Device IMEI",
+                            "validate": "^[0-9]{15}$"
+                        },
+                        {
+                            "type": "SelectColor",
+                            "name": "MapShareMarkerColor",
+                            "caption": "Marker color",
+                            "allowTransparent": true,
+                            "transparentCaption": "Designer default"
+                        },
+                        {
+                            "type": "ExpansionPanel",
+                            "caption": "Protected MapShare feed",
+                            "items": [
+                                {
+                                    "type": "ValidationTextBox",
+                                    "name": "MapShareUsername",
+                                    "caption": "Username (if required)"
+                                },
+                                {
+                                    "type": "PasswordTextBox",
+                                    "name": "MapSharePassword",
+                                    "caption": "MapShare password"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "name": "TrackerSources",
             "caption": "Additional location devices",
             "items": [
@@ -448,7 +553,7 @@
                 },
                 {
                     "type": "Label",
-                    "caption": "Use OpenWoIst JSON with latitude, longitude and measurement time."
+                    "caption": "Select a Symcon string variable with latitude, longitude and measurement time in OpenWoIst JSON format."
                 }
             ]
         },
