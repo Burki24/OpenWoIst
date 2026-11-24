@@ -112,8 +112,10 @@ Der Prüfsummenvergleich bestätigte die unveränderten Zuordnungen und
 das unveränderte Haussteuerungsprofil.
 
 **Tessie.** Der JSON-Import nutzt `drive_state.gps_as_of` als GPS-Messzeit.
-Positionswechsel und fehlende Messzeit wurden mit Testdaten lokal geprüft.
-Die Abnahme auf der Entwicklungsinstanz steht aus.
+Auf `dev` (`e287475`, Version 0.20) wanderte der Marker mit Testdaten in
+der nativen Kachel und in IPSView Desktop. Ohne GPS-Messzeit blieb der
+letzte Standort erhalten. Zuordnungen und Haussteuerungsprofil blieben
+erhalten.
 Die direkte Instanzauswahl für NRG-Stack Tessie bleibt offen. Dessen
 Standortvariablen enthalten die Koordinaten, die Empfangszeit gilt für
 beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
