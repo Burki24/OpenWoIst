@@ -79,8 +79,8 @@ check($trackerMap->GetIPSViewHTML() === $ownTracksEmbed && tileState($trackerMap
 $exampleRows = [$ownTracksRow];
 $exampleIDs = [];
 $payloads = [
-    'Home Assistant' => ['latitude' => 52.51453, 'longitude' => 13.35010, 'timestamp' => $now],
-    'MQTT GPS'       => ['latitude' => 52.51461, 'longitude' => 13.35684, 'timestamp' => $now, 'horizontalAccuracy' => 12]
+    'MQTT GPS 1' => ['latitude' => 52.51453, 'longitude' => 13.35010, 'timestamp' => $now],
+    'MQTT GPS 2' => ['latitude' => 52.51461, 'longitude' => 13.35684, 'timestamp' => $now, 'horizontalAccuracy' => 12]
 ];
 foreach ($payloads as $name => $payload) {
     $input = IPS_CreateVariable(VARIABLETYPE_STRING);
@@ -115,7 +115,7 @@ foreach (array_values($payloads) as $index => $payload) {
 }
 $genericAccess = bootstrap($trackerMap->GetIPSViewHTML())['options'];
 [$status, $response] = mapRequest($trackerMap, $path, token: $genericAccess['token']);
-check($status === 200 && json_decode($response, true, 32, JSON_THROW_ON_ERROR)['sources'] === $expected, 'IPSView shows the same Home Assistant and MQTT tracker data as the tile.');
+check($status === 200 && json_decode($response, true, 32, JSON_THROW_ON_ERROR)['sources'] === $expected, 'IPSView shows the same generic JSON tracker data as the tile.');
 
 $exampleRows[1]['TrackerFormat'] = 'owntracks';
 IPS_SetProperty($trackerMapID, 'Trackers', json_encode($exampleRows, JSON_THROW_ON_ERROR));

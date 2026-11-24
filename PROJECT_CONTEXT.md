@@ -60,13 +60,14 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    simulierten Daten für 1.14 und 1.19 Beta geprüft. Die Laufzeitabnahme
    des neuen Formulars steht aus.
    [Tractive im Store](https://www.symcon.de/de/module-store/demel41-tractivegps/)
-4. [x] **Weitere Quellen über bestehende Symcon-Variablen.** Auf `dev`
-   (`aba702d`) wurden simulierte Ausgaben der Home-Assistant-Automation
-   und eines MQTT-GPS-Senders über den Symcon-MQTT-Server empfangen.
-   Kachel und IPSView Desktop zeigten beide Positionswechsel und behielten
-   bei fehlender Messzeit die letzte bekannte Position. Die bestehenden
-   Zuordnungen und das Haussteuerungsprofil blieben erhalten.
-   [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
+4. [x] **Weitere Quellen über Symcon-MQTT.** Auf `dev` (`aba702d`) zeigten
+   Kachel und IPSView Desktop Positionswechsel mit simuliertem OpenWoIst-JSON
+   über den Symcon-MQTT-Server. Bei fehlender Messzeit blieb die letzte bekannte
+   Position sichtbar. Zuordnungen und Haussteuerungsprofil blieben erhalten.
+   [Einrichtung](OpenWoIst/README.md#mqtt-gps-anschließen)
+
+**Garmin LiveTrack.** Für eine mögliche Anbindung kommt der Abruf aus
+Symcon infrage. Die Prüfung mit einer echten Freigabesitzung steht aus.
 
 **Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.

@@ -28,7 +28,7 @@
             "Manual variable assignment": "Manuelle Variablenzuordnung",
             "Leave the source instance empty to use the variables selected here.": "Lasse die Quellinstanz leer, um die hier zugeordneten Variablen zu verwenden.",
             "Advanced position settings": "Erweiterte Positionseinstellungen",
-            "Use OpenWoIst JSON for a complete position from sources such as Home Assistant or MQTT GPS.": "Wähle OpenWoIst-JSON für vollständige Positionen, etwa von Home Assistant oder MQTT-GPS.",
+            "Use OpenWoIst JSON with latitude, longitude and measurement time.": "Verwende OpenWoIst-JSON mit Breitengrad, Längengrad und Messzeit.",
             "Tractive GPS device": "Tractive-GPS-Gerät",
             "Tractive devices": "Tractive-Geräte",
             "Pet name": "Haustiername",

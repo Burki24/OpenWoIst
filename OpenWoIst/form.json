@@ -377,7 +377,7 @@
                 },
                 {
                     "type": "Label",
-                    "caption": "Use OpenWoIst JSON for a complete position from sources such as Home Assistant or MQTT GPS."
+                    "caption": "Use OpenWoIst JSON with latitude, longitude and measurement time."
                 }
             ]
         },

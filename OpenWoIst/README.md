@@ -126,9 +126,9 @@ vorliegt, verwende **Manuelle Variablenzuordnung**. Das JSON enthält `lat`,
 einen Namen und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
 
-## Home Assistant und MQTT-GPS anschließen
+## MQTT-GPS anschließen
 
-Beide Beispiele schreiben die vollständige Position als eine MQTT-Nachricht.
+Der GPS-Sender veröffentlicht die vollständige Position als eine MQTT-Nachricht.
 Verwende einen Broker, den der Sender und Symcon erreichen. Bei einem externen
 Broker abonniert der [MQTT Client in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-client/)
 das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-server/)
@@ -137,49 +137,7 @@ Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
 **String** an. Ordne sie unter **Tracker und Standortgeräte → Weitere
 Standortgeräte** als **Positionsvariable (JSON)** zu.
 
-### Home Assistant
-
-Diese Automation setzt voraus, dass eine GPS-Entität `latitude`, `longitude`
-und `fix_timestamp` gemeinsam als Attribute liefert. `fix_timestamp` ist die
-ursprüngliche Messzeit in Unix-Sekunden. Passe die Entitäts-ID und bei Bedarf
-den Namen des Zeitfelds an deine Integration an. Der Zeitpunkt eines
-Home-Assistant-Zustandsupdates kann von der GPS-Messzeit abweichen.
-[Triggerdaten](https://www.home-assistant.io/docs/automation/trigger-data/) ·
-[MQTT](https://www.home-assistant.io/integrations/mqtt/)
-
-```yaml
-alias: OpenWoIst GPS-Position weitergeben
-triggers:
-  - trigger: state
-    entity_id: device_tracker.gps_test
-conditions:
-  - condition: template
-    value_template: >-
-      {% set p = trigger.to_state.attributes if trigger.to_state is not none else {} %}
-      {{ p.latitude is number and p.latitude is not boolean and -90 <= p.latitude <= 90
-         and p.longitude is number and p.longitude is not boolean and -180 <= p.longitude <= 180
-         and p.fix_timestamp is integer and p.fix_timestamp > 0 }}
-actions:
-  - action: mqtt.publish
-    data:
-      topic: openwoist/demo/home_assistant
-      payload: >-
-        {% set p = trigger.to_state.attributes %}
-        {{ {'latitude': p.latitude, 'longitude': p.longitude,
-            'timestamp': p.fix_timestamp} | to_json }}
-```
-
-Für einen Test kannst du in den [Entwicklerwerkzeugen](https://www.home-assistant.io/docs/tools/dev-tools/#states)
-den Zustand der separaten Testentität `device_tracker.gps_test` mit den
-drei Attributen setzen, zum Beispiel `latitude: 52.51453`,
-`longitude: 13.35010` und `fix_timestamp` als aktuelle ganze Unix-Sekunde.
-Sende anschließend einen zweiten Zustand mit anderen Koordinaten und einer
-höheren Messzeit. Symcon empfängt die Meldungen auf `openwoist/demo/home_assistant`.
-
-### MQTT-GPS
-
-Ein MQTT-GPS-Sender kann direkt auf `openwoist/demo/gps` veröffentlichen.
-Die folgende Nachricht enthält synthetische Testdaten.
+Verwende für einen Test auf `openwoist/demo/gps` diese synthetische Nachricht.
 
 ```json
 {

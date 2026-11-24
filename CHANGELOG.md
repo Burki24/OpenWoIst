@@ -7,8 +7,8 @@
 - Bei geringer Höhe bleiben Karte und scrollbare Objektliste nebeneinander
   sichtbar. Die Bedienelemente passen in eine Zeile.
 - Die Fahrzeugliste bietet **Eine JSON-Variable** oder **Drei Positionsvariablen**
-  an. Home Assistant und MQTT-GPS verwenden OpenWoIst-JSON unter
-  **Weitere Standortgeräte**.
+  an. Unter **Weitere Standortgeräte** erklärt das Formular, welche Daten
+  OpenWoIst-JSON benötigt.
 
 ## Neu
 
@@ -38,7 +38,7 @@
   haben eigene Listen für ihre JSON-Quellen. Gespeicherte Zuordnungen
   erscheinen nach dem Modulupdate in den jeweiligen Listen.
 - Standortgeräte können generisches OpenWoIst-JSON lesen. Die Modulanleitung
-  zeigt Beispiele für Home Assistant und MQTT-GPS.
+  zeigt die direkte Kopplung eines MQTT-GPS-Senders mit Symcon.
 - OpenWoIst zeigt Apple-Geräte aus ausgewählten iCloud-Konten und ein Fahrzeug
   aus Symcon-Variablen auf derselben Kachel.
 - Ein Testfahrzeug mit vier synthetischen Positionen lässt sich über das

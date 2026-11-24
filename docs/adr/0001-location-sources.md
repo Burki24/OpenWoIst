@@ -14,6 +14,11 @@ und Traccar-Daten aus zugewiesenen JSON-Variablen beim Einlesen.
 Gespeicherte Anbieterwerte in `VehicleMode` gelten weiter, solange kein
 eigenes JSON-Format gewählt wird.
 
+Standortquellen werden direkt an Symcon oder über Symcon-Quellmodule
+angebunden. Konkurrierende Hausautomationssysteme wie Home Assistant
+sind weder als Datenquelle noch als Vermittler vorgesehen. MQTT dient
+als Transport zwischen Standortanbieter oder Gerät und Symcon.
+
 Bei bekannten Quellmodulen mit verlässlichem Variablenvertrag wählen Benutzer
 die vorhandenen Geräteinstanzen in einer Liste. OpenWoIst ermittelt die
 Variablen-IDs anhand der Idents und prüft die Typen. Je Instanz sind eigene

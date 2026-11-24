@@ -22,6 +22,11 @@ die zugehörigen zentralen Standards.
 - Lizenz für OpenWoIst ist die PolyForm Noncommercial License 1.0.0 gemäß
   [LICENSE](LICENSE). Integrierte Komponenten führen ihre eigenen Lizenzhinweise.
 - OpenWoIst liest zugewiesene Symcon-Variablen und optional den normalisierten Cache zugewiesener SymconiCloud-Konten. Zugangsdaten und Anbieterzugriffe liegen beim jeweiligen Quellmodul.
+- OpenWoIst wird weder direkt noch als Datenbrücke mit konkurrierenden
+  Hausautomationssystemen wie Home Assistant gekoppelt. Das gilt auch für
+  Empfehlungen und Beispiele. Standortquellen werden direkt an Symcon oder
+  über ein Symcon-Quellmodul angebunden. MQTT bleibt für die direkte
+  Datenübertragung vom Standortanbieter oder Gerät verfügbar.
 - Native Kachel und IPSView zeigen denselben Standortzustand. Jede Ausgabe
   hat einen eigenen Designer für Rahmen, Farben, Schrift und Kartenprofil.
   IPSView kann das Kartenprofil der Kachel übernehmen und seine eigene
