@@ -66,11 +66,13 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Position sichtbar. Zuordnungen und Haussteuerungsprofil blieben erhalten.
    [Einrichtung](OpenWoIst/README.md#mqtt-gps-anschließen)
 
-**Garmin LiveTrack.** Direkter Abruf freigegebener Garmin-Connect-Sitzungen
-aus Symcon. Mit simulierten Antworten sind Garmin-Messzeit, Positionswechsel,
-Sitzungsende und Linkwechsel lokal in Kachel und IPSView geprüft. Beide
-Browser-Testframes zeigten den Markerwechsel. Die Abnahme mit einer echten
-Freigabesitzung und den nativen Hosts steht aus.
+**Garmin LiveTrack.** Nach dem regulären `dev`-Update auf `8d4d442` ließ
+sich ein Garmin-Eintrag hinzufügen. Zwei simulierte Messpunkte bewegten den
+Marker in der nativen Kachel und in IPSView Desktop neben iCloud-Gerät und
+Testfahrzeug. Prüfsummen bestätigten unveränderte Zuordnungen, die unveränderte
+IPSView-Testansicht und das unveränderte Haussteuerungsprofil. Sitzungsende
+und Linkwechsel sind lokal simuliert geprüft. Die Prüfung mit einer echten
+Garmin-Freigabe steht aus.
 
 **Formularüberarbeitung.** Die Anbieterlisten stehen in thematischen
 Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.
