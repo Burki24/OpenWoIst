@@ -4,12 +4,11 @@
             "type": "ExpansionPanel",
             "name": "VehicleSources",
             "caption": "Vehicles",
-            "expanded": true,
             "items": [
                 {
                     "type": "List",
                     "name": "Vehicles",
-                    "caption": "Additional vehicles",
+                    "caption": "Vehicles from variables",
                     "rowCount": 4,
                     "add": true,
                     "delete": true,

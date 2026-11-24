@@ -26,11 +26,12 @@ $directMap = IPS\InstanceManager::getInstanceInterface($directMapID);
 $tractivePanel = static function (OpenWoIst $map): array
 {
     $form = json_decode($map->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-    return array_column($form['elements'], null, 'name')['TractiveSources'];
+    $group = array_column($form['elements'], null, 'name')['LocationDeviceSources'];
+    return array_column($group['items'], null, 'name')['TractiveSources'];
 };
 $beforeSetup = $tractivePanel($directMap);
 $beforeItems = array_column($beforeSetup['items'], null, 'name');
-check($beforeSetup['caption'] === 'Tractive GPS' && $beforeSetup['expanded'] && $beforeSetup['items'][0]['name'] === 'TractiveTrackers'
+check($beforeSetup['caption'] === 'Tractive GPS' && $beforeSetup['expanded'] && $beforeItems['TractiveTrackers']['type'] === 'List'
     && $beforeItems['TractiveSetupRequired']['visible'], 'The standalone Tractive section exposes the device list and explains an empty selector.');
 
 $modules = $metadata->getValue();

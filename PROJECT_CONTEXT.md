@@ -68,7 +68,8 @@ und IPSView Desktop auf `dev` (`e79ccfd`) abgenommen.
    Zuordnungen und das Haussteuerungsprofil blieben erhalten.
    [Beispiele](OpenWoIst/README.md#home-assistant-und-mqtt-gps-anschließen)
 
-**Formularüberarbeitung.** Jede unterstützte Quelle hat einen eigenen Bereich.
+**Formularüberarbeitung.** Die Anbieterlisten stehen in drei thematischen
+Gruppen. Die Links zu den Quellmodulen stehen in ihren jeweiligen Bereichen.
 Smartcar, Hyundai/Kia, Volvo, Renault Z.E., Tronity und OwnTracks verwenden
 die direkte Instanzauswahl. BMW CarData und Traccar lesen JSON-Variablen.
 Die Übernahme bisheriger Zuordnungen ist lokal geprüft. Die Abnahme im

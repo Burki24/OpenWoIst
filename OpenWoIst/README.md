@@ -5,9 +5,9 @@ Symcon-Variablen. Beide Quellenarten lassen sich auch einzeln verwenden.
 
 ## Einrichten und mit dem Testfahrzeug ausprobieren
 
-1. Eine Instanz **OpenWoIst** anlegen. Unter **iCloud → iCloud-Konten** die
-   Konto-Instanzen aus SymconiCloud auswählen. Voraussetzung für Apple-Positionen
-   ist ein gefüllter Gerätestand im ausgewählten Konto.
+1. Eine Instanz **OpenWoIst** anlegen. Unter **Apple und Google → iCloud →
+   iCloud-Konten** die Konto-Instanzen aus SymconiCloud auswählen. Voraussetzung
+   für Apple-Positionen ist ein gefüllter Gerätestand im ausgewählten Konto.
 2. Unter **Fahrzeuge → Bisherige Fahrzeugquelle und Testfahrzeug** den Eintrag
    **Testfahrzeug** auswählen und die Konfiguration übernehmen. Dadurch entsteht
    die String-Variable **Position des Testfahrzeugs** (`DemoPosition`) mit einem
@@ -24,6 +24,10 @@ einer Position stammt aus der jeweiligen Messung. Unter
 Kachel gespeicherte Positionen als **Letzte bekannte Position** an. Beim
 Entfernen eines Kontos aus der Auswahl oder bei dessen Abmeldung werden seine
 Positionen von der Karte entfernt.
+
+Die Modulbereiche stehen unter **Fahrzeuge**, **Apple und Google** sowie
+**Tracker und Standortgeräte**. Im jeweiligen Modulbereich führt die
+Schaltfläche mit dem Modulnamen zum Modul-Store oder zu GitHub.
 
 Der Quellenfilter steuert die sichtbaren Marker und Listeneinträge.
 Kachelzugriff umfasst die Standortdaten aller Quellen, die der Instanz
@@ -87,8 +91,8 @@ Löschfunktion im Instanzformular.
 ## Tractive-GPS-Geräte hinzufügen
 
 Installiere das [Symcon-Modul Tractive GPS](https://www.symcon.de/de/module-store/demel41-tractivegps/)
-und richte dort deine Tracker ein. Öffne danach in OpenWoIst den Bereich
-**Tractive GPS** und wähle unter **Hinzufügen** je Tracker die vorhandene
+und richte dort deine Tracker ein. Öffne danach **Tracker und Standortgeräte →
+Tractive GPS** und wähle unter **Hinzufügen** je Tracker die vorhandene
 Geräteinstanz. In der Liste kannst du den **Haustiernamen** und die
 **Markerfarbe** je Tracker bearbeiten. Bei leerem Haustiernamen verwendet die
 Liste beim Öffnen den Namen der Geräteinstanz. OpenWoIst findet die
@@ -102,11 +106,12 @@ direkte Geräteauswahl.
 
 ## OwnTracks-Geräte hinzufügen
 
-Wähle unter **OwnTracks → Hinzufügen** je Gerät die vorhandene OwnTracks-Data-
-Instanz aus. Aktiviere im Quellmodul die Positionsübernahme. Wenn der
-Positionsdatensatz bereits als Symcon-String vorliegt, verwende **Manuelle
-Variablenzuordnung**. Das JSON enthält `lat`, `lon`, `tst` als Unix-Sekunden und
-optional `acc` in Metern. Geräte können einen Namen und eine Markerfarbe erhalten.
+Wähle unter **Tracker und Standortgeräte → OwnTracks → Hinzufügen** je Gerät
+die vorhandene OwnTracks-Data-Instanz aus. Aktiviere im Quellmodul die
+Positionsübernahme. Wenn der Positionsdatensatz bereits als Symcon-String
+vorliegt, verwende **Manuelle Variablenzuordnung**. Das JSON enthält `lat`,
+`lon`, `tst` als Unix-Sekunden und optional `acc` in Metern. Geräte können
+einen Namen und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
 
 ## Home Assistant und MQTT-GPS anschließen
@@ -117,8 +122,8 @@ Broker abonniert der [MQTT Client in Symcon](https://www.symcon.de/de/service/do
 das jeweilige Topic. Beim [MQTT-Server in Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/mqtt/mqtt-server/)
 sendet die Quelle direkt dorthin. Sende eine erste Meldung auf das gewünschte
 Topic. Lege es über den MQTT-Konfigurator mit einer Nutzdatenvariable vom Typ
-**String** an. Ordne sie in OpenWoIst unter **Weitere Standortgeräte**
-als **Positionsvariable (JSON)** zu.
+**String** an. Ordne sie unter **Tracker und Standortgeräte → Weitere
+Standortgeräte** als **Positionsvariable (JSON)** zu.
 
 ### Home Assistant
 
@@ -180,7 +185,8 @@ Marker. Bei fehlendem `timestamp` bleibt der letzte gültige Standort sichtbar.
 
 ## Vorhandene Fahrzeugvariablen anschließen
 
-Unter **Weitere Fahrzeuge** pro Fahrzeug einen Eintrag mit Namen hinzufügen.
+Unter **Fahrzeuge → Fahrzeuge aus Variablen** pro Fahrzeug einen Eintrag mit
+Namen hinzufügen.
 Die Liste zeigt die Namen und Quellenarten der hinzugefügten Fahrzeuge.
 Die zuvor konfigurierte Einzelquelle steht weiterhin unter **Bisherige
 Fahrzeugquelle und Testfahrzeug**.
@@ -208,9 +214,10 @@ SetValueString($positionsVariableID, json_encode([
 
 ### BMW CarData und Traccar anschließen
 
-Öffne **BMW CarData** oder **Traccar** und füge einen Eintrag je Fahrzeug
-oder Tracker hinzu. Ordne unter **Positionsvariable (JSON)** die String-Variable
-mit den Originaldaten zu. OpenWoIst konvertiert sie beim Einlesen.
+Öffne **Fahrzeuge → BMW CarData** oder **Tracker und Standortgeräte → Traccar**
+und füge einen Eintrag je Fahrzeug oder Tracker hinzu. Ordne unter
+**Positionsvariable (JSON)** die String-Variable mit den Originaldaten zu.
+OpenWoIst konvertiert sie beim Einlesen.
 
 Für BMW kann die Variable das Ergebnis von `BMW_getTelematicData`,
 eine CarData-REST-Antwort oder eine Stream-Meldung enthalten. Beide
@@ -240,8 +247,8 @@ Topic per MQTT 3.1.1 abonnieren. [Traccar-Weiterleitung](https://www.traccar.org
    wie `openwoist/traccar/test`.
 2. Abonniere das Topic mit dem **MQTT Client** in Symcon. Lege ein
    **MQTT Client Device** mit einer Nutzdatenvariable vom Typ **String** an.
-3. Wähle in OpenWoIst unter **Traccar → Hinzufügen** die String-Variable als
-   Positionsvariable aus.
+3. Wähle unter **Tracker und Standortgeräte → Traccar → Hinzufügen** die
+   String-Variable als Positionsvariable aus.
 
 Eine gekürzte Testmeldung enthält die Position samt GPS-Messzeit.
 
@@ -264,9 +271,9 @@ zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
 ### Fahrzeuge aus vorhandenen Modulen auswählen
 
-Öffne den Bereich des Quellmoduls und wähle unter **Hinzufügen** pro Fahrzeug
-die vorhandene Instanz. OpenWoIst findet die lokalen Variablen anhand der
-folgenden Idents. Über **Manuelle Variablenzuordnung** kannst du eigene
+Öffne unter **Fahrzeuge** den Bereich des Quellmoduls und wähle unter
+**Hinzufügen** pro Fahrzeug die vorhandene Instanz. OpenWoIst findet die lokalen
+Variablen anhand der folgenden Idents. Über **Manuelle Variablenzuordnung** kannst du eigene
 Variablen aus derselben Quelle verwenden. Lasse dafür die Quellinstanz leer.
 
 | Quellmodul | Koordinaten | Messzeit |

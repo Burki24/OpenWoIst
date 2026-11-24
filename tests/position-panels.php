@@ -17,12 +17,17 @@ $providerContracts = [
 $positionPanelMapID = IPS_CreateInstance($mapModule);
 $positionPanelMap = IPS\InstanceManager::getInstanceInterface($positionPanelMapID);
 IPS_SetProperty($positionPanelMapID, 'EnableIPSView', true);
-$form = json_decode($positionPanelMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-$panels = array_column($form['elements'], null, 'name');
+$providerPanels = static function (OpenWoIst $map): array
+{
+    $form = json_decode($map->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
+    $groups = array_column($form['elements'], null, 'name');
+    return array_column([...$groups['VehicleSources']['items'], ...$groups['LocationDeviceSources']['items']], null, 'name');
+};
+$panels = $providerPanels($positionPanelMap);
 $modules = $metadata->getValue();
 foreach ($providerContracts as $property => [$guid]) {
     $modules[$guid] = array_replace($modules[$mapModule], ['Class' => TestPositionProvider::class, 'ModuleID' => $guid, 'Prefix' => 'TESTPROVIDER']);
-    $list = $panels[$property . 'Section']['items'][0];
+    $list = array_column($panels[$property . 'Section']['items'], null, 'name')[$property];
     $columns = array_column($list['columns'], null, 'name');
     check($list['name'] === $property && $list['add'] && $list['delete']
         && $columns['SourceInstance']['edit']['validModules'] === [$guid]
@@ -62,7 +67,7 @@ $bmwPayload = static function (float $latitude, int $time) use ($bmwPrefix): arr
 $bmwSource = IPS_CreateVariable(VARIABLETYPE_STRING);
 $traccarSource = IPS_CreateVariable(VARIABLETYPE_STRING);
 foreach (['BMWCarDataVehicles' => ['BMW', $bmwSource], 'TraccarDevices' => ['Traccar', $traccarSource]] as $property => [$name, $variable]) {
-    $list = $panels[$property . 'Section']['items'][0];
+    $list = array_column($panels[$property . 'Section']['items'], null, 'name')[$property];
     $inputs = array_column($list['form'], null, 'name');
     check($list['name'] === $property && $list['add'] && $inputs['SourcePosition']['validVariableTypes'] === [VARIABLETYPE_STRING]
         && !isset($inputs['SourceInstance']), 'BMW and Traccar each have a dedicated JSON list.');
@@ -101,10 +106,9 @@ foreach ([0, 1] as $step) {
     [$status, $body] = mapRequest($positionPanelMap, $panelPath, token: $panelAccess['token']);
     check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $sources, 'Both visualization outputs receive every provider position.');
 }
-$populated = json_decode($positionPanelMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
-$populated = array_column($populated['elements'], null, 'name');
+$populated = $providerPanels($positionPanelMap);
 foreach (array_keys($providerContracts) as $property) {
-    $values = $populated[$property . 'Section']['items'][0]['values'];
+    $values = array_column($populated[$property . 'Section']['items'], null, 'name')[$property]['values'];
     check(count($values) === 2 && array_column($values, 'SourceName') === [$property, $property]
         && $values[0]['SourceInstance'] !== $values[1]['SourceInstance'], 'Each provider list shows both configured devices and their source names.');
 }

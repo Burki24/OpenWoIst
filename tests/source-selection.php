@@ -18,8 +18,35 @@ check(count($devices) === 2, 'Existing assignments include all iCloud devices by
 $before = IPS_GetConfiguration($selectionID);
 $configuration = json_decode($selectionMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
 $fields = array_column($configuration['elements'], null, 'name');
-check(array_slice(array_column($configuration['elements'], 'caption'), 0, 3) === ['Vehicles', 'iCloud', 'GoogleCloud'], 'The form starts with the three source sections.');
-$picker = array_column($fields['ICloudSources']['items'], null, 'name')['SelectedDevices'];
+check(array_slice(array_column($configuration['elements'], 'caption'), 0, 3) === ['Vehicles', 'Apple and Google', 'Trackers and location devices'], 'The form starts with thematic source groups.');
+$cloudPanels = array_column($fields['CloudSources']['items'], null, 'name');
+$devicePanels = array_column($fields['LocationDeviceSources']['items'], null, 'name');
+$vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
+check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
+    && array_keys($devicePanels) === ['TractiveSources', 'OwnTracksDevicesSection', 'TraccarDevicesSection', 'TrackerSources']
+    && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
+$modulePanels = $cloudPanels + $devicePanels + $vehiclePanels;
+$links = [
+    'ICloudSources'              => 'https://github.com/Burki24/SymconiCloud',
+    'TractiveSources'            => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
+    'OwnTracksDevicesSection'    => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+    'TraccarDevicesSection'      => 'https://github.com/traccar/traccar',
+    'BMWCarDataVehiclesSection'  => 'https://github.com/parcivad/ips-bmw-cardata',
+    'SmartcarVehiclesSection'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
+    'HyundaiKiaVehiclesSection'  => 'https://github.com/da8ter/Bluelink',
+    'VolvoVehiclesSection'       => 'https://github.com/demel42/IPSymconVolvo',
+    'RenaultZEVehiclesSection'   => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
+    'TronityVehiclesSection'     => 'https://github.com/symcon/Tronity'
+];
+foreach ($links as $name => $url) {
+    $panel = $modulePanels[$name];
+    $link = $panel['items'][0];
+    check($link['type'] === 'Button' && $link['link'] && str_starts_with($link['caption'], $name === 'ICloudSources' ? 'SymconiCloud' : $panel['caption'])
+        && $link['onClick'] === 'echo ' . var_export($url, true) . ';' && !isset($panel['onClick']), 'Each module name is linked inside its panel and opening the panel never launches the link.');
+}
+$generic = $vehiclePanels['Vehicles'];
+check($generic['caption'] === 'Vehicles from variables' && isset($vehiclePanels['ExistingVehicleSettings']), 'The generic vehicle list and the test vehicle remain accessible.');
+$picker = array_column($cloudPanels['ICloudSources']['items'], null, 'name')['SelectedDevices'];
 $choices = array_column($picker['values'], null, 'DeviceKey');
 check(count($choices) === 2 && isset($choices[$phoneKey], $choices[$devices[1]['id']]), 'The list includes every assigned cached device even without a fix.');
 check(!$choices[$phoneKey]['Included'] && $choices[$phoneKey]['MarkerColor'] === -1, 'New cached entries can be colored independently of their selection.');
@@ -31,7 +58,7 @@ $jsonInputs = $vehicleForm[1]['options'][0]['items'] ?? $vehicleForm[2]['items']
 $coordinateInputs = $vehicleForm[1]['options'][1]['items'] ?? $vehicleForm[3]['items'];
 check(array_column($jsonInputs, 'name') === ['CarPosition']
     && array_column($coordinateInputs, 'name') === ['CarLatitude', 'CarLongitude', 'CarTimestamp']
-    && $fields['TraccarDevicesSection']['items'][0]['name'] === 'TraccarDevices', 'The generic vehicle and Traccar source have their own inputs.');
+    && isset(array_column($devicePanels['TraccarDevicesSection']['items'], null, 'name')['TraccarDevices']), 'The generic vehicle and Traccar source have their own inputs.');
 check(IPS_GetConfiguration($selectionID) === $before, 'Opening the picker must not modify assignments.');
 
 $initialAccess = bootstrap($selectionMap->GetIPSViewHTML())['options'];
@@ -42,7 +69,8 @@ IPS_ApplyChanges($selectionID);
 check(array_column(source($selectionMap, 'icloud')['objects'], 'id') === [$phoneKey], 'A failed cache read must never restore deselected devices.');
 $configuration = json_decode($selectionMap->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
 $fields = array_column($configuration['elements'], null, 'name');
-$picker = array_column($fields['ICloudSources']['items'], null, 'name')['SelectedDevices'];
+$cloudPanels = array_column($fields['CloudSources']['items'], null, 'name');
+$picker = array_column($cloudPanels['ICloudSources']['items'], null, 'name')['SelectedDevices'];
 check(array_column($picker['values'], 'DeviceKey') === [$phoneKey] && $picker['values'][0]['Included'], 'Legacy rows remain selected and editable during a cache failure.');
 $access = bootstrap($selectionMap->GetIPSViewHTML())['options'];
 $path = dirname($access['page']) . '/state';

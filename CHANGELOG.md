@@ -21,13 +21,14 @@
   Die Liste zeigt den Haustiernamen und die Karte übernimmt die
   Positionsvariablen automatisch.
 
-- Das Quellenformular ist in **Fahrzeuge**, **iCloud** und **GoogleCloud**
-  gegliedert. Die iCloud-Liste zeigt die Geräte der zugewiesenen Kontocaches.
+- Das Quellenformular gruppiert die Quellen unter **Fahrzeuge**,
+  **Apple und Google** sowie **Tracker und Standortgeräte**. Der jeweilige
+  Modulbereich verlinkt zum Modul-Store oder zu GitHub.
 - Einzelne Geräte und Fahrzeuge erhalten eigene Markerfarben in Kachel und
   IPSView. Die Designer liefern die Standardfarben.
 - Die iCloud-Geräteauswahl begrenzt Karte und Objektliste auf ausgewählte
   Geräte aus den zugewiesenen Kontocaches.
-- Unter **Weitere Fahrzeuge** lassen sich mehrere Fahrzeuge mit eigenen
+- Unter **Fahrzeuge aus Variablen** lassen sich mehrere Fahrzeuge mit eigenen
   Symcon-Variablen hinzufügen und verwalten.
 - Smartcar, Hyundai Bluelink / Kia Connect, Volvo, Renault Z.E., Tronity
   und OwnTracks haben eigene Listen für mehrere Geräteinstanzen. OpenWoIst

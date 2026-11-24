@@ -17,19 +17,69 @@ trait PositionSourcePanels
         'traccar'     => ['TraccarDevices', 'Traccar', [], []]
     ];
 
+    private const SOURCE_MODULE_URLS = [
+        'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
+        'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
+        'hyundai-kia' => 'https://github.com/da8ter/Bluelink',
+        'volvo'       => 'https://github.com/demel42/IPSymconVolvo',
+        'renault-ze'  => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
+        'tronity'     => 'https://github.com/symcon/Tronity',
+        'owntracks'   => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+        'traccar'     => 'https://github.com/traccar/traccar',
+        'icloud'      => 'https://github.com/Burki24/SymconiCloud',
+        'tractive'    => 'https://www.symcon.de/de/module-store/demel41-tractivegps/'
+    ];
+
     private function configurePositionPanels(array $form): array
     {
         $elements = array_column($form['elements'], null, 'name');
         $vehicleFields = array_column(array_column($elements['VehicleSources']['items'], null, 'name')['ExistingVehicleSettings']['items'], null, 'name');
-        $panels = [];
-        foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules, $idents]) {
+        $vehicleModules = [];
+        $deviceModules = [];
+        foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules]) {
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
             $list['values'] = $this->positionPanelValues($property, $modules);
-            $panels[] = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [$list]];
+            $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [$this->sourceModuleLink($mode, $caption), $list]];
+            if (in_array($mode, ['owntracks', 'traccar'], true)) {
+                $deviceModules[] = $panel;
+            } else {
+                $vehicleModules[] = $panel;
+            }
         }
-        $afterTractive = array_search('TractiveSources', array_column($form['elements'], 'name'), true) + 1;
-        array_splice($form['elements'], $afterTractive, 0, $panels);
+
+        $vehicles = $elements['VehicleSources'];
+        $vehicles['items'] = [...$vehicleModules, ...$vehicles['items']];
+        $iCloud = $elements['ICloudSources'];
+        array_unshift($iCloud['items'], $this->sourceModuleLink('icloud', 'SymconiCloud'));
+        $tractive = $elements['TractiveSources'];
+        array_unshift($tractive['items'], $this->sourceModuleLink('tractive', 'Tractive GPS'));
+        $clouds = [
+            'type'    => 'ExpansionPanel',
+            'name'    => 'CloudSources',
+            'caption' => 'Apple and Google',
+            'items'   => [$iCloud, $elements['GoogleCloudSources']]
+        ];
+        $devices = [
+            'type'    => 'ExpansionPanel',
+            'name'    => 'LocationDeviceSources',
+            'caption' => 'Trackers and location devices',
+            'items'   => [$tractive, ...$deviceModules, $elements['TrackerSources']]
+        ];
+        unset($elements['VehicleSources'], $elements['ICloudSources'], $elements['GoogleCloudSources'], $elements['TractiveSources'], $elements['TrackerSources']);
+        $form['elements'] = [$vehicles, $clouds, $devices, ...array_values($elements)];
         return $form;
+    }
+
+    private function sourceModuleLink(string $mode, string $caption): array
+    {
+        $url = self::SOURCE_MODULE_URLS[$mode];
+        $format = str_starts_with($url, 'https://github.com/') ? '%s on GitHub' : '%s in the Module Store';
+        return [
+            'type'    => 'Button',
+            'caption' => sprintf($this->Translate($format), $caption),
+            'link'    => true,
+            'onClick' => 'echo ' . var_export($url, true) . ';'
+        ];
     }
 
     private function positionPanelList(string $mode, string $property, array $modules, array $vehicleFields): array
