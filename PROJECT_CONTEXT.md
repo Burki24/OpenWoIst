@@ -125,11 +125,18 @@ beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/
 0.23) wanderte der Marker mit Testdaten in der nativen Kachel und in
 IPSView Desktop. Ein ungültiger Bericht ließ den letzten Standort stehen.
 Quellzuordnungen und Haussteuerungsprofil blieben erhalten. Die direkte
-Tesla-Instanzauswahl steht aus.
+Instanzauswahl für Schnittchers IPS-Tesla bleibt offen. `TeslaVehicleDrive`
+hat Variablen für Koordinaten und `gps_as_of`. Im Abruf des Connectors fehlt
+der Datenblock `location_data`, den Tesla ab Firmware 2023.38 für den
+Standort voraussetzt.
+[IPS-Tesla-Connector](https://github.com/Schnittcher/IPS-Tesla/blob/ca2999a70325a0ec640ec0f0e2386886f5c1fdad/TeslaVehicleConnector/module.php) ·
+[Tesla Fleet API](https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-endpoints#vehicle-data)
 [Tesla-Fahrzeugbericht](https://github.com/teslamotors/fleet-telemetry/blob/bb7c8a931e46da3b3eb6d20a67541c8f755f1ee6/protos/vehicle_data.proto)
 
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
-Parkkoordinaten ohne zugehörige Messzeit. Für Google Find Hub ist eine
+Parkkoordinaten ohne zugehörige Messzeit. Für kompatible Škoda mit OEM-Zeit
+ist der [Smartcar-Import](OpenWoIst/README.md#škoda-über-smartcar-einbinden)
+bereits verfügbar. Für Google Find Hub ist eine
 unterstützte Schnittstelle für Gerätestandorte Voraussetzung.
 [Google Find Hub](https://developers.google.com/nearby/fast-pair/landing-page-find-hub)
 

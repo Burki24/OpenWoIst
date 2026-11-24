@@ -346,6 +346,22 @@ Fahrzeug und Dienst zuletzt gemeldete Parkpositionen sein.
 Beim Modulupdate erscheinen bisherige Zuordnungen in den jeweiligen
 Anbieterlisten. Namen, Variablen und Markerfarben werden übernommen.
 
+### Škoda über Smartcar einbinden
+
+Die direkte MyŠkoda-Anbindung bleibt offen. Die öffentliche MyŠkoda-API
+liefert die Parkkoordinaten ohne zugehörige GPS-Messzeit. `LastUpdate` im
+Symcon-Modul gibt den Zeitpunkt des Abrufs an.
+[MyŠkoda-API-Schema](https://public.api.connect.skoda-auto.cz/docs/myskoda-public-api.yaml) ·
+[MySkoda-Moduldokumentation](https://github.com/taloriko/IPSymconMySkoda/blob/f00484c10cdfa17dd66972093ee8e4f86ecc0964/MySkoda/README.md#L147-L170)
+
+Wenn Smartcar für deinen Škoda die Koordinaten und die OEM-Zeit des
+Standortsignals bereitstellt, wähle unter **Fahrzeuge → Smartcar** die
+vorhandene Smartcar-Fahrzeuginstanz. Aktiviere im Smartcar-Modul die
+zusätzliche OEM-Aktualisierungszeit für das Standortsignal. OpenWoIst liest
+`Latitude`, `Longitude` und `Sig_location_preciselocation_OEMUpdatedAt`
+automatisch aus der Instanz.
+[Smartcar für Škoda](https://smartcar.com/brand/skoda)
+
 ## Adressen und Zonen
 
 Unter **Adressauflösung** kannst du einen eigenen Nominatim-Server oder

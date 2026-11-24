@@ -9,6 +9,7 @@ use Throwable;
 trait VehicleSourceForm
 {
     private const VEHICLE_PRESETS = [
+        'ips-tesla'    => 'IPS-Tesla',
         'smartcar'     => 'Smartcar',
         'hyundai-kia'  => 'Hyundai Bluelink / Kia Connect',
         'volvo'        => 'Volvo',

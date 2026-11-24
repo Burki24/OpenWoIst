@@ -26,7 +26,7 @@ $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
     && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
     && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'PajSources', 'TrackerSources']
-    && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'TeslaFleetVehiclesSection', 'TessieVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
+    && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'IPSTeslaVehiclesSection', 'TeslaFleetVehiclesSection', 'TessieVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
 $modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels;
 $links = [
     'ICloudSources'               => 'https://github.com/Burki24/SymconiCloud',
@@ -37,6 +37,7 @@ $links = [
     'TraccarDevicesSection'       => 'https://github.com/traccar/traccar',
     'BMWCarDataVehiclesSection'   => 'https://github.com/parcivad/ips-bmw-cardata',
     'TeslaFleetVehiclesSection'   => 'https://developer.tesla.com/docs/fleet-api/fleet-telemetry',
+    'IPSTeslaVehiclesSection'     => 'https://github.com/Schnittcher/IPS-Tesla',
     'TessieVehiclesSection'       => 'https://developer.tessie.com/reference/get-vehicle',
     'SmartcarVehiclesSection'     => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
     'HyundaiKiaVehiclesSection'   => 'https://github.com/da8ter/Bluelink',

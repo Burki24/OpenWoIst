@@ -82,9 +82,14 @@ final class PositionConverter
 
     public static function convertVariables(string $source, array $position): array
     {
+        if ($source === 'ips-tesla') {
+            $position['latitude'] = self::number($position['latitude'], '.');
+            $position['longitude'] = self::number($position['longitude'], '.');
+        }
         $time = $position['timestamp'];
         $position['timestamp'] = match ($source) {
             'smartcar', 'volvo', 'renault-ze', 'tronity' => is_int($time) ? $time : null,
+            'ips-tesla'                                  => self::measurementTime($time, 'unix-seconds')[0] ?? null,
             'hyundai-kia'                                => self::localPositionTime($time),
             'fressnapf'                                  => self::measurementTime($time, 'iso8601')[0] ?? null,
             default                                      => null

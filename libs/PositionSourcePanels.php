@@ -8,6 +8,7 @@ trait PositionSourcePanels
 {
     private const POSITION_PANELS = [
         'bmw-cardata' => ['BMWCarDataVehicles', 'BMW CarData', [], []],
+        'ips-tesla'   => ['IPSTeslaVehicles', 'IPS-Tesla', ['{83675CDD-3E50-FB21-8AE6-B4FC718A77B6}'], ['latitude', 'longitude', 'gps_as_of']],
         'tesla-fleet' => ['TeslaFleetVehicles', 'Tesla Fleet Telemetry', [], []],
         'tessie'      => ['TessieVehicles', 'Tessie', [], []],
         'smartcar'    => ['SmartcarVehicles', 'Smartcar', ['{1E1B7C9A-2D4F-4E8A-9C3B-7F6D5A4E2B10}'], ['Latitude', 'Longitude', 'Sig_location_preciselocation_OEMUpdatedAt']],
@@ -22,6 +23,7 @@ trait PositionSourcePanels
 
     private const SOURCE_MODULE_URLS = [
         'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
+        'ips-tesla'   => 'https://github.com/Schnittcher/IPS-Tesla',
         'tesla-fleet' => 'https://developer.tesla.com/docs/fleet-api/fleet-telemetry',
         'tessie'      => 'https://developer.tessie.com/reference/get-vehicle',
         'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
@@ -46,8 +48,11 @@ trait PositionSourcePanels
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules]) {
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
             $list['values'] = $this->positionPanelValues($mode, $property, $modules);
-            $hint = $modules === [] ? sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption)
-                : 'Select an existing Symcon device instance.';
+            $hint = match (true) {
+                $mode === 'ips-tesla' => 'Enable vehicle location in the Tesla Vehicle Connector, then select the Tesla Vehicle Drive instance.',
+                $modules === []      => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
+                default              => 'Select an existing Symcon device instance.'
+            };
             $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [
                 $this->sourceModuleLink($mode, $caption), ['type' => 'Label', 'caption' => $hint], $list
             ]];
@@ -122,7 +127,7 @@ trait PositionSourcePanels
 
         $variables = [];
         $assignments = array_column($vehicleFields['VehicleAssignments']['items'], null, 'name');
-        $variableFields = $mode === 'fressnapf' ? [] : ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp']);
+        $variableFields = in_array($mode, ['fressnapf', 'ips-tesla'], true) ? [] : ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp']);
         foreach ($variableFields as $field) {
             $input = $assignments['Vehicle' . $field];
             $input['name'] = 'Source' . $field;
@@ -262,7 +267,7 @@ trait PositionSourcePanels
     {
         $isJSON = PositionConverter::supports($mode);
         if ($instance === 0) {
-            if ($mode === 'fressnapf') {
+            if (in_array($mode, ['fressnapf', 'ips-tesla'], true)) {
                 return [];
             }
             $keys = $isJSON ? ['SourcePosition'] : ['SourceLatitude', 'SourceLongitude', 'SourceTimestamp'];
@@ -274,6 +279,14 @@ trait PositionSourcePanels
             return [];
         }
         $types = $isJSON ? [VARIABLETYPE_STRING] : [VARIABLETYPE_FLOAT, VARIABLETYPE_FLOAT, in_array($mode, ['hyundai-kia', 'fressnapf'], true) ? VARIABLETYPE_STRING : VARIABLETYPE_INTEGER];
+        if ($mode === 'ips-tesla') {
+            $connector = IPS_GetInstance($instance)['ConnectionID'];
+            if (!$this->isPositionPanelInstance($connector, ['{72887112-E270-FFC1-04AC-817D82F42027}'])
+                || (json_decode(IPS_GetConfiguration($connector), true)['IncludeLocationData'] ?? false) !== true) {
+                return [];
+            }
+            $types = [VARIABLETYPE_STRING, VARIABLETYPE_STRING, VARIABLETYPE_STRING];
+        }
         $ids = [];
         foreach ($idents as $index => $ident) {
             $id = (int) @IPS_GetObjectIDByIdent($ident, $instance);
