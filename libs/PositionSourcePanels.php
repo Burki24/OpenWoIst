@@ -8,6 +8,7 @@ trait PositionSourcePanels
 {
     private const POSITION_PANELS = [
         'bmw-cardata' => ['BMWCarDataVehicles', 'BMW CarData', [], []],
+        'tessie'      => ['TessieVehicles', 'Tessie', [], []],
         'smartcar'    => ['SmartcarVehicles', 'Smartcar', ['{1E1B7C9A-2D4F-4E8A-9C3B-7F6D5A4E2B10}'], ['Latitude', 'Longitude', 'Sig_location_preciselocation_OEMUpdatedAt']],
         'hyundai-kia' => ['HyundaiKiaVehicles', 'Hyundai Bluelink / Kia Connect', ['{C3D4E5F6-789A-BCDE-F012-3456789ABCDE}'], ['Latitude', 'Longitude', 'PositionTimestamp']],
         'volvo'       => ['VolvoVehicles', 'Volvo', ['{6C6B7979-37AA-69B7-2E19-7E10D92A97E3}'], ['CurrentLatitude', 'CurrentLongitude', 'LastPositionMessage']],
@@ -20,6 +21,7 @@ trait PositionSourcePanels
 
     private const SOURCE_MODULE_URLS = [
         'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
+        'tessie'      => 'https://developer.tessie.com/reference/get-vehicle',
         'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
         'hyundai-kia' => 'https://github.com/da8ter/Bluelink',
         'volvo'       => 'https://github.com/demel42/IPSymconVolvo',
@@ -85,7 +87,11 @@ trait PositionSourcePanels
     private function sourceModuleLink(string $mode, string $caption): array
     {
         $url = self::SOURCE_MODULE_URLS[$mode];
-        $format = str_starts_with($url, 'https://github.com/') ? '%s on GitHub' : '%s in the Module Store';
+        $format = match (true) {
+            $mode === 'tessie'                           => '%s API documentation',
+            str_starts_with($url, 'https://github.com/') => '%s on GitHub',
+            default                                      => '%s in the Module Store'
+        };
         return [
             'type'    => 'Button',
             'caption' => sprintf($this->Translate($format), $caption),
@@ -137,7 +143,7 @@ trait PositionSourcePanels
             ]];
         }
 
-        if ($isJSON) {
+        if ($isJSON && $mode !== 'tessie') {
             $advanced = $vehicleFields['VehicleAdvanced'];
             foreach ($advanced['items'] as &$input) {
                 $input['name'] = 'Source' . substr($input['name'], strlen('Vehicle'));

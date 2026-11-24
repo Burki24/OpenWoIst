@@ -296,6 +296,15 @@ Verwende zum Testen eine aktuelle Messzeit. Bei einem gemeinsamen Topic für
 mehrere Tracker teile die Meldungen nach `position.deviceId` auf. Jede
 zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
+### Tessie-Positionsdaten anschließen
+
+Wähle unter **Fahrzeuge → Tessie** pro Fahrzeug die Symcon-String-Variable,
+die deine Datenquelle mit der Antwort von `GET /{vin}/state` befüllt.
+Du kannst auch nur das darin enthaltene Objekt `drive_state` speichern.
+OpenWoIst liest `latitude`, `longitude` und `gps_as_of` in Unix-Sekunden.
+Bei fehlender GPS-Messzeit bleibt der letzte gültige Standort sichtbar.
+[Tessie-API-Dokumentation](https://developer.tessie.com/reference/get-vehicle)
+
 ### Fahrzeuge aus vorhandenen Modulen auswählen
 
 Öffne unter **Fahrzeuge** den Bereich des Quellmoduls und wähle unter

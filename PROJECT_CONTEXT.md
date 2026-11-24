@@ -111,9 +111,17 @@ Der Zonenkreis blieb sichtbar, beide Karten blieben geöffnet.
 Der Prüfsummenvergleich bestätigte die unveränderten Zuordnungen und
 das unveränderte Haussteuerungsprofil.
 
-**Später bei geklärter Datenquelle.** MySkoda, Tesla und Tessie benötigen
-einen zur Position gehörenden Zeitstempel im Quellmodul. Für Google Find Hub
-ist eine unterstützte Schnittstelle für Gerätestandorte Voraussetzung.
+**Tessie.** Der JSON-Import nutzt `drive_state.gps_as_of` als GPS-Messzeit.
+Positionswechsel und fehlende Messzeit wurden mit Testdaten lokal geprüft.
+Die Abnahme auf der Entwicklungsinstanz steht aus.
+Die direkte Instanzauswahl für NRG-Stack Tessie bleibt offen. Dessen
+Standortvariablen enthalten die Koordinaten, die Empfangszeit gilt für
+beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
+
+**Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
+Parkkoordinaten ohne zugehörige Messzeit. Für die direkte Tesla-Instanzanbindung
+fehlt ein bestätigter Positionsvertrag. Für Google Find Hub ist eine
+unterstützte Schnittstelle für Gerätestandorte Voraussetzung.
 [Google Find Hub](https://developers.google.com/nearby/fast-pair/landing-page-find-hub)
 
 **Ablauf pro Paket.** Bei „weiter“ gilt der erste offene, ausführbare Schritt.

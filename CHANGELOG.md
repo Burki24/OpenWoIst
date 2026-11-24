@@ -15,6 +15,8 @@
 
 ## Neu
 
+- **Tessie** übernimmt die Fahrzeugposition aus einer Symcon-JSON-Variable
+  mit der GPS-Messzeit `gps_as_of`.
 - **PAJ GPS** lädt Geräte aus dem FINDER Portal unter **Tracker und
   Standortgeräte**. Jedes ausgewählte Gerät hat eine eigene Markerfarbe und
   zeigt seine PAJ-Messzeit.

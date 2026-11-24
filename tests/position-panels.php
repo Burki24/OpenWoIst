@@ -66,11 +66,18 @@ $bmwPayload = static function (float $latitude, int $time) use ($bmwPrefix): arr
 };
 $bmwSource = IPS_CreateVariable(VARIABLETYPE_STRING);
 $traccarSource = IPS_CreateVariable(VARIABLETYPE_STRING);
-foreach (['BMWCarDataVehicles' => ['BMW', $bmwSource], 'TraccarDevices' => ['Traccar', $traccarSource]] as $property => [$name, $variable]) {
+$tessieSource = IPS_CreateVariable(VARIABLETYPE_STRING);
+$jsonSources = [
+    'BMWCarDataVehicles' => ['BMW', $bmwSource],
+    'TraccarDevices'     => ['Traccar', $traccarSource],
+    'TessieVehicles'     => ['Tessie', $tessieSource]
+];
+foreach ($jsonSources as $property => [$name, $variable]) {
+    check(isset($panels[$property . 'Section']), 'A dedicated form is available for ' . $name . '.');
     $list = array_column($panels[$property . 'Section']['items'], null, 'name')[$property];
     $inputs = array_column($list['form'], null, 'name');
     check($list['name'] === $property && $list['add'] && $inputs['SourcePosition']['validVariableTypes'] === [VARIABLETYPE_STRING]
-        && !isset($inputs['SourceInstance']), 'BMW and Traccar each have a dedicated JSON list.');
+        && !isset($inputs['SourceInstance']), 'Each JSON provider has a dedicated list with a string variable selector.');
     IPS_SetProperty($positionPanelMapID, $property, json_encode([['SourceName' => $name, 'SourcePosition' => $variable]], JSON_THROW_ON_ERROR));
 }
 IPS_ApplyChanges($positionPanelMapID);
@@ -93,11 +100,13 @@ foreach ([0, 1] as $step) {
     }
     SetValueString($bmwSource, json_encode($bmwPayload(50.25 + $step / 2, $time), JSON_THROW_ON_ERROR));
     SetValueString($traccarSource, json_encode(['latitude' => 50.25 + $step / 2, 'longitude' => 8.25, 'fixTime' => gmdate('c', $time)], JSON_THROW_ON_ERROR));
-    foreach ([$bmwSource, $traccarSource] as $variable) {
+    $driveState = ['latitude' => 50.25 + $step / 2, 'longitude' => 8.25, 'gps_as_of' => $time, 'timestamp' => ($time + 12) * 1000];
+    SetValueString($tessieSource, json_encode($step === 0 ? ['drive_state' => $driveState] : $driveState, JSON_THROW_ON_ERROR));
+    foreach ([$bmwSource, $traccarSource, $tessieSource] as $variable) {
         $positionPanelMap->MessageSink($time, $variable, VM_UPDATE, []);
     }
     $sources = tileState($positionPanelMap)['sources'];
-    check(count($sources) === 14 && count(array_unique(array_column($sources, 'id'))) === 14, 'All named providers contribute their own uniquely identified positions.');
+    check(count($sources) === 15 && count(array_unique(array_column($sources, 'id'))) === 15, 'All named providers contribute their own uniquely identified positions.');
     foreach ($sources as $entry) {
         $fix = $entry['objects'][0]['location'];
         check($fix['timestamp'] === $time
@@ -106,6 +115,20 @@ foreach ([0, 1] as $step) {
     [$status, $body] = mapRequest($positionPanelMap, $panelPath, token: $panelAccess['token']);
     check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === $sources, 'Both visualization outputs receive every provider position.');
 }
+$lastTessie = array_column($sources, null, 'name')['Tessie']['objects'][0];
+$driveState['latitude'] = 51.25;
+$driveState['timestamp'] += 1000;
+SetValueString($tessieSource, json_encode(['drive_state' => $driveState], JSON_THROW_ON_ERROR));
+$positionPanelMap->MessageSink($now, $tessieSource, VM_UPDATE, []);
+$unchangedTessie = array_column(tileState($positionPanelMap)['sources'], null, 'name')['Tessie']['objects'][0];
+check($unchangedTessie === $lastTessie, 'A newer vehicle status with the same GPS time cannot move the Tessie marker.');
+unset($driveState['gps_as_of']);
+SetValueString($tessieSource, json_encode(['drive_state' => $driveState], JSON_THROW_ON_ERROR));
+$positionPanelMap->MessageSink($now, $tessieSource, VM_UPDATE, []);
+$tessieWithoutFixTime = array_column(tileState($positionPanelMap)['sources'], null, 'name')['Tessie']['objects'][0];
+check(!$tessieWithoutFixTime['current'] && $tessieWithoutFixTime['location'] === $lastTessie['location'], 'Tessie keeps the last known position when the GPS measurement time is missing.');
+[$status, $body] = mapRequest($positionPanelMap, $panelPath, token: $panelAccess['token']);
+check($status === 200 && json_decode($body, true, 32, JSON_THROW_ON_ERROR)['sources'] === tileState($positionPanelMap)['sources'], 'IPSView also retains the last known Tessie position.');
 $populated = $providerPanels($positionPanelMap);
 foreach (array_keys($providerContracts) as $property) {
     $values = array_column($populated[$property . 'Section']['items'], null, 'name')[$property]['values'];
