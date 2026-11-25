@@ -323,10 +323,16 @@ den vollständigen Positionsbericht als eine Nachricht liefern.
 [Tesla Fleet Telemetry](https://github.com/teslamotors/fleet-telemetry#personalized-backendsdispatchers) ·
 [Tesla-MQTT-Format](https://github.com/teslamotors/fleet-telemetry/tree/main/datastore/mqtt#payload-formats)
 
-### Tessie-Positionsdaten anschließen
+### Tessie-Fahrzeuge auswählen
 
-Wähle unter **Fahrzeuge → Tessie** pro Fahrzeug die Symcon-String-Variable,
-die deine Datenquelle mit der Antwort von `GET /{vin}/state` befüllt.
+Öffne **Fahrzeuge → Tessie → Hinzufügen** und wähle die vorhandene
+Tessie-Fahrzeuginstanz. In NRG-Stack Tessie muss der Telemetrie-Datenpunkt
+`Location` aktiv sein. OpenWoIst findet die beiden Standortvariablen automatisch.
+Nach der nächsten zusammengehörigen Aktualisierung erscheint der Standort mit
+der Empfangszeit in Kachel und IPSView. [NRG-Stack Tessie](https://github.com/DG65/NRGTessie)
+
+Unter **Fahrzeuge → Tessie → Tessie-JSON** kannst du auch eine
+Symcon-String-Variable mit der Antwort von `GET /{vin}/state` auswählen.
 Du kannst auch nur das darin enthaltene Objekt `drive_state` speichern.
 OpenWoIst liest `latitude`, `longitude` und `gps_as_of` in Unix-Sekunden.
 Bei fehlender GPS-Messzeit bleibt der letzte gültige Standort sichtbar.

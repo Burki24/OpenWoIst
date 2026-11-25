@@ -52,6 +52,13 @@ Dabei bleiben die Variablen-IDs und die Kartenidentität erhalten. BMW CarData,
 Traccar, Tessie und Tesla Fleet Telemetry übernehmen vollständige
 Positionsberichte aus JSON-Variablen.
 
+NRG-Stack Tessie kann direkt als Fahrzeuginstanz ausgewählt werden. OpenWoIst
+übernimmt Breiten- und Längengrad aus zwei Variablenupdates in Schreibreihenfolge
+mit derselben Symcon-Aktualisierungssekunde. Die Karte kennzeichnet den
+Zeitpunkt als Empfangszeit. Zwei Teilmeldungen in derselben Sekunde können
+ohne gemeinsame Paketkennung wie ein vollständiger Standort aussehen.
+[NRG-Stack-Quellcode](https://github.com/DG65/NRGTessie/blob/2d4f8707a927fddf20cb415852cf49f62edda20a/TessieVehicle/module.php#L1465-L1489)
+
 IPS-Tesla liest `latitude`, `longitude` und `gps_as_of` aus der gewählten
 `TeslaVehicleDrive`-Instanz. Die aktivierte Option `IncludeLocationData`
 im zugehörigen Connector setzt einen IPS-Tesla-Stand voraus, der die

@@ -28,6 +28,7 @@ require_once __DIR__ . '/../libs/PajGPSClient.php';
 require_once __DIR__ . '/../libs/PajSources.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
 require_once __DIR__ . '/../libs/PositionSourcePanels.php';
+require_once __DIR__ . '/../libs/TessiePosition.php';
 require_once __DIR__ . '/../libs/TractivePosition.php';
 require_once __DIR__ . '/../libs/TractiveSources.php';
 require_once __DIR__ . '/../libs/VehicleSourceForm.php';
@@ -52,6 +53,7 @@ use OpenWoIst\MapDesign;
 use OpenWoIst\PajSources;
 use OpenWoIst\PositionConverter;
 use OpenWoIst\PositionSourcePanels;
+use OpenWoIst\TessiePosition;
 use OpenWoIst\TractivePosition;
 use OpenWoIst\TractiveSources;
 use OpenWoIst\VehicleSourceForm;
@@ -79,6 +81,7 @@ class OpenWoIst extends IPSModuleStrict
     use VehicleSourceForm;
 
     private const ACCOUNT_MODULE = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
+    private const EVENT_POSITION_MODES = ['fressnapf', 'nrg-tessie'];
     private const DEMO_ROUTE = [
         [52.51453, 13.35010],
         [52.51461, 13.35684],
@@ -323,10 +326,10 @@ class OpenWoIst extends IPSModuleStrict
         try {
             $now = time();
             $update = null;
-            $fressnapf = null;
+            $positionReport = null;
             if ($message === null) {
                 if ($force) {
-                    $this->SetBuffer('FressnapfReports', '');
+                    $this->SetBuffer('PositionReports', '');
                 }
                 // The regular source refresh also recovers bindings when a provider creates variables later.
                 $positions = $this->configuredPositions();
@@ -336,8 +339,8 @@ class OpenWoIst extends IPSModuleStrict
             } else {
                 $update = $this->captureTractiveUpdate($message['id'], $message['observedAt'], $message['value'], $this->configuredTractiveTrackers(), $now);
                 $positions = $this->configuredPositions();
-                $fressnapf = $this->captureFressnapfUpdate($positions, $message);
-                if ($update === null && $fressnapf === null && !in_array($message['id'], array_column($positions, 'trigger'), true)) {
+                $positionReport = $this->capturePositionReport($positions, $message);
+                if ($update === null && $positionReport === null && !in_array($message['id'], array_column($positions, 'trigger'), true)) {
                     return;
                 }
             }
@@ -357,7 +360,7 @@ class OpenWoIst extends IPSModuleStrict
                 $sources[] = $source;
             }
             foreach ($this->configuredPositions() as $key => $position) {
-                $observed = ($fressnapf['key'] ?? null) === $key ? $fressnapf['position'] : null;
+                $observed = ($positionReport['key'] ?? null) === $key ? $positionReport['position'] : null;
                 $sources[] = $this->readPositionSource($position, $key, $old[$key]['objects'][0]['location'] ?? null, $now, $observed);
             }
             $sources = array_merge($sources, $this->readTractiveSources($this->configuredTractiveTrackers(), $old, $update));
@@ -465,6 +468,7 @@ class OpenWoIst extends IPSModuleStrict
     private function readPositionSource(array $position, string $key, ?array $previous, int $now, ?array $observed = null): array
     {
         $mode = $position['mode'];
+        $eventDriven = in_array($mode, self::EVENT_POSITION_MODES, true);
         $kind = $position['kind'];
         $name = $position['name'];
         if ($name === '' && IPS_VariableExists($position['trigger'])) {
@@ -474,18 +478,23 @@ class OpenWoIst extends IPSModuleStrict
             $name = $this->Translate($kind === 'tracker' ? 'Location device' : 'Vehicle');
         }
         $source = ['id' => $key, 'kind' => $kind, 'name' => $name, 'available' => false, 'objects' => []];
+        if ($mode === 'nrg-tessie') {
+            $source['timeBasis'] = 'receipt';
+        }
         $ids = $position['ids'];
         $data = null;
         try {
             if ($ids !== [] && count(array_unique($ids)) === count($ids) && array_reduce($ids, static fn ($ok, $id): bool => $ok && IPS_VariableExists($id), true)) {
-                $data = $mode === 'fressnapf' ? $observed : $this->readPositionData($position);
+                $data = $eventDriven ? $observed : $this->readPositionData($position);
                 $source['available'] = true;
             }
         } catch (Throwable $exception) {
             $this->DebugFlowEvent(__FUNCTION__, __LINE__, 'FEHLER', 'Die zugewiesenen Positionsvariablen konnten nicht gelesen werden.', ['Fehlerklasse' => $exception::class]);
         }
         $fix = LocationSnapshot::fix($data, $now);
-        if ($mode === 'fressnapf' && $source['available'] && ($fix === null || $fix['timestamp'] <= ($previous['timestamp'] ?? 0))) {
+        $lastTimestamp = $previous['timestamp'] ?? 0;
+        if ($eventDriven && $source['available'] && ($fix === null || $fix['timestamp'] < $lastTimestamp
+            || ($mode === 'fressnapf' && $fix['timestamp'] === $lastTimestamp))) {
             $fix = $previous;
         }
         if ((PositionConverter::supports($mode) || isset(self::VEHICLE_PRESETS[$mode]))
@@ -635,27 +644,30 @@ class OpenWoIst extends IPSModuleStrict
         return $this->configuredVehicles() + $this->configuredTrackers();
     }
 
-    private function captureFressnapfUpdate(array $positions, array $message): ?array
+    private function capturePositionReport(array $positions, array $message): ?array
     {
         foreach ($positions as $key => $position) {
-            if ($position['mode'] !== 'fressnapf') {
+            $mode = $position['mode'];
+            if (!in_array($mode, self::EVENT_POSITION_MODES, true)) {
                 continue;
             }
             $field = array_search($message['id'], $position['ids'], true);
             if ($field === false) {
                 continue;
             }
-            $reports = json_decode($this->GetBuffer('FressnapfReports'), true) ?? [];
+            $reports = json_decode($this->GetBuffer('PositionReports'), true) ?? [];
             $required = array_slice($position['ids'], 0, 3);
             $prior = $reports[$key] ?? [];
             $pending = ($prior['ids'] ?? []) === $required ? $prior['pending'] : [];
-            [$next, $fix] = FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt']);
+            [$next, $fix] = $mode === 'nrg-tessie'
+                ? TessiePosition::receive($pending, $field, $message['value'], $message['observedAt'], array_map('IPS_GetVariable', $position['ids']))
+                : FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt']);
             if ($next === []) {
                 unset($reports[$key]);
             } else {
                 $reports[$key] = ['ids' => $required, 'pending' => $next];
             }
-            $this->SetBuffer('FressnapfReports', json_encode($reports, JSON_THROW_ON_ERROR));
+            $this->SetBuffer('PositionReports', json_encode($reports, JSON_THROW_ON_ERROR));
             return $fix === null ? null : ['key' => $key, 'position' => $fix];
         }
         return null;
@@ -665,7 +677,7 @@ class OpenWoIst extends IPSModuleStrict
     {
         $triggers = array_column($positions, 'trigger');
         foreach ($positions as $position) {
-            if ($position['mode'] === 'fressnapf') {
+            if (in_array($position['mode'], self::EVENT_POSITION_MODES, true)) {
                 $triggers = array_merge($triggers, $position['ids']);
             }
         }

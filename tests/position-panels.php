@@ -21,7 +21,8 @@ $providerPanels = static function (OpenWoIst $map): array
 {
     $form = json_decode($map->GetConfigurationForm(), true, 64, JSON_THROW_ON_ERROR);
     $groups = array_column($form['elements'], null, 'name');
-    return array_column([...$groups['VehicleSources']['items'], ...$groups['LocationDeviceSources']['items']], null, 'name');
+    $panels = array_column([...$groups['VehicleSources']['items'], ...$groups['LocationDeviceSources']['items']], null, 'name');
+    return $panels + array_column($panels['NRGTessieVehiclesSection']['items'], null, 'name');
 };
 $panels = $providerPanels($positionPanelMap);
 $modules = $metadata->getValue();

@@ -15,6 +15,8 @@
 
 ## Neu
 
+- Unter **Fahrzeuge → Tessie** genügt die Auswahl einer vorhandenen
+  Tessie-Fahrzeuginstanz. Die Karte zeigt den Standort mit seiner Empfangszeit.
 - **IPS-Tesla** bietet eine Liste für vorhandene Tesla-Vehicle-Drive-Instanzen.
   OpenWoIst übernimmt Koordinaten und GPS-Messzeit automatisch, sobald der
   Fahrzeugstandort im zugehörigen Tesla Vehicle Connector aktiviert ist.

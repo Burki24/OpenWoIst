@@ -107,9 +107,10 @@
             return item;
         }
         const {timestamp, accuracy} = object.location;
-        const time = element('time', '', ageText(timestamp, now));
+        const receipt = source.timeBasis === 'receipt';
+        const time = element('time', '', (receipt ? text('Received') + ' ' : '') + ageText(timestamp, now));
         time.dateTime = new Date(timestamp * 1000).toISOString();
-        time.title = absoluteTime.format(timestamp * 1000);
+        time.title = (receipt ? text('Received at') + ' ' : '') + absoluteTime.format(timestamp * 1000);
         if (stale) item.append(text('Last known position') + ' · ');
         item.append(time);
         if (accuracy > 0) item.append(' · ±' + Math.ceil(accuracy) + ' m');

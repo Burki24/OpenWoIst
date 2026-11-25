@@ -116,9 +116,12 @@ Auf `dev` (`e287475`, Version 0.20) wanderte der Marker mit Testdaten in
 der nativen Kachel und in IPSView Desktop. Ohne GPS-Messzeit blieb der
 letzte Standort erhalten. Zuordnungen und Haussteuerungsprofil blieben
 erhalten.
-Die direkte Instanzauswahl für NRG-Stack Tessie bleibt offen. Dessen
-Standortvariablen enthalten die Koordinaten, die Empfangszeit gilt für
-beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
+Unter **Fahrzeuge → Tessie** gibt es die direkte Auswahl mehrerer
+NRG-Stack-Tessie-Instanzen. Lokale Tests bestätigen Positionswechsel und
+Empfangszeit in Kachel und IPSView sowie die bestehende JSON-Zuordnung.
+Die Abnahme in den nativen Hosts steht aus.
+[NRG-Stack Tessie](https://github.com/DG65/NRGTessie) ·
+[Tessie-API](https://developer.tessie.com/reference/get-vehicle)
 
 **Tesla Fleet Telemetry.** Der JSON-Import übernimmt `Location` und
 `createdAt` aus demselben Fahrzeugbericht. Auf `dev` (`fe462f0`, Version
