@@ -12,6 +12,7 @@ require_once __DIR__ . '/../libs/helper/OpenFreeMapHelper.php';
 require_once __DIR__ . '/../libs/helper/ResponsiveVisualizationHelper.php';
 require_once __DIR__ . '/../libs/helper/ReverseGeocodingHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
+require_once __DIR__ . '/../libs/FiatUconnectPosition.php';
 require_once __DIR__ . '/../libs/FressnapfPosition.php';
 require_once __DIR__ . '/../libs/GarminLiveTrackClient.php';
 require_once __DIR__ . '/../libs/GarminMapShareClient.php';
@@ -41,6 +42,7 @@ use Burki24\SymconModuleHelper\IPSViewStyleConfigurationHelper;
 use Burki24\SymconModuleHelper\OpenFreeMapHelper;
 use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
+use OpenWoIst\FiatUconnectPosition;
 use OpenWoIst\FressnapfPosition;
 use OpenWoIst\GarminSources;
 use OpenWoIst\ICloudDeviceSelection;
@@ -81,7 +83,7 @@ class OpenWoIst extends IPSModuleStrict
     use VehicleSourceForm;
 
     private const ACCOUNT_MODULE = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
-    private const EVENT_POSITION_MODES = ['fressnapf', 'nrg-tessie'];
+    private const EVENT_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'nrg-tessie'];
     private const DEMO_ROUTE = [
         [52.51453, 13.35010],
         [52.51461, 13.35684],
@@ -494,7 +496,7 @@ class OpenWoIst extends IPSModuleStrict
         $fix = LocationSnapshot::fix($data, $now);
         $lastTimestamp = $previous['timestamp'] ?? 0;
         if ($eventDriven && $source['available'] && ($fix === null || $fix['timestamp'] < $lastTimestamp
-            || ($mode === 'fressnapf' && $fix['timestamp'] === $lastTimestamp))) {
+            || ($mode !== 'nrg-tessie' && $fix['timestamp'] === $lastTimestamp))) {
             $fix = $previous;
         }
         if ((PositionConverter::supports($mode) || isset(self::VEHICLE_PRESETS[$mode]))
@@ -659,9 +661,11 @@ class OpenWoIst extends IPSModuleStrict
             $required = array_slice($position['ids'], 0, 3);
             $prior = $reports[$key] ?? [];
             $pending = ($prior['ids'] ?? []) === $required ? $prior['pending'] : [];
-            [$next, $fix] = $mode === 'nrg-tessie'
-                ? TessiePosition::receive($pending, $field, $message['value'], $message['observedAt'], array_map('IPS_GetVariable', $position['ids']))
-                : FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt']);
+            [$next, $fix] = match ($mode) {
+                'fiat-uconnect' => FiatUconnectPosition::receive($pending, $field, $message['value'], array_map('IPS_GetVariable', $position['ids'])),
+                'nrg-tessie'    => TessiePosition::receive($pending, $field, $message['value'], $message['observedAt'], array_map('IPS_GetVariable', $position['ids'])),
+                'fressnapf'     => FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt'])
+            };
             if ($next === []) {
                 unset($reports[$key]);
             } else {

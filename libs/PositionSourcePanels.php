@@ -7,36 +7,40 @@ namespace OpenWoIst;
 trait PositionSourcePanels
 {
     private const POSITION_PANELS = [
-        'bmw-cardata' => ['BMWCarDataVehicles', 'BMW CarData', [], []],
-        'ips-tesla'   => ['IPSTeslaVehicles', 'IPS-Tesla', ['{83675CDD-3E50-FB21-8AE6-B4FC718A77B6}'], ['latitude', 'longitude', 'gps_as_of']],
-        'tesla-fleet' => ['TeslaFleetVehicles', 'Tesla Fleet Telemetry', [], []],
-        'nrg-tessie'  => ['NRGTessieVehicles', 'Tessie', ['{3F1F7E31-8BA0-4B8F-9B62-47DAD7A0B6C9}'], ['stat_tel_Location_lat', 'stat_tel_Location_lon']],
-        'tessie'      => ['TessieVehicles', 'Tessie', [], []],
-        'smartcar'    => ['SmartcarVehicles', 'Smartcar', ['{1E1B7C9A-2D4F-4E8A-9C3B-7F6D5A4E2B10}'], ['Latitude', 'Longitude', 'Sig_location_preciselocation_OEMUpdatedAt']],
-        'hyundai-kia' => ['HyundaiKiaVehicles', 'Hyundai Bluelink / Kia Connect', ['{C3D4E5F6-789A-BCDE-F012-3456789ABCDE}'], ['Latitude', 'Longitude', 'PositionTimestamp']],
-        'volvo'       => ['VolvoVehicles', 'Volvo', ['{6C6B7979-37AA-69B7-2E19-7E10D92A97E3}'], ['CurrentLatitude', 'CurrentLongitude', 'LastPositionMessage']],
-        'renault-ze'  => ['RenaultZEVehicles', 'Renault Z.E.', ['{C7AB2E48-7D3A-94B8-E4D6-137CFB91D821}'], ['GPSLatitude', 'GPSLongitude', 'GPSUpdate']],
-        'tronity'     => ['TronityVehicles', 'Tronity', ['{D041B19E-6D70-A84F-B67C-4FF51CA38D3A}'], ['Latitude', 'Longitude', 'Timestamp']],
-        'owntracks'   => ['OwnTracksDevices', 'OwnTracks', ['{8398750C-51CE-51C8-97A9-9356BB11ABDD}'], ['position']],
-        'traccar'     => ['TraccarDevices', 'Traccar', [], []],
-        'fressnapf'   => ['FressnapfTrackers', 'Fressnapf Tracker', ['{AF92FA56-B339-6D82-B015-DF819C042C29}'], ['Latitude', 'Longitude', 'SampledAt']]
+        'bmw-cardata'   => ['BMWCarDataVehicles', 'BMW CarData', [], []],
+        'ips-tesla'     => ['IPSTeslaVehicles', 'IPS-Tesla', ['{83675CDD-3E50-FB21-8AE6-B4FC718A77B6}'], ['latitude', 'longitude', 'gps_as_of']],
+        'tesla-fleet'   => ['TeslaFleetVehicles', 'Tesla Fleet Telemetry', [], []],
+        'nrg-tessie'    => ['NRGTessieVehicles', 'Tessie', ['{3F1F7E31-8BA0-4B8F-9B62-47DAD7A0B6C9}'], ['stat_tel_Location_lat', 'stat_tel_Location_lon']],
+        'tessie'        => ['TessieVehicles', 'Tessie', [], []],
+        'fiat-uconnect' => ['FiatUconnectVehicles', 'Fiat Uconnect', ['{A0D064E8-44E3-206A-9B5E-87F12B666EA7}'], ['CurrentLatitude', 'CurrentLongitude', 'LastPositionUpdate']],
+        'smartcar'      => ['SmartcarVehicles', 'Smartcar', ['{1E1B7C9A-2D4F-4E8A-9C3B-7F6D5A4E2B10}'], ['Latitude', 'Longitude', 'Sig_location_preciselocation_OEMUpdatedAt']],
+        'hyundai-kia'   => ['HyundaiKiaVehicles', 'Hyundai Bluelink / Kia Connect', ['{C3D4E5F6-789A-BCDE-F012-3456789ABCDE}'], ['Latitude', 'Longitude', 'PositionTimestamp']],
+        'volvo'         => ['VolvoVehicles', 'Volvo', ['{6C6B7979-37AA-69B7-2E19-7E10D92A97E3}'], ['CurrentLatitude', 'CurrentLongitude', 'LastPositionMessage']],
+        'renault-ze'    => ['RenaultZEVehicles', 'Renault Z.E.', ['{C7AB2E48-7D3A-94B8-E4D6-137CFB91D821}'], ['GPSLatitude', 'GPSLongitude', 'GPSUpdate']],
+        'tronity'       => ['TronityVehicles', 'Tronity', ['{D041B19E-6D70-A84F-B67C-4FF51CA38D3A}'], ['Latitude', 'Longitude', 'Timestamp']],
+        'owntracks'     => ['OwnTracksDevices', 'OwnTracks', ['{8398750C-51CE-51C8-97A9-9356BB11ABDD}'], ['position']],
+        'traccar'       => ['TraccarDevices', 'Traccar', [], []],
+        'fressnapf'     => ['FressnapfTrackers', 'Fressnapf Tracker', ['{AF92FA56-B339-6D82-B015-DF819C042C29}'], ['Latitude', 'Longitude', 'SampledAt']]
     ];
 
+    private const INSTANCE_ONLY_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'ips-tesla', 'nrg-tessie'];
+
     private const SOURCE_MODULE_URLS = [
-        'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
-        'ips-tesla'   => 'https://github.com/Schnittcher/IPS-Tesla',
-        'nrg-tessie'  => 'https://github.com/DG65/NRGTessie',
-        'tessie'      => 'https://developer.tessie.com/reference/get-vehicle',
-        'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
-        'hyundai-kia' => 'https://github.com/da8ter/Bluelink',
-        'volvo'       => 'https://github.com/demel42/IPSymconVolvo',
-        'renault-ze'  => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
-        'tronity'     => 'https://github.com/symcon/Tronity',
-        'owntracks'   => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
-        'traccar'     => 'https://github.com/traccar/traccar',
-        'icloud'      => 'https://github.com/Burki24/SymconiCloud',
-        'tractive'    => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
-        'fressnapf'   => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/'
+        'bmw-cardata'   => 'https://github.com/parcivad/ips-bmw-cardata',
+        'ips-tesla'     => 'https://github.com/Schnittcher/IPS-Tesla',
+        'nrg-tessie'    => 'https://github.com/DG65/NRGTessie',
+        'tessie'        => 'https://developer.tessie.com/reference/get-vehicle',
+        'fiat-uconnect' => 'https://github.com/demel42/IPSymconFiatUconnect',
+        'smartcar'      => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
+        'hyundai-kia'   => 'https://github.com/da8ter/Bluelink',
+        'volvo'         => 'https://github.com/demel42/IPSymconVolvo',
+        'renault-ze'    => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
+        'tronity'       => 'https://github.com/symcon/Tronity',
+        'owntracks'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+        'traccar'       => 'https://github.com/traccar/traccar',
+        'icloud'        => 'https://github.com/Burki24/SymconiCloud',
+        'tractive'      => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
+        'fressnapf'     => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/'
     ];
 
     private function configurePositionPanels(array $form): array
@@ -54,10 +58,11 @@ trait PositionSourcePanels
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
             $list['values'] = $this->positionPanelValues($mode, $property, $modules);
             $hint = match (true) {
-                $mode === 'ips-tesla'  => 'Enable vehicle location in the Tesla Vehicle Connector, then select the Tesla Vehicle Drive instance.',
-                $mode === 'nrg-tessie' => 'Select the Tessie vehicle instance. The Location telemetry data point must be enabled in Tessie.',
-                $modules === []        => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
-                default                => 'Select an existing Symcon device instance.'
+                $mode === 'ips-tesla'     => 'Enable vehicle location in the Tesla Vehicle Connector, then select the Tesla Vehicle Drive instance.',
+                $mode === 'nrg-tessie'    => 'Select the Tessie vehicle instance. The Location telemetry data point must be enabled in Tessie.',
+                $mode === 'fiat-uconnect' => 'Select the Fiat Uconnect vehicle instance. Its position appears after the next complete position report.',
+                $modules === []           => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
+                default                   => 'Select an existing Symcon device instance.'
             };
             $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [
                 $this->sourceModuleLink($mode, $caption), ['type' => 'Label', 'caption' => $hint], $list
@@ -136,7 +141,7 @@ trait PositionSourcePanels
 
         $variables = [];
         $assignments = array_column($vehicleFields['VehicleAssignments']['items'], null, 'name');
-        $variableFields = in_array($mode, ['fressnapf', 'ips-tesla', 'nrg-tessie'], true) ? [] : ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp']);
+        $variableFields = in_array($mode, self::INSTANCE_ONLY_POSITION_MODES, true) ? [] : ($isJSON ? ['Position'] : ['Latitude', 'Longitude', 'Timestamp']);
         foreach ($variableFields as $field) {
             $input = $assignments['Vehicle' . $field];
             $input['name'] = 'Source' . $field;
@@ -276,7 +281,7 @@ trait PositionSourcePanels
     {
         $isJSON = PositionConverter::supports($mode);
         if ($instance === 0) {
-            if (in_array($mode, ['fressnapf', 'ips-tesla', 'nrg-tessie'], true)) {
+            if (in_array($mode, self::INSTANCE_ONLY_POSITION_MODES, true)) {
                 return [];
             }
             $keys = $isJSON ? ['SourcePosition'] : ['SourceLatitude', 'SourceLongitude', 'SourceTimestamp'];

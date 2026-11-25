@@ -323,6 +323,16 @@ OpenWoIst liest `latitude`, `longitude` und `gps_as_of` in Unix-Sekunden.
 Bei fehlender GPS-Messzeit bleibt der letzte gültige Standort sichtbar.
 [Tessie-API-Dokumentation](https://developer.tessie.com/reference/get-vehicle)
 
+### Fiat-Uconnect-Fahrzeuge auswählen
+
+Öffne **Fahrzeuge → Fiat Uconnect → Hinzufügen** und wähle pro Fahrzeug
+die vorhandene Fiat-Uconnect-Instanz. OpenWoIst findet `CurrentLatitude`,
+`CurrentLongitude` und `LastPositionUpdate` automatisch. Sobald das Quellmodul
+alle drei Variablen in dieser Reihenfolge innerhalb einer Sekunde aktualisiert,
+erscheint die Position mit der GPS-Messzeit aus `LastPositionUpdate`.
+Bei unvollständigen Meldungen bleibt die letzte gültige Position sichtbar.
+[Fiat Uconnect auf GitHub](https://github.com/demel42/IPSymconFiatUconnect)
+
 ### Fahrzeuge aus vorhandenen Modulen auswählen
 
 Öffne unter **Fahrzeuge** den Bereich des Quellmoduls und wähle unter

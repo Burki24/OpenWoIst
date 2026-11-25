@@ -18,6 +18,9 @@
 
 ## Neu
 
+- Unter **Fahrzeuge → Fiat Uconnect** lassen sich vorhandene Fahrzeuginstanzen
+  direkt auswählen. OpenWoIst übernimmt die Position mit der GPS-Messzeit,
+  wenn das Quellmodul alle drei Werte innerhalb einer Sekunde aktualisiert.
 - Unter **Fahrzeuge → Tessie** genügt die Auswahl einer vorhandenen
   Tessie-Fahrzeuginstanz. Die Karte zeigt den Standort mit seiner Empfangszeit.
 - **IPS-Tesla** bietet eine Liste für vorhandene Tesla-Vehicle-Drive-Instanzen.

@@ -136,12 +136,12 @@ und veröffentlicht `gps_as_of` nach den beiden Koordinaten. Der Test mit
 einem Fahrzeug und die Freigabe des PR stehen aus.
 [Tesla Fleet API](https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-endpoints#vehicle-data)
 
-**Fiat Uconnect 1.10.** Die direkte Instanzauswahl bleibt offen. Das
-Quellmodul schreibt `CurrentLatitude`, `CurrentLongitude` und
-`LastPositionUpdate` einzeln. In der Simulation ergaben zwei überlappende
-Teilantworten dieselben Variablen- und Statistikereignisse wie ein
-vollständiger Standortbericht. Für die direkte Auswahl fehlt ein eindeutig
-zuordenbarer Positionsdatensatz.
+**Fiat Uconnect 1.10.** Direkte Instanzauswahl mit einem Plausibilitätsfenster
+von einer Sekunde zwischen den drei Variablenupdates. Lokale Tests bestätigen
+den Positionswechsel mit GPS-Messzeit und das Beibehalten der letzten Position
+bei unvollständigen Meldungen. Überlappende Teilmeldungen in erwarteter
+Reihenfolge können innerhalb des Fensters zusammenfallen. Die Abnahme in
+Kachel und IPSView Desktop steht aus.
 [Fiat-Uconnect-Quellcode](https://github.com/demel42/IPSymconFiatUconnect/blob/8ebc7e8a237952d1452a8f864051bf1ef3761724/FiatUconnect/module.php#L1221-L1243)
 
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API

@@ -68,6 +68,12 @@ Messzeit während des Schreibens zurücksetzt und erst nach beiden
 Koordinaten veröffentlicht. OpenWoIst aktualisiert den Punkt anhand
 dieser GPS-Messzeit.
 
+Für Fiat Uconnect liest OpenWoIst `CurrentLatitude`, `CurrentLongitude` und
+`LastPositionUpdate` der gewählten Fahrzeuginstanz. Es wartet auf Updates in dieser Reihenfolge
+mit höchstens einer Sekunde zwischen erstem und letztem `VariableUpdated`.
+Der Wert von `LastPositionUpdate` ist die GPS-Messzeit. Überlappende Teilmeldungen
+in dieser Reihenfolge können innerhalb des Fensters zusammenfallen.
+
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
 `LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.
