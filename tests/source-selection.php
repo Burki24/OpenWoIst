@@ -26,7 +26,7 @@ $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
     && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
     && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'PajSources', 'TrackerSources']
-    && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'IPSTeslaVehiclesSection', 'TeslaFleetVehiclesSection', 'NRGTessieVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
+    && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'IPSTeslaVehiclesSection', 'NRGTessieVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
 $modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels + array_column($vehiclePanels['NRGTessieVehiclesSection']['items'], null, 'name');
 $links = [
     'ICloudSources'               => 'https://github.com/Burki24/SymconiCloud',
@@ -36,7 +36,6 @@ $links = [
     'OwnTracksDevicesSection'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
     'TraccarDevicesSection'       => 'https://github.com/traccar/traccar',
     'BMWCarDataVehiclesSection'   => 'https://github.com/parcivad/ips-bmw-cardata',
-    'TeslaFleetVehiclesSection'   => 'https://developer.tesla.com/docs/fleet-api/fleet-telemetry',
     'IPSTeslaVehiclesSection'     => 'https://github.com/Schnittcher/IPS-Tesla',
     'TessieVehiclesSection'       => 'https://developer.tessie.com/reference/get-vehicle',
     'NRGTessieVehiclesSection'    => 'https://github.com/DG65/NRGTessie',

@@ -49,8 +49,10 @@ Die Quellmodule haben eigene Listen im Konfigurationsformular. Die bisherigen
 benannten Einträge aus den gemeinsamen Listen und der einzelnen Fahrzeugquelle
 werden beim Laden der gespeicherten Konfiguration den neuen Listen zugeordnet.
 Dabei bleiben die Variablen-IDs und die Kartenidentität erhalten. BMW CarData,
-Traccar, Tessie und Tesla Fleet Telemetry übernehmen vollständige
-Positionsberichte aus JSON-Variablen.
+Traccar und Tessie übernehmen vollständige Positionsberichte aus JSON-Variablen.
+Tesla-Livetelemetrie wird über Tessie eingerichtet. Bereits gespeicherte
+Fleet-Telemetry-JSON-Zuordnungen werden weiterhin ausgewertet. Ein direkter
+Zugang zu einem eigenen Telemetrieserver setzt eine konkrete Datenschnittstelle voraus.
 
 NRG-Stack Tessie kann direkt als Fahrzeuginstanz ausgewählt werden. OpenWoIst
 übernimmt Breiten- und Längengrad aus zwei Variablenupdates in Schreibreihenfolge

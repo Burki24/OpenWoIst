@@ -308,21 +308,6 @@ Die Auswahl setzt einen IPS-Tesla-Stand mit dieser Connector-Option voraus.
 Bis ein vollständiger GPS-Bericht vorliegt, bleibt der letzte bekannte
 Standort sichtbar. [IPS-Tesla auf GitHub](https://github.com/Schnittcher/IPS-Tesla)
 
-### Tesla Fleet Telemetry anschließen
-
-Wähle unter **Fahrzeuge → Tesla Fleet Telemetry** pro Fahrzeug die
-Symcon-String-Variable mit dem vollständigen JSON-Positionsbericht. Der
-Fleet-Telemetry-Server kann Fahrzeugberichte mit
-`transmit_decoded_records: true` als JSON ausgeben. Leite pro Fahrzeug die
-Berichte mit `Location` an dessen Variable weiter.
-
-OpenWoIst liest `Location` aus `data` und verwendet `createdAt` aus
-demselben Bericht. Die einzelnen Feld-Topics des Tesla-MQTT-Dispatchers
-enthalten nur den jeweiligen Feldwert. Für MQTT muss die Weiterleitung
-den vollständigen Positionsbericht als eine Nachricht liefern.
-[Tesla Fleet Telemetry](https://github.com/teslamotors/fleet-telemetry#personalized-backendsdispatchers) ·
-[Tesla-MQTT-Format](https://github.com/teslamotors/fleet-telemetry/tree/main/datastore/mqtt#payload-formats)
-
 ### Tessie-Fahrzeuge auswählen
 
 Öffne **Fahrzeuge → Tessie → Hinzufügen** und wähle die vorhandene

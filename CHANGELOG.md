@@ -12,6 +12,9 @@
   OpenWoIst-JSON benötigt.
 - Die Anbieterbereiche erklären, wo eine Symcon-Instanz, ein Freigabelink
   oder eine Positionsvariable benötigt wird.
+- Tesla-Livetelemetrie wird im Formular über **Tessie** eingerichtet. Der
+  separate JSON-Eintrag für **Tesla Fleet Telemetry** entfällt. Bereits
+  gespeicherte Zuordnungen werden weiterhin ausgewertet.
 
 ## Neu
 
@@ -20,8 +23,6 @@
 - **IPS-Tesla** bietet eine Liste für vorhandene Tesla-Vehicle-Drive-Instanzen.
   OpenWoIst übernimmt Koordinaten und GPS-Messzeit automatisch, sobald der
   Fahrzeugstandort im zugehörigen Tesla Vehicle Connector aktiviert ist.
-- **Tesla Fleet Telemetry** übernimmt Position und Zeitstempel aus
-  einem vollständigen Fahrzeugbericht in einer Symcon-JSON-Variable.
 - **Tessie** übernimmt die Fahrzeugposition aus einer Symcon-JSON-Variable
   mit der GPS-Messzeit `gps_as_of`.
 - **PAJ GPS** lädt Geräte aus dem FINDER Portal unter **Tracker und

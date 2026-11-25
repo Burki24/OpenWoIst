@@ -25,7 +25,6 @@ trait PositionSourcePanels
     private const SOURCE_MODULE_URLS = [
         'bmw-cardata' => 'https://github.com/parcivad/ips-bmw-cardata',
         'ips-tesla'   => 'https://github.com/Schnittcher/IPS-Tesla',
-        'tesla-fleet' => 'https://developer.tesla.com/docs/fleet-api/fleet-telemetry',
         'nrg-tessie'  => 'https://github.com/DG65/NRGTessie',
         'tessie'      => 'https://developer.tessie.com/reference/get-vehicle',
         'smartcar'    => 'https://www.symcon.de/de/module-store/smartcar-symcon/',
@@ -48,6 +47,10 @@ trait PositionSourcePanels
         $deviceModules = [];
         $petModules = [];
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules]) {
+            if ($mode === 'tesla-fleet') {
+                // Keep reading saved Fleet Telemetry assignments without offering new ones.
+                continue;
+            }
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
             $list['values'] = $this->positionPanelValues($mode, $property, $modules);
             $hint = match (true) {
@@ -156,7 +159,7 @@ trait PositionSourcePanels
             ]];
         }
 
-        if ($isJSON && !in_array($mode, ['tesla-fleet', 'tessie'], true)) {
+        if ($isJSON && $mode !== 'tessie') {
             $advanced = $vehicleFields['VehicleAdvanced'];
             foreach ($advanced['items'] as &$input) {
                 $input['name'] = 'Source' . substr($input['name'], strlen('Vehicle'));

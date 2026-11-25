@@ -123,12 +123,11 @@ Die Abnahme in den nativen Hosts steht aus.
 [NRG-Stack Tessie](https://github.com/DG65/NRGTessie) ·
 [Tessie-API](https://developer.tessie.com/reference/get-vehicle)
 
-**Tesla Fleet Telemetry.** Der JSON-Import übernimmt `Location` und
-`createdAt` aus demselben Fahrzeugbericht. Auf `dev` (`fe462f0`, Version
-0.23) wanderte der Marker mit Testdaten in der nativen Kachel und in
-IPSView Desktop. Ein ungültiger Bericht ließ den letzten Standort stehen.
-Quellzuordnungen und Haussteuerungsprofil blieben erhalten.
-[Tesla-Fahrzeugbericht](https://github.com/teslamotors/fleet-telemetry/blob/bb7c8a931e46da3b3eb6d20a67541c8f755f1ee6/protos/vehicle_data.proto)
+**Tesla Fleet Telemetry.** Der bisherige JSON-Import wurde auf `dev`
+(`fe462f0`, Version 0.23) mit Testdaten in Kachel und IPSView Desktop
+abgenommen. Gespeicherte Testzuordnungen werden weiter ausgewertet. Neue
+Livetelemetrie-Quellen werden über Tessie eingerichtet. Ein eigener
+Telemetrieserver bleibt bis zur Klärung seiner Datenschnittstelle offen.
 
 **IPS-Tesla.** Die direkte Auswahl mehrerer `TeslaVehicleDrive`-Instanzen
 ist mit simulierten GPS-Berichten für Kachel und IPSView geprüft. Der

@@ -73,8 +73,7 @@ $teslaLocation = static fn (float $lat, float $lon): array => ['key' => 'Locatio
 $jsonSources = [
     'BMWCarDataVehicles' => ['BMW', $bmwSource],
     'TraccarDevices'     => ['Traccar', $traccarSource],
-    'TessieVehicles'     => ['Tessie', $tessieSource],
-    'TeslaFleetVehicles' => ['Tesla Fleet Test', $teslaSource]
+    'TessieVehicles'     => ['Tessie', $tessieSource]
 ];
 foreach ($jsonSources as $property => [$name, $variable]) {
     check(isset($panels[$property . 'Section']), 'A dedicated form is available for ' . $name . '.');
@@ -84,7 +83,11 @@ foreach ($jsonSources as $property => [$name, $variable]) {
         && !isset($inputs['SourceInstance']), 'Each JSON provider has a dedicated list with a string variable selector.');
     IPS_SetProperty($positionPanelMapID, $property, json_encode([['SourceName' => $name, 'SourcePosition' => $variable]], JSON_THROW_ON_ERROR));
 }
+$legacyTesla = json_encode([['SourceName' => 'Tesla Fleet Test', 'SourcePosition' => $teslaSource]], JSON_THROW_ON_ERROR);
+IPS_SetProperty($positionPanelMapID, 'TeslaFleetVehicles', $legacyTesla);
 IPS_ApplyChanges($positionPanelMapID);
+check(!isset($providerPanels($positionPanelMap)['TeslaFleetVehiclesSection'])
+    && IPS_GetProperty($positionPanelMapID, 'TeslaFleetVehicles') === $legacyTesla, 'An existing Fleet Telemetry assignment remains stored after opening the form without its panel.');
 $panelEmbed = $positionPanelMap->GetIPSViewHTML();
 $panelAccess = bootstrap($panelEmbed)['options'];
 $panelPath = dirname($panelAccess['page']) . '/state';
