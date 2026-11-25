@@ -74,6 +74,12 @@ mit höchstens einer Sekunde zwischen erstem und letztem `VariableUpdated`.
 Der Wert von `LastPositionUpdate` ist die GPS-Messzeit. Überlappende Teilmeldungen
 in dieser Reihenfolge können innerhalb des Fensters zusammenfallen.
 
+Geofency-Geräte sind Dummy-Instanzen unter einem Geofency-Empfänger. OpenWoIst
+liest `Timestamp`, `CurrentLatitude` und `CurrentLongitude` in der
+Schreibreihenfolge des Empfängers mit demselben Plausibilitätsfenster. Der
+Empfänger meldet bei fehlender aktueller Position `0/0`, das OpenWoIst verwirft.
+[Geofency-Quellcode](https://github.com/symcon/SymconMisc/blob/master/Geofency/module.php)
+
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
 `LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.

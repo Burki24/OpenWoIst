@@ -261,6 +261,7 @@ require __DIR__ . '/location-details.php';
 require __DIR__ . '/position-panels.php';
 require __DIR__ . '/ips-tesla-sources.php';
 require __DIR__ . '/fiat-uconnect-sources.php';
+require __DIR__ . '/geofency-sources.php';
 require __DIR__ . '/tessie-sources.php';
 require __DIR__ . '/fressnapf-sources.php';
 require __DIR__ . '/garmin-livetrack.php';

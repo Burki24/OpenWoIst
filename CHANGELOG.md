@@ -18,6 +18,9 @@
 
 ## Neu
 
+- Unter **Tracker und Standortgeräte → Geofency** lassen sich mehrere Geräte
+  auswählen. Die Karte übernimmt die gemeldete Geräteposition bei Ein- und
+  Austritt mit der zugehörigen Ereigniszeit.
 - Unter **Fahrzeuge → Fiat Uconnect** lassen sich vorhandene Fahrzeuginstanzen
   direkt auswählen. OpenWoIst übernimmt die Position mit der GPS-Messzeit,
   wenn das Quellmodul alle drei Werte innerhalb einer Sekunde aktualisiert.

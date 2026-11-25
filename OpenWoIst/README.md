@@ -143,6 +143,17 @@ vorliegt, verwende **Manuelle Variablenzuordnung**. Das JSON enthält `lat`,
 einen Namen und eine Markerfarbe erhalten.
 Ohne ausgewählte Farbe greift die Gerätefarbe aus dem jeweiligen Designer.
 
+## Geofency-Geräte hinzufügen
+
+Richte den Geofency-Webhook in [Symcon](https://www.symcon.de/de/service/dokumentation/modulreferenz/geraete/geofency/)
+ein und aktiviere in der App **Aktuelle Position senden**. Nach der ersten
+Meldung legt Geofency die Geräteinstanz an. Wähle unter **Tracker und
+Standortgeräte → Geofency → Hinzufügen** pro Gerät die vorhandene Instanz.
+
+Bei einer vollständigen Ein- oder Austrittsmeldung übernimmt OpenWoIst die
+Geräteposition mit ihrer Ereigniszeit. Meldungen ohne Gerätekoordinaten lassen
+die letzte gültige Position stehen.
+
 ## Garmin LiveTrack hinzufügen
 
 1. Starte in Garmin Connect eine LiveTrack-Aktivität und kopiere ihren

@@ -144,6 +144,11 @@ Reihenfolge können innerhalb des Fensters zusammenfallen. Die Abnahme in
 Kachel und IPSView Desktop steht aus.
 [Fiat-Uconnect-Quellcode](https://github.com/demel42/IPSymconFiatUconnect/blob/8ebc7e8a237952d1452a8f864051bf1ef3761724/FiatUconnect/module.php#L1221-L1243)
 
+**Geofency.** Die Geräteauswahl findet Instanzen unter Geofency-Empfängern.
+Lokale Tests mit zwei simulierten Geräten prüfen den Positionswechsel mit
+Ereigniszeit und den Erhalt der Position bei fehlenden Koordinaten in beiden
+Ausgaben. Die Abnahme mit Geofency-App und nativem Host steht aus.
+
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
 Parkkoordinaten ohne zugehörige Messzeit. Für kompatible Škoda mit OEM-Zeit
 ist der [Smartcar-Import](OpenWoIst/README.md#škoda-über-smartcar-einbinden)

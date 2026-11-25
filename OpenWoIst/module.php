@@ -12,7 +12,6 @@ require_once __DIR__ . '/../libs/helper/OpenFreeMapHelper.php';
 require_once __DIR__ . '/../libs/helper/ResponsiveVisualizationHelper.php';
 require_once __DIR__ . '/../libs/helper/ReverseGeocodingHelper.php';
 require_once __DIR__ . '/../libs/helper/VisualizationThemeConfigurationHelper.php';
-require_once __DIR__ . '/../libs/FiatUconnectPosition.php';
 require_once __DIR__ . '/../libs/FressnapfPosition.php';
 require_once __DIR__ . '/../libs/GarminLiveTrackClient.php';
 require_once __DIR__ . '/../libs/GarminMapShareClient.php';
@@ -25,6 +24,7 @@ require_once __DIR__ . '/../libs/LocationSnapshot.php';
 require_once __DIR__ . '/../libs/LocationZones.php';
 require_once __DIR__ . '/../libs/MapColorGuide.php';
 require_once __DIR__ . '/../libs/MapDesign.php';
+require_once __DIR__ . '/../libs/OrderedPositionUpdates.php';
 require_once __DIR__ . '/../libs/PajGPSClient.php';
 require_once __DIR__ . '/../libs/PajSources.php';
 require_once __DIR__ . '/../libs/PositionConverter.php';
@@ -42,7 +42,6 @@ use Burki24\SymconModuleHelper\IPSViewStyleConfigurationHelper;
 use Burki24\SymconModuleHelper\OpenFreeMapHelper;
 use Burki24\SymconModuleHelper\ResponsiveVisualizationHelper;
 use Burki24\SymconModuleHelper\VisualizationThemeConfigurationHelper;
-use OpenWoIst\FiatUconnectPosition;
 use OpenWoIst\FressnapfPosition;
 use OpenWoIst\GarminSources;
 use OpenWoIst\ICloudDeviceSelection;
@@ -52,6 +51,7 @@ use OpenWoIst\LocationSnapshot;
 use OpenWoIst\LocationZones;
 use OpenWoIst\MapColorGuide;
 use OpenWoIst\MapDesign;
+use OpenWoIst\OrderedPositionUpdates;
 use OpenWoIst\PajSources;
 use OpenWoIst\PositionConverter;
 use OpenWoIst\PositionSourcePanels;
@@ -83,7 +83,7 @@ class OpenWoIst extends IPSModuleStrict
     use VehicleSourceForm;
 
     private const ACCOUNT_MODULE = '{10BF9A03-98A3-495A-B0FA-A4FA0B1002D5}';
-    private const EVENT_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'nrg-tessie'];
+    private const EVENT_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'geofency', 'nrg-tessie'];
     private const DEMO_ROUTE = [
         [52.51453, 13.35010],
         [52.51461, 13.35684],
@@ -662,7 +662,13 @@ class OpenWoIst extends IPSModuleStrict
             $prior = $reports[$key] ?? [];
             $pending = ($prior['ids'] ?? []) === $required ? $prior['pending'] : [];
             [$next, $fix] = match ($mode) {
-                'fiat-uconnect' => FiatUconnectPosition::receive($pending, $field, $message['value'], array_map('IPS_GetVariable', $position['ids'])),
+                'fiat-uconnect', 'geofency' => OrderedPositionUpdates::receive(
+                    $pending,
+                    $field,
+                    $message['value'],
+                    array_map('IPS_GetVariable', $position['ids']),
+                    $mode === 'geofency' ? [2, 0, 1] : [0, 1, 2]
+                ),
                 'nrg-tessie'    => TessiePosition::receive($pending, $field, $message['value'], $message['observedAt'], array_map('IPS_GetVariable', $position['ids'])),
                 'fressnapf'     => FressnapfPosition::receive($pending, $field, $message['value'], $message['observedAt'])
             };
@@ -672,6 +678,10 @@ class OpenWoIst extends IPSModuleStrict
                 $reports[$key] = ['ids' => $required, 'pending' => $next];
             }
             $this->SetBuffer('PositionReports', json_encode($reports, JSON_THROW_ON_ERROR));
+            if ($mode === 'geofency' && $fix !== null && (float) $fix['latitude'] === 0.0 && (float) $fix['longitude'] === 0.0) {
+                // The Geofency receiver writes 0/0 when the webhook contains no current position.
+                return null;
+            }
             return $fix === null ? null : ['key' => $key, 'position' => $fix];
         }
         return null;

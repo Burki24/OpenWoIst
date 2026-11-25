@@ -25,7 +25,7 @@ $devicePanels = array_column($fields['LocationDeviceSources']['items'], null, 'n
 $vehiclePanels = array_column($fields['VehicleSources']['items'], null, 'name');
 check(array_keys($cloudPanels) === ['ICloudSources', 'GoogleCloudSources']
     && array_keys($petPanels) === ['TractiveSources', 'FressnapfTrackersSection']
-    && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'PajSources', 'TrackerSources']
+    && array_keys($devicePanels) === ['OwnTracksDevicesSection', 'GeofencyDevicesSection', 'TraccarDevicesSection', 'GarminLiveTrackSources', 'GarminMapShareSources', 'PajSources', 'TrackerSources']
     && array_keys($vehiclePanels) === ['BMWCarDataVehiclesSection', 'IPSTeslaVehiclesSection', 'NRGTessieVehiclesSection', 'FiatUconnectVehiclesSection', 'SmartcarVehiclesSection', 'HyundaiKiaVehiclesSection', 'VolvoVehiclesSection', 'RenaultZEVehiclesSection', 'TronityVehiclesSection', 'Vehicles', 'ExistingVehicleSettings'], 'Provider panels keep their own lists within the appropriate group.');
 $modulePanels = $cloudPanels + $petPanels + $devicePanels + $vehiclePanels + array_column($vehiclePanels['NRGTessieVehiclesSection']['items'], null, 'name');
 $links = [
@@ -34,6 +34,7 @@ $links = [
     'FressnapfTrackersSection'    => 'https://www.symcon.de/de/module-store/bgersmann-fressnapftracker/',
     'PajSources'                  => 'https://v2.finder-portal.com/',
     'OwnTracksDevicesSection'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+    'GeofencyDevicesSection'      => 'https://github.com/symcon/SymconMisc/tree/master/Geofency',
     'TraccarDevicesSection'       => 'https://github.com/traccar/traccar',
     'BMWCarDataVehiclesSection'   => 'https://github.com/parcivad/ips-bmw-cardata',
     'IPSTeslaVehiclesSection'     => 'https://github.com/Schnittcher/IPS-Tesla',

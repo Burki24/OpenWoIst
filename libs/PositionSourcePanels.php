@@ -6,6 +6,9 @@ namespace OpenWoIst;
 
 trait PositionSourcePanels
 {
+    private const GEOFENCY_RECEIVER_MODULE = '{0100CA50-D2DA-11E4-8830-0800200C9A66}';
+    private const GEOFENCY_DEVICE_MODULE = '{485D0419-BE97-4548-AA9C-C083EB82E61E}';
+
     private const POSITION_PANELS = [
         'bmw-cardata'   => ['BMWCarDataVehicles', 'BMW CarData', [], []],
         'ips-tesla'     => ['IPSTeslaVehicles', 'IPS-Tesla', ['{83675CDD-3E50-FB21-8AE6-B4FC718A77B6}'], ['latitude', 'longitude', 'gps_as_of']],
@@ -19,11 +22,13 @@ trait PositionSourcePanels
         'renault-ze'    => ['RenaultZEVehicles', 'Renault Z.E.', ['{C7AB2E48-7D3A-94B8-E4D6-137CFB91D821}'], ['GPSLatitude', 'GPSLongitude', 'GPSUpdate']],
         'tronity'       => ['TronityVehicles', 'Tronity', ['{D041B19E-6D70-A84F-B67C-4FF51CA38D3A}'], ['Latitude', 'Longitude', 'Timestamp']],
         'owntracks'     => ['OwnTracksDevices', 'OwnTracks', ['{8398750C-51CE-51C8-97A9-9356BB11ABDD}'], ['position']],
+        'geofency'      => ['GeofencyDevices', 'Geofency', [self::GEOFENCY_DEVICE_MODULE], ['CurrentLatitude', 'CurrentLongitude', 'Timestamp']],
         'traccar'       => ['TraccarDevices', 'Traccar', [], []],
         'fressnapf'     => ['FressnapfTrackers', 'Fressnapf Tracker', ['{AF92FA56-B339-6D82-B015-DF819C042C29}'], ['Latitude', 'Longitude', 'SampledAt']]
     ];
 
-    private const INSTANCE_ONLY_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'ips-tesla', 'nrg-tessie'];
+    private const INSTANCE_ONLY_POSITION_MODES = ['fiat-uconnect', 'fressnapf', 'geofency', 'ips-tesla', 'nrg-tessie'];
+    private const TRACKER_POSITION_MODES = ['owntracks', 'geofency', 'fressnapf'];
 
     private const SOURCE_MODULE_URLS = [
         'bmw-cardata'   => 'https://github.com/parcivad/ips-bmw-cardata',
@@ -37,6 +42,7 @@ trait PositionSourcePanels
         'renault-ze'    => 'https://www.symcon.de/de/module-store/net-lorbetzki-zoe/',
         'tronity'       => 'https://github.com/symcon/Tronity',
         'owntracks'     => 'https://www.symcon.de/de/module-store/silberstreifen-owntracks/',
+        'geofency'      => 'https://github.com/symcon/SymconMisc/tree/master/Geofency',
         'traccar'       => 'https://github.com/traccar/traccar',
         'icloud'        => 'https://github.com/Burki24/SymconiCloud',
         'tractive'      => 'https://www.symcon.de/de/module-store/demel41-tractivegps/',
@@ -56,18 +62,18 @@ trait PositionSourcePanels
                 continue;
             }
             $list = $this->positionPanelList($mode, $property, $modules, $vehicleFields);
-            $list['values'] = $this->positionPanelValues($mode, $property, $modules);
             $hint = match (true) {
                 $mode === 'ips-tesla'     => 'Enable vehicle location in the Tesla Vehicle Connector, then select the Tesla Vehicle Drive instance.',
                 $mode === 'nrg-tessie'    => 'Select the Tessie vehicle instance. The Location telemetry data point must be enabled in Tessie.',
                 $mode === 'fiat-uconnect' => 'Select the Fiat Uconnect vehicle instance. Its position appears after the next complete position report.',
+                $mode === 'geofency'      => 'Enable Send current position in the Geofency webhook settings. Devices become selectable after the first event.',
                 $modules === []           => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
                 default                   => 'Select an existing Symcon device instance.'
             };
             $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [
                 $this->sourceModuleLink($mode, $caption), ['type' => 'Label', 'caption' => $hint], $list
             ]];
-            if (in_array($mode, ['owntracks', 'traccar'], true)) {
+            if (in_array($mode, ['owntracks', 'geofency', 'traccar'], true)) {
                 $deviceModules[] = $panel;
             } elseif ($mode === 'fressnapf') {
                 $petModules[] = $panel;
@@ -124,6 +130,8 @@ trait PositionSourcePanels
     private function positionPanelList(string $mode, string $property, array $modules, array $vehicleFields): array
     {
         $isJSON = PositionConverter::supports($mode);
+        $values = $this->positionPanelValues($mode, $property, $modules);
+        $add = true;
         $nameCaption = $mode === 'fressnapf' ? 'Pet name' : 'Name on the map';
         $name = ['type' => 'ValidationTextBox', 'name' => 'SourceName', 'caption' => $nameCaption];
         $color = array_diff_key($vehicleFields['VehicleMarkerColor'], ['visible' => true]);
@@ -133,9 +141,13 @@ trait PositionSourcePanels
         ];
         $dialog = [$name];
         if ($modules !== []) {
-            $instance = ['type' => 'SelectInstance', 'name' => 'SourceInstance', 'caption' => 'Source instance', 'validModules' => $modules];
-            $columns[] = ['name' => 'SourceInstance', 'caption' => 'Source instance', 'width' => '260px', 'add' => 0, 'edit' => ['type' => 'SelectInstance', 'validModules' => $modules]];
-            $dialog[] = $instance;
+            $selector = ['type' => 'SelectInstance', 'validModules' => $modules];
+            if ($mode === 'geofency') {
+                [$add, $options] = $this->geofencyDeviceOptions($values);
+                $selector = ['type' => 'Select', 'options' => $options];
+            }
+            $columns[] = ['name' => 'SourceInstance', 'caption' => 'Source instance', 'width' => '260px', 'add' => 0, 'edit' => $selector];
+            $dialog[] = $selector + ['name' => 'SourceInstance', 'caption' => 'Source instance'];
             $dialog[] = ['type' => 'Label', 'caption' => 'OpenWoIst locates the position variables of the selected instance automatically.'];
         }
 
@@ -183,9 +195,10 @@ trait PositionSourcePanels
             'name'                        => $property,
             'caption'                     => 'Configured devices',
             'rowCount'                    => 4,
-            'add'                         => true,
+            'add'                         => $add,
             'delete'                      => true,
             'loadValuesFromConfiguration' => false,
+            'values'                      => $values,
             'columns'                     => $columns,
             'form'                        => $dialog
         ];
@@ -214,7 +227,30 @@ trait PositionSourcePanels
 
     private function isPositionPanelInstance(int $id, array $modules): bool
     {
-        return $modules !== [] && $id > 0 && IPS_InstanceExists($id) && in_array(IPS_GetInstance($id)['ModuleInfo']['ModuleID'], $modules, true);
+        if ($modules === [] || $id <= 0 || !IPS_InstanceExists($id) || !in_array(IPS_GetInstance($id)['ModuleInfo']['ModuleID'], $modules, true)) {
+            return false;
+        }
+        return $modules !== [self::GEOFENCY_DEVICE_MODULE] || $this->isPositionPanelInstance(IPS_GetParent($id), [self::GEOFENCY_RECEIVER_MODULE]);
+    }
+
+    private function geofencyDeviceOptions(array $configured): array
+    {
+        $options = [0 => $this->Translate('Select a Geofency device')];
+        foreach (IPS_GetInstanceListByModuleID(self::GEOFENCY_RECEIVER_MODULE) as $receiver) {
+            foreach (IPS_GetChildrenIDs($receiver) as $id) {
+                if ($this->isPositionPanelInstance($id, [self::GEOFENCY_DEVICE_MODULE])) {
+                    $options[$id] = IPS_GetName($id) . ' (#' . $id . ')';
+                }
+            }
+        }
+        $add = count($options) > 1;
+        foreach ($configured as $row) {
+            $id = $row['SourceInstance'] ?? 0;
+            if (is_int($id) && $id > 0) {
+                $options[$id] ??= sprintf($this->Translate('Unavailable device (#%d)'), $id);
+            }
+        }
+        return [$add, array_map(static fn (int $id, string $name): array => ['caption' => $name, 'value' => $id], array_keys($options), $options)];
     }
 
     private function positionPanelInstanceName(string $mode, int $id): string
@@ -235,11 +271,11 @@ trait PositionSourcePanels
     {
         $positions = [];
         foreach (self::POSITION_PANELS as $mode => [$property, $caption, $modules, $idents]) {
-            if ($kind === 'tracker' && !in_array($mode, ['owntracks', 'fressnapf'], true)) {
+            if ($kind === 'tracker' && !in_array($mode, self::TRACKER_POSITION_MODES, true)) {
                 continue;
             }
             foreach ($this->positionRows($this->ReadPropertyString($property)) ?? [] as $row) {
-                $rowKind = $mode === 'fressnapf' || ($mode === 'owntracks' && ($row['SourceKind'] ?? '') !== 'vehicle') ? 'tracker' : 'vehicle';
+                $rowKind = in_array($mode, self::TRACKER_POSITION_MODES, true) && !($mode === 'owntracks' && ($row['SourceKind'] ?? '') === 'vehicle') ? 'tracker' : 'vehicle';
                 if ($rowKind !== $kind) {
                     continue;
                 }
@@ -251,12 +287,17 @@ trait PositionSourcePanels
                     continue;
                 }
                 $name = is_string($row['SourceName'] ?? null) ? trim($row['SourceName']) : '';
+                $triggerField = match ($mode) {
+                    'fressnapf' => 2,
+                    'geofency'  => 1,
+                    default     => array_key_last($ids)
+                };
                 $position = [
                     'mode'             => $mode,
                     'kind'             => $kind,
                     'name'             => $name !== '' ? $name : ($known ? $this->positionPanelInstanceName($mode, $instance) : ($instance > 0 ? $this->Translate($caption) : '')),
                     'ids'              => $ids,
-                    'trigger'          => $ids[$mode === 'fressnapf' ? 2 : array_key_last($ids)] ?? 0,
+                    'trigger'          => $ids[$triggerField] ?? 0,
                     'markerColor'      => LocationSnapshot::markerColor($row['SourceMarkerColor'] ?? null),
                     'timeFormat'       => is_string($row['SourceTimeFormat'] ?? null) ? $row['SourceTimeFormat'] : 'default',
                     'decimalSeparator' => is_string($row['SourceDecimalSeparator'] ?? null) ? $row['SourceDecimalSeparator'] : '.'
