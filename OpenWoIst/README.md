@@ -296,6 +296,18 @@ Verwende zum Testen eine aktuelle Messzeit. Bei einem gemeinsamen Topic für
 mehrere Tracker teile die Meldungen nach `position.deviceId` auf. Jede
 zugewiesene String-Variable enthält die Meldungen eines Trackers.
 
+### IPS-Tesla-Instanzen auswählen
+
+Aktiviere im **Tesla Vehicle Connector** die Option **Fahrzeugstandort
+abrufen**. Wähle danach unter **Fahrzeuge → IPS-Tesla** pro Fahrzeug die
+Instanz **Tesla Vehicle Drive**. OpenWoIst liest `latitude`, `longitude` und
+die GPS-Messzeit `gps_as_of` automatisch. Je Fahrzeug kannst du einen
+Anzeigenamen und eine Markerfarbe vergeben.
+
+Die Auswahl setzt einen IPS-Tesla-Stand mit dieser Connector-Option voraus.
+Bis ein vollständiger GPS-Bericht vorliegt, bleibt der letzte bekannte
+Standort sichtbar. [IPS-Tesla auf GitHub](https://github.com/Schnittcher/IPS-Tesla)
+
 ### Tesla Fleet Telemetry anschließen
 
 Wähle unter **Fahrzeuge → Tesla Fleet Telemetry** pro Fahrzeug die

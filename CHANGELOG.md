@@ -15,6 +15,9 @@
 
 ## Neu
 
+- **IPS-Tesla** bietet eine Liste für vorhandene Tesla-Vehicle-Drive-Instanzen.
+  OpenWoIst übernimmt Koordinaten und GPS-Messzeit automatisch, sobald der
+  Fahrzeugstandort im zugehörigen Tesla Vehicle Connector aktiviert ist.
 - **Tesla Fleet Telemetry** übernimmt Position und Zeitstempel aus
   einem vollständigen Fahrzeugbericht in einer Symcon-JSON-Variable.
 - **Tessie** übernimmt die Fahrzeugposition aus einer Symcon-JSON-Variable

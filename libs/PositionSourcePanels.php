@@ -50,8 +50,8 @@ trait PositionSourcePanels
             $list['values'] = $this->positionPanelValues($mode, $property, $modules);
             $hint = match (true) {
                 $mode === 'ips-tesla' => 'Enable vehicle location in the Tesla Vehicle Connector, then select the Tesla Vehicle Drive instance.',
-                $modules === []      => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
-                default              => 'Select an existing Symcon device instance.'
+                $modules === []       => sprintf($this->Translate('Select a Symcon string variable containing %s position JSON.'), $caption),
+                default               => 'Select an existing Symcon device instance.'
             };
             $panel = ['type' => 'ExpansionPanel', 'name' => $property . 'Section', 'caption' => $caption, 'items' => [
                 $this->sourceModuleLink($mode, $caption), ['type' => 'Label', 'caption' => $hint], $list

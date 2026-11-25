@@ -259,6 +259,7 @@ require __DIR__ . '/position-presets.php';
 require __DIR__ . '/tracker-sources.php';
 require __DIR__ . '/location-details.php';
 require __DIR__ . '/position-panels.php';
+require __DIR__ . '/ips-tesla-sources.php';
 require __DIR__ . '/fressnapf-sources.php';
 require __DIR__ . '/garmin-livetrack.php';
 require __DIR__ . '/garmin-mapshare.php';

@@ -124,14 +124,15 @@ beliebige Telemetriepakete. [Tessie-API](https://developer.tessie.com/reference/
 `createdAt` aus demselben Fahrzeugbericht. Auf `dev` (`fe462f0`, Version
 0.23) wanderte der Marker mit Testdaten in der nativen Kachel und in
 IPSView Desktop. Ein ungültiger Bericht ließ den letzten Standort stehen.
-Quellzuordnungen und Haussteuerungsprofil blieben erhalten. Die direkte
-Instanzauswahl für Schnittchers IPS-Tesla bleibt offen. `TeslaVehicleDrive`
-hat Variablen für Koordinaten und `gps_as_of`. Im Abruf des Connectors fehlt
-der Datenblock `location_data`, den Tesla ab Firmware 2023.38 für den
-Standort voraussetzt.
-[IPS-Tesla-Connector](https://github.com/Schnittcher/IPS-Tesla/blob/ca2999a70325a0ec640ec0f0e2386886f5c1fdad/TeslaVehicleConnector/module.php) ·
-[Tesla Fleet API](https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-endpoints#vehicle-data)
+Quellzuordnungen und Haussteuerungsprofil blieben erhalten.
 [Tesla-Fahrzeugbericht](https://github.com/teslamotors/fleet-telemetry/blob/bb7c8a931e46da3b3eb6d20a67541c8f755f1ee6/protos/vehicle_data.proto)
+
+**IPS-Tesla.** Die direkte Auswahl mehrerer `TeslaVehicleDrive`-Instanzen
+ist mit simulierten GPS-Berichten für Kachel und IPSView geprüft. Der
+vorbereitete IPS-Tesla-PR ergänzt den optionalen `location_data`-Abruf
+und veröffentlicht `gps_as_of` nach den beiden Koordinaten. Der Test mit
+einem Fahrzeug und die Freigabe des PR stehen aus.
+[Tesla Fleet API](https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-endpoints#vehicle-data)
 
 **Später bei geklärter Datenquelle.** Bei MyŠkoda liefert die Public API
 Parkkoordinaten ohne zugehörige Messzeit. Für kompatible Škoda mit OEM-Zeit

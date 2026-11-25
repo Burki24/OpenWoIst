@@ -52,6 +52,13 @@ Dabei bleiben die Variablen-IDs und die Kartenidentität erhalten. BMW CarData,
 Traccar, Tessie und Tesla Fleet Telemetry übernehmen vollständige
 Positionsberichte aus JSON-Variablen.
 
+IPS-Tesla liest `latitude`, `longitude` und `gps_as_of` aus der gewählten
+`TeslaVehicleDrive`-Instanz. Die aktivierte Option `IncludeLocationData`
+im zugehörigen Connector setzt einen IPS-Tesla-Stand voraus, der die
+Messzeit während des Schreibens zurücksetzt und erst nach beiden
+Koordinaten veröffentlicht. OpenWoIst aktualisiert den Punkt anhand
+dieser GPS-Messzeit.
+
 Für Tractive verarbeitet die Karte Variablenaktualisierungen pro ausgewählter
 Geräteinstanz. `LastUpdate` markiert den Abschluss, die Messzeit stammt aus
 `LastPositionMessage`. Unvollständige oder überlappende Folgen werden verworfen.
